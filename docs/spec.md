@@ -1,0 +1,305 @@
+# Especificacion viva de Irati
+
+Este documento es la fuente de verdad funcional y tecnica de Irati. Debe actualizarse antes o durante cada hito cuando cambien decisiones, reglas de dominio, datos o criterios de aceptacion.
+
+## Vision
+
+Irati es una aplicacion privada para Rafa y Begoña que empieza con seguimiento de peso y vacunas. El objetivo del MVP es responder de forma rapida a dos preguntas:
+
+- Como evoluciona el peso de Irati.
+- Que vacunas estan pendientes, proximas, aplicadas o retrasadas.
+
+## Alcance del MVP
+
+Incluido:
+
+- Perfil basico de Irati.
+- Fecha de nacimiento: 02/07/2026.
+- Acceso con PIN/passcode compartido y seguridad real de servidor.
+- PWA instalable desde el inicio.
+- Registro de peso.
+- Grafica simple de peso.
+- Filtro de peso por lugar.
+- Planificacion editable de vacunas.
+- Registro de vacunas aplicadas.
+- Estados de vacunas.
+- Avisos internos de proximas y retrasadas.
+- Supabase como persistencia principal.
+- Despliegue en Vercel.
+
+Excluido:
+
+- Modo offline de datos.
+- Realtime.
+- Email.
+- Push notifications.
+- Exportacion o impresion para pediatra.
+- Percentiles oficiales.
+- Cuentas separadas para Rafa y Begoña.
+- Acceso familiar de solo lectura.
+- Seguimiento de sueño, tomas, pañales u otros hitos.
+
+## Usuarios
+
+### Rafa y Begoña
+
+Usan una unica cuenta compartida protegida por PIN/passcode. En el MVP ambos tienen el mismo acceso y no se registra autoria por persona.
+
+## Seguridad
+
+La app no debe exponer datos privados antes de autenticar.
+
+Requisitos iniciales:
+
+- PIN/passcode compartido.
+- El PIN no se guarda en claro.
+- El servidor valida el PIN contra un hash.
+- La sesion se guarda en cookie HttpOnly.
+- La cookie debe usar configuracion segura para produccion.
+- Debe existir rate limit basico para intentos fallidos.
+- Debe existir logout.
+
+Decisiones pendientes:
+
+- Duracion exacta de la sesion.
+- Mecanismo concreto de rate limit en Vercel.
+- Estrategia de rotacion del PIN.
+
+## Plataforma
+
+Stack previsto:
+
+- Next.js, ultima version estable verificada al crear el proyecto.
+- TypeScript.
+- pnpm.
+- Supabase remoto.
+- Vercel.
+- PWA.
+- Tests basicos.
+
+PWA:
+
+- La aplicacion debe ser instalable desde el inicio.
+- El shell puede cachearse para instalacion y carga basica.
+- Los datos requieren conexion en el MVP.
+- No se implementa IndexedDB ni cola de sincronizacion.
+- No se implementa realtime.
+
+## Arquitectura
+
+Se usara arquitectura hexagonal con separacion pragmatica:
+
+- Dominio: entidades, value objects y reglas puras.
+- Aplicacion: casos de uso.
+- Puertos: interfaces para persistencia, autenticacion y reloj.
+- Adaptadores: Supabase, cookies/sesion, Next.js handlers/server actions segun convenga.
+- UI: componentes y paginas.
+
+Regla:
+
+- La UI no debe contener reglas de dominio importantes.
+- Supabase no debe filtrarse como dependencia directa del dominio.
+- Las reglas calculables, como estados de vacuna, deben poder probarse sin navegador ni base de datos.
+
+Estructura orientativa pendiente de confirmar al inicializar Next.js:
+
+```txt
+src/
+  app/
+  modules/
+    profile/
+      domain/
+      application/
+      infrastructure/
+      ui/
+    weight/
+      domain/
+      application/
+      infrastructure/
+      ui/
+    vaccines/
+      domain/
+      application/
+      infrastructure/
+      ui/
+    auth/
+      domain/
+      application/
+      infrastructure/
+      ui/
+  shared/
+    domain/
+    application/
+    infrastructure/
+    ui/
+docs/
+  roadmap.md
+  spec.md
+```
+
+## Dominio
+
+### Perfil de Irati
+
+Datos iniciales:
+
+- Nombre: Irati.
+- Fecha de nacimiento: 2026-07-02.
+
+La fecha de nacimiento se usa para calcular la planificacion inicial de vacunas desde el calendario de la Comunidad de Madrid.
+
+### Peso
+
+Una entrada de peso contiene:
+
+- Fecha.
+- Peso en gramos.
+- Lugar.
+
+Lugares validos iniciales:
+
+- Pediatra.
+- Farmacia.
+
+Reglas:
+
+- El peso se registra en gramos.
+- La grafica muestra una linea simple.
+- La grafica permite filtrar por Todos, Farmacia o Pediatra.
+- No se calculan percentiles en el MVP.
+- No se mezclan estimaciones con pesos registrados en el MVP.
+
+Criterios de aceptacion:
+
+- Puedo añadir un peso con fecha, gramos y lugar.
+- Puedo ver el historico de pesos.
+- Puedo ver una grafica simple con todos los pesos.
+- Puedo filtrar la grafica por Farmacia.
+- Puedo filtrar la grafica por Pediatra.
+- Si no hay pesos para un filtro, veo un estado vacio claro.
+
+### Vacunas
+
+La app gestiona vacunas planificadas y vacunas aplicadas.
+
+El calendario inicial sera una tarea del roadmap:
+
+- Buscar fuente oficial vigente de la Comunidad de Madrid.
+- Verificar datos antes de implementarlos.
+- Registrar fuente y fecha de verificacion.
+- Cargar datos iniciales editables.
+
+Una dosis planificada contiene, como minimo:
+
+- Vacuna.
+- Dosis.
+- Fecha planificada.
+- Estado calculado o derivado.
+
+Una vacuna aplicada contiene:
+
+- Fecha de aplicacion.
+- Vacuna.
+- Dosis.
+- Lugar.
+- Lote.
+- Notas.
+
+El lugar de vacunacion es texto libre.
+
+Estados:
+
+- Pendiente.
+- Proxima.
+- Aplicada.
+- Retrasada.
+
+Reglas de estado iniciales:
+
+- Aplicada: tiene fecha real de aplicacion registrada.
+- Retrasada: no esta aplicada y la fecha planificada es anterior a hoy.
+- Proxima: no esta aplicada y la fecha planificada esta entre hoy y los proximos 14 dias.
+- Pendiente: no esta aplicada y la fecha planificada queda a mas de 14 dias.
+
+Criterios de aceptacion:
+
+- Puedo ver vacunas planificadas ordenadas por fecha.
+- Puedo distinguir pendientes, proximas, aplicadas y retrasadas.
+- Puedo marcar una dosis como aplicada.
+- Al aplicar una dosis puedo registrar fecha, vacuna, dosis, lugar, lote y notas.
+- Puedo editar los datos iniciales del calendario.
+- Veo avisos internos cuando hay vacunas proximas.
+- Veo avisos internos cuando hay vacunas retrasadas.
+
+## Pantallas iniciales
+
+La UX se definira despues, pero el MVP debe cubrir estas superficies:
+
+- Bloqueo/login por PIN.
+- Inicio/resumen.
+- Peso.
+- Vacunas.
+- Ajustes minimos o perfil.
+
+El inicio debe priorizar:
+
+- Peso actual o ultimo peso registrado.
+- Acceso rapido a registrar peso.
+- Proximas vacunas.
+- Vacunas retrasadas si existen.
+
+## Persistencia
+
+Supabase sera la fuente principal.
+
+No se implementa en el MVP:
+
+- Persistencia local con IndexedDB.
+- Reintentos offline.
+- Conflictos de sincronizacion.
+- Subscripciones realtime.
+
+Tablas previstas, pendientes de concretar en `docs/database-schema.md`:
+
+- `app_profile` o equivalente para Irati y configuracion base.
+- `weight_entries`.
+- `vaccine_plans`.
+- `vaccine_applications` o campos de aplicacion en la planificacion.
+- Tabla o mecanismo para sesion/rate limit si fuera necesario.
+
+## Testing
+
+Estrategia inicial:
+
+- Tests unitarios basicos de reglas de dominio.
+- Tests de casos de uso principales.
+- Tests de adaptadores Supabase donde aporten confianza.
+- Tests de componentes clave cuando haya UI.
+- E2E minimo solo cuando el flujo principal este montado.
+
+No se exige cobertura exhaustiva al inicio. La cobertura debe crecer cuando se añadan mas reglas clinicas, seguridad o flujos criticos.
+
+## Decisiones abiertas
+
+- Duracion de sesion.
+- Diseño visual.
+- Navegacion exacta.
+- Libreria de graficas.
+- Libreria o estrategia de PWA para Next.js.
+- Forma exacta del esquema Supabase.
+- Si vacunas planificadas y aplicaciones viven en una o dos tablas.
+- Como gestionar cambios manuales sobre calendario inicial.
+- Textos exactos de avisos internos.
+
+## Proceso SDD
+
+Antes de implementar un hito:
+
+1. Revisar si `docs/spec.md` cubre el comportamiento.
+2. Añadir o ajustar reglas y criterios de aceptacion.
+3. Implementar el cambio mas pequeño que cumpla la spec.
+4. Añadir tests basicos proporcionales al riesgo.
+5. Ejecutar validaciones.
+6. Actualizar `docs/roadmap.md` con el estado real.
+
+La spec puede cambiar, pero no debe quedar por detras del producto.
