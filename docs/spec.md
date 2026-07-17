@@ -17,6 +17,8 @@ Incluido:
 - Fecha de nacimiento: 02/07/2026.
 - Acceso con PIN/passcode compartido y seguridad real de servidor.
 - PWA instalable desde el inicio.
+- Estilo visual familiar, suave y luminoso, con morado como color principal.
+- Navegacion inferior con Inicio, Peso, Vacunas y Ajustes.
 - Registro de peso.
 - Grafica simple de peso.
 - Filtro de peso por lugar.
@@ -233,7 +235,7 @@ Criterios de aceptacion:
 
 ## Pantallas iniciales
 
-La UX se definira despues, pero el MVP debe cubrir estas superficies:
+El MVP debe cubrir estas superficies:
 
 - Bloqueo/login por PIN.
 - Inicio/resumen.
@@ -241,12 +243,99 @@ La UX se definira despues, pero el MVP debe cubrir estas superficies:
 - Vacunas.
 - Ajustes minimos o perfil.
 
+### Direccion visual
+
+La app debe sentirse familiar, suave y luminosa.
+
+Decisiones:
+
+- Morado como color principal de marca y acciones.
+- Fondos claros.
+- Tonos suaves.
+- Tarjetas redondeadas y amables para avisos, resumenes y bloques principales.
+- Mucho cuidado con la legibilidad y la jerarquia visual.
+- Las acciones principales deben ser visibles y faciles de tocar.
+- Los avisos retrasados deben destacar, pero dentro de la paleta morada.
+
+### Navegacion
+
+La navegacion principal usa menu inferior tipo app movil.
+
+Pestañas iniciales:
+
+- Inicio.
+- Peso.
+- Vacunas.
+- Ajustes.
+
+La estructura puede crecer despues con mas pestañas o menus secundarios, pero el MVP parte de estas cuatro.
+
+### Inicio
+
 El inicio debe priorizar:
 
-- Peso actual o ultimo peso registrado.
-- Acceso rapido a registrar peso.
-- Proximas vacunas.
+- Irati y su edad actual.
 - Vacunas retrasadas si existen.
+- Vacunas proximas.
+- Ultimo peso registrado, con fecha y lugar.
+- Acciones rapidas para registrar peso y marcar vacuna aplicada.
+- Mini resumen de vacunas pendientes/proximas y total de pesos registrados.
+
+El orden debe favorecer lo accionable: primero lo que requiere atencion, despues el contexto.
+
+### Peso
+
+La pantalla de Peso debe priorizar:
+
+- Grafica de peso arriba.
+- Historial debajo.
+- Boton de accion destacado para añadir peso.
+
+El ultimo peso se muestra en la pantalla de Inicio, no como elemento dominante de la pantalla de Peso.
+
+### Vacunas
+
+La pantalla de Vacunas debe incluir un toggle de vista.
+
+Vista por defecto:
+
+- Por estado.
+
+Vistas:
+
+- Por estado.
+- Linea temporal.
+
+La vista por estado se agrupa en este orden:
+
+- Retrasadas.
+- Proximas.
+- Pendientes.
+- Aplicadas.
+
+La linea temporal se organiza por edad de Irati, no solo por fecha concreta.
+
+La edicion del calendario de vacunas vive inicialmente dentro de Vacunas, no en Ajustes.
+
+### Ajustes
+
+Ajustes sera minima al principio.
+
+Debe cubrir:
+
+- Perfil basico de Irati.
+- Sesion/PIN segun el alcance implementado.
+- Informacion tecnica basica si es util para desarrollo o soporte.
+
+No debe absorber la gestion completa del calendario de vacunas en el MVP.
+
+### Formularios
+
+Los formularios de añadir o editar peso y vacunas se abren como modal.
+
+En movil, el patron preferido es bottom sheet.
+
+En escritorio se podra adaptar, pero debe conservarse la sensacion de modal y no de pagina independiente.
 
 ## Persistencia
 
@@ -282,8 +371,7 @@ No se exige cobertura exhaustiva al inicio. La cobertura debe crecer cuando se a
 ## Decisiones abiertas
 
 - Duracion de sesion.
-- Diseño visual.
-- Navegacion exacta.
+- Detalles visuales finos de componentes.
 - Libreria de graficas.
 - Libreria o estrategia de PWA para Next.js.
 - Forma exacta del esquema Supabase.

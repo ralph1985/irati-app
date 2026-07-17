@@ -15,6 +15,7 @@ Irati es una aplicacion privada para Rafa y Begoña orientada al seguimiento de 
 - pnpm como gestor de paquetes.
 - Vercel como destino de despliegue.
 - Arquitectura hexagonal desde el inicio, sin sobreingenieria.
+- Diseño familiar, suave y luminoso, con morado como color principal.
 - Hitos pequeños, verificables y documentados.
 - Tests basicos al principio; ampliar cobertura cuando crezca el riesgo.
 
@@ -79,7 +80,27 @@ No se copia:
 - [x] Crear `docs/roadmap.md`.
 - [x] Crear `docs/spec.md`.
 
-## Hito 1 - Inicializacion tecnica
+## Hito 1 - Definicion UX inicial
+
+- [x] Definir tono de producto: app familiar.
+- [x] Definir navegacion principal: menu inferior.
+- [x] Definir pestañas iniciales: Inicio, Peso, Vacunas y Ajustes.
+- [x] Definir Inicio: Irati y edad, avisos, ultimo peso, acciones rapidas y resumen.
+- [x] Definir paleta: suave y luminosa con morado como color principal.
+- [x] Definir tarjetas redondeadas y suaves para bloques principales.
+- [x] Definir acciones destacadas en las pantallas principales.
+- [x] Definir Peso: grafica arriba e historial debajo.
+- [x] Definir Vacunas con toggle de vista.
+- [x] Definir vista por defecto de Vacunas: por estado.
+- [x] Definir orden de estados: retrasadas, proximas, pendientes y aplicadas.
+- [x] Definir linea temporal de vacunas organizada por edad.
+- [x] Definir Ajustes como pantalla minima al principio.
+- [x] Definir edicion del calendario dentro de Vacunas.
+- [x] Definir formularios como modal/bottom sheet.
+- [x] Definir que las vacunas retrasadas destaquen dentro de la paleta morada.
+- [x] Actualizar `docs/spec.md` con las decisiones UX.
+
+## Hito 2 - Inicializacion tecnica
 
 - [ ] Crear proyecto Next.js con TypeScript usando la ultima version estable.
 - [ ] Configurar pnpm.
@@ -93,7 +114,7 @@ No se copia:
 - [ ] Preparar variables de entorno de ejemplo.
 - [ ] Verificar typecheck, lint, tests y build.
 
-## Hito 2 - Seguridad de acceso
+## Hito 3 - Seguridad de acceso
 
 - [ ] Definir el contrato de autenticacion por PIN/passcode en `docs/spec.md`.
 - [ ] Crear hashing del PIN en servidor.
@@ -105,7 +126,7 @@ No se copia:
 - [ ] Añadir logout.
 - [ ] Añadir tests basicos de login, sesion y bloqueo.
 
-## Hito 3 - Supabase y modelo base
+## Hito 4 - Supabase y modelo base
 
 - [ ] Crear proyecto Supabase remoto.
 - [ ] Añadir Supabase CLI al proyecto.
@@ -120,7 +141,7 @@ No se copia:
 - [ ] Aplicar migraciones en Supabase remoto.
 - [ ] Añadir tests basicos de adaptadores.
 
-## Hito 4 - Perfil de Irati
+## Hito 5 - Perfil de Irati
 
 - [ ] Mostrar perfil basico de Irati.
 - [ ] Guardar fecha de nacimiento `2026-07-02`.
@@ -129,7 +150,7 @@ No se copia:
 - [ ] Añadir validaciones basicas.
 - [ ] Añadir tests del caso de uso de perfil.
 
-## Hito 5 - Registro de peso
+## Hito 6 - Registro de peso
 
 - [ ] Definir entidad de peso en dominio.
 - [ ] Registrar peso con fecha, gramos y lugar.
@@ -141,7 +162,7 @@ No se copia:
 - [ ] Mostrar estado de carga y error.
 - [ ] Añadir tests basicos de dominio, caso de uso y componente.
 
-## Hito 6 - Grafica de peso
+## Hito 7 - Grafica de peso
 
 - [ ] Mostrar linea simple con la evolucion del peso.
 - [ ] Filtrar la grafica por Todos, Farmacia o Pediatra.
@@ -150,7 +171,7 @@ No se copia:
 - [ ] Evitar percentiles o referencias clinicas en este hito.
 - [ ] Añadir tests basicos de filtrado y renderizado.
 
-## Hito 7 - Calendario inicial de vacunas
+## Hito 8 - Calendario inicial de vacunas
 
 - [ ] Buscar y verificar la fuente oficial vigente de la Comunidad de Madrid.
 - [ ] Documentar la fuente y fecha de verificacion.
@@ -161,7 +182,7 @@ No se copia:
 - [ ] Mantener claro que los datos pueden necesitar revision manual.
 - [ ] Añadir tests basicos de calculo de fechas y carga inicial.
 
-## Hito 8 - Vacunas planificadas y estados
+## Hito 9 - Vacunas planificadas y estados
 
 - [ ] Mostrar vacunas planificadas.
 - [ ] Calcular estado pendiente.
@@ -172,7 +193,7 @@ No se copia:
 - [ ] Mostrar resumen de proximas y retrasadas.
 - [ ] Añadir tests basicos de estados.
 
-## Hito 9 - Registro de vacunas aplicadas
+## Hito 10 - Registro de vacunas aplicadas
 
 - [ ] Marcar una dosis planificada como aplicada.
 - [ ] Registrar fecha de aplicacion.
@@ -185,7 +206,7 @@ No se copia:
 - [ ] Permitir volver una vacuna a pendiente con confirmacion.
 - [ ] Añadir tests basicos del flujo aplicado/pendiente.
 
-## Hito 10 - Avisos internos
+## Hito 11 - Avisos internos
 
 - [ ] Mostrar avisos dentro de la app para vacunas proximas.
 - [ ] Mostrar avisos dentro de la app para vacunas retrasadas.
@@ -193,7 +214,7 @@ No se copia:
 - [ ] Hacer que los avisos sean visibles en la pantalla inicial.
 - [ ] Añadir tests basicos de avisos.
 
-## Hito 11 - Pulido del MVP
+## Hito 12 - Pulido del MVP
 
 - [ ] Revisar usabilidad movil.
 - [ ] Revisar accesibilidad basica.
