@@ -11,7 +11,7 @@ const errorMessages: Record<string, string> = {
 export function LoginScreen({ error }: LoginScreenProps) {
   return (
     <main className="auth-shell">
-      <form className="auth-panel" action="/login" method="post">
+      <form className="auth-panel" action="/login" method="post" suppressHydrationWarning>
         <p className="auth-kicker">Irati</p>
         <h1>Acceso privado</h1>
         <label>
@@ -21,6 +21,7 @@ export function LoginScreen({ error }: LoginScreenProps) {
             inputMode="numeric"
             name="passcode"
             required
+            suppressHydrationWarning
             type="password"
           />
         </label>

@@ -42,7 +42,7 @@ export default async function Home({ searchParams }: HomeProps) {
           </article>
         </section>
 
-        <form action="/logout" method="post">
+        <form action="/logout" method="post" suppressHydrationWarning>
           <button className={styles.logout} type="submit">
             Salir
           </button>
