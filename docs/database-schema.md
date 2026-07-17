@@ -2,6 +2,12 @@
 
 Este documento describe el esquema inicial de Supabase para Irati. La migracion fuente esta en `supabase/migrations/20260717163000_initial_schema.sql`.
 
+Proyecto remoto:
+
+- Nombre: `Irati`
+- Ref: `hbnyumafehpbplupucar`
+- Region: `eu-west-1`
+
 ## Decisiones
 
 - Supabase es persistencia principal.

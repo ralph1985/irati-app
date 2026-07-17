@@ -128,9 +128,9 @@ No se copia:
 
 ## Hito 4 - Supabase y modelo base
 
-- [ ] Crear proyecto Supabase remoto.
+- [x] Crear proyecto Supabase remoto.
 - [x] Añadir Supabase CLI al proyecto.
-- [ ] Configurar link al proyecto remoto.
+- [x] Configurar link al proyecto remoto.
 - [x] Crear migraciones iniciales.
 - [x] Crear tabla de perfil de Irati.
 - [x] Guardar nombre y fecha de nacimiento.
@@ -138,7 +138,7 @@ No se copia:
 - [x] Crear tabla de vacunas planificadas.
 - [x] Crear tabla de vacunas aplicadas o campos equivalentes segun diseño final.
 - [x] Documentar esquema en `docs/database-schema.md`.
-- [ ] Aplicar migraciones en Supabase remoto.
+- [x] Aplicar migraciones en Supabase remoto.
 - [x] Añadir tests basicos de adaptadores.
 
 ## Hito 5 - Perfil de Irati
