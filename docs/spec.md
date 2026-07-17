@@ -387,6 +387,7 @@ Debe cubrir:
 - Perfil basico de Irati.
 - Sesion/PIN segun el alcance implementado.
 - Informacion tecnica basica si es util para desarrollo o soporte.
+- La pantalla muestra el perfil basico, el estado del acceso compartido, accion de cerrar sesion e informacion tecnica del MVP.
 
 No debe absorber la gestion completa del calendario de vacunas en el MVP.
 

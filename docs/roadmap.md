@@ -221,6 +221,7 @@ No se copia:
 - [x] Revisar estados vacios.
 - [x] Revisar errores de conexion.
 - [x] Revisar textos visibles.
+- [x] Crear pantalla minima de Ajustes.
 - [x] Revisar instalacion PWA.
 - [x] Ejecutar typecheck, lint, tests y build.
 - [x] Actualizar `docs/spec.md`.
