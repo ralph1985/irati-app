@@ -1,8 +1,15 @@
 import Link from "next/link";
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
+import {
+  filterWeightEntries,
+  formatWeightFilterLabel,
+  isWeightFilter,
+  weightFilterValues,
+} from "@/modules/weight/application/weight-filter";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
 import { listWeightEntries } from "@/modules/weight/application/list-weight-entries";
 import { SupabaseWeightRepository } from "@/modules/weight/infrastructure/supabase-weight-repository";
+import { WeightChart } from "@/modules/weight/ui/weight-chart";
 import { WeightHistory } from "@/modules/weight/ui/weight-history";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
 import {
@@ -17,6 +24,7 @@ type WeightPageProps = {
     created?: string;
     deleted?: string;
     error?: string;
+    lugar?: string;
     updated?: string;
   }>;
 };
@@ -29,7 +37,7 @@ const errorMessages: Record<string, string> = {
 };
 
 export default async function WeightPage({ searchParams }: WeightPageProps) {
-  const { created, deleted, error, updated } = await searchParams;
+  const { created, deleted, error, lugar, updated } = await searchParams;
 
   if (!(await hasValidSession())) {
     return <LoginScreen />;
@@ -37,6 +45,8 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
 
   const { entries, loadError } = await getWeightEntries();
   const currentError = error ?? loadError;
+  const activeFilter = isWeightFilter(lugar) ? lugar : "all";
+  const filteredEntries = filterWeightEntries(entries, activeFilter);
 
   return (
     <div className={styles.page}>
@@ -89,15 +99,36 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
           </form>
         </section>
 
+        <section className={styles.panel} aria-labelledby="chart-title">
+          <div className={styles.sectionTitle}>
+            <h2 id="chart-title">Evolucion</h2>
+            <span>{formatWeightFilterLabel(activeFilter)}</span>
+          </div>
+
+          <div className={styles.filters} aria-label="Filtrar pesos por lugar">
+            {weightFilterValues.map((filter) => (
+              <Link
+                aria-current={filter === activeFilter ? "page" : undefined}
+                href={filter === "all" ? "/peso" : `/peso?lugar=${filter}`}
+                key={filter}
+              >
+                {formatWeightFilterLabel(filter)}
+              </Link>
+            ))}
+          </div>
+
+          <WeightChart entries={filteredEntries} />
+        </section>
+
         <section className={styles.panel} aria-labelledby="history-title">
           <div className={styles.sectionTitle}>
             <h2 id="history-title">Historico</h2>
-            <span>{entries.length} registros</span>
+            <span>{filteredEntries.length} registros</span>
           </div>
 
           <WeightHistory
             deleteAction={deleteWeightEntryAction}
-            entries={entries}
+            entries={filteredEntries}
             updateAction={updateWeightEntryAction}
           />
         </section>

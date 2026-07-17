@@ -164,12 +164,12 @@ No se copia:
 
 ## Hito 7 - Grafica de peso
 
-- [ ] Mostrar linea simple con la evolucion del peso.
-- [ ] Filtrar la grafica por Todos, Farmacia o Pediatra.
-- [ ] Mantener el listado coherente con el filtro elegido, si aporta claridad.
-- [ ] Mostrar estado vacio cuando no haya datos para el filtro.
-- [ ] Evitar percentiles o referencias clinicas en este hito.
-- [ ] Añadir tests basicos de filtrado y renderizado.
+- [x] Mostrar linea simple con la evolucion del peso.
+- [x] Filtrar la grafica por Todos, Farmacia o Pediatra.
+- [x] Mantener el listado coherente con el filtro elegido, si aporta claridad.
+- [x] Mostrar estado vacio cuando no haya datos para el filtro.
+- [x] Evitar percentiles o referencias clinicas en este hito.
+- [x] Añadir tests basicos de filtrado y renderizado.
 
 ## Hito 8 - Calendario inicial de vacunas
 

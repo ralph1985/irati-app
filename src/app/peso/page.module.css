@@ -140,6 +140,83 @@
   font-weight: 700;
 }
 
+.filters {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.filters a {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(124, 58, 237, 0.16);
+  border-radius: 14px;
+  background: #fff;
+  color: #604873;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.filters a[aria-current="page"] {
+  background: #7c3aed;
+  color: #fff;
+}
+
+.chart {
+  display: grid;
+  gap: 10px;
+}
+
+.chart svg {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: visible;
+}
+
+.chart line {
+  stroke: rgba(96, 72, 115, 0.22);
+  stroke-width: 1;
+}
+
+.chart path {
+  fill: none;
+  stroke: #7c3aed;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.chart circle {
+  fill: #fff;
+  stroke: #7c3aed;
+  stroke-width: 3;
+}
+
+.chartMeta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+
+.chartMeta span,
+.chartMeta strong {
+  border-radius: 12px;
+  background: #fff;
+  color: #604873;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 10px;
+  text-align: center;
+}
+
+.chartMeta strong {
+  background: #f3e8ff;
+  color: #5b21b6;
+}
+
 .history {
   display: grid;
   gap: 10px;
@@ -283,5 +360,9 @@
 
   .form {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filters {
+    grid-template-columns: repeat(4, 1fr);
   }
 }

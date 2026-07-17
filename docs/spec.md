@@ -196,7 +196,7 @@ Reglas:
 
 - El peso se registra en gramos.
 - La grafica muestra una linea simple.
-- La grafica permite filtrar por Todos, Farmacia o Pediatra.
+- La grafica permite filtrar por Todos, Hospital, Farmacia o Pediatra.
 - No se calculan percentiles en el MVP.
 - No se mezclan estimaciones con pesos registrados en el MVP.
 
@@ -209,6 +209,7 @@ Criterios de aceptacion:
 - Puedo ver una grafica simple con todos los pesos.
 - Puedo filtrar la grafica por Farmacia.
 - Puedo filtrar la grafica por Pediatra.
+- Puedo filtrar la grafica por Hospital.
 - Si no hay pesos para un filtro, veo un estado vacio claro.
 
 ### Vacunas
