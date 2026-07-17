@@ -49,6 +49,7 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
               <label>
                 Lugar
                 <select name="place" required defaultValue={entry.place}>
+                  <option value="hospital">Hospital</option>
                   <option value="pediatra">Pediatra</option>
                   <option value="farmacia">Farmacia</option>
                 </select>
@@ -90,5 +91,9 @@ function formatDate(date: string): string {
 }
 
 function formatPlace(place: string): string {
+  if (place === "hospital") {
+    return "Hospital";
+  }
+
   return place === "pediatra" ? "Pediatra" : "Farmacia";
 }

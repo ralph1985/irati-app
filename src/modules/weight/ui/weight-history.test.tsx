@@ -22,7 +22,7 @@ describe("WeightHistory", () => {
             id: "weight-1",
             measuredOn: "2026-07-17",
             weightGrams: 3200,
-            place: "pediatra",
+            place: "hospital",
             notes: null,
           },
         ]}
@@ -31,6 +31,6 @@ describe("WeightHistory", () => {
     );
 
     expect(html).toContain("3200 g");
-    expect(html).toContain("Pediatra");
+    expect(html).toContain("Hospital");
   });
 });

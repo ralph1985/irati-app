@@ -30,7 +30,7 @@ export type Database = {
           id: string;
           measured_on: string;
           weight_grams: number;
-          place: "pediatra" | "farmacia";
+          place: "hospital" | "pediatra" | "farmacia";
           notes: string | null;
           created_at: string;
           updated_at: string;
@@ -39,7 +39,7 @@ export type Database = {
           id?: string;
           measured_on: string;
           weight_grams: number;
-          place: "pediatra" | "farmacia";
+          place: "hospital" | "pediatra" | "farmacia";
           notes?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -48,7 +48,7 @@ export type Database = {
           id?: string;
           measured_on?: string;
           weight_grams?: number;
-          place?: "pediatra" | "farmacia";
+          place?: "hospital" | "pediatra" | "farmacia";
           notes?: string | null;
           created_at?: string;
           updated_at?: string;

@@ -38,15 +38,15 @@ Seed inicial:
 
 Historico de pesos registrados.
 
-| Campo          | Tipo          | Regla                   |
-| -------------- | ------------- | ----------------------- |
-| `id`           | `uuid`        | Primary key             |
-| `measured_on`  | `date`        | Fecha del peso          |
-| `weight_grams` | `integer`     | Entre 1000 y 20000      |
-| `place`        | `text`        | `pediatra` o `farmacia` |
-| `notes`        | `text`        | Opcional                |
-| `created_at`   | `timestamptz` | `now()`                 |
-| `updated_at`   | `timestamptz` | `now()`                 |
+| Campo          | Tipo          | Regla                               |
+| -------------- | ------------- | ----------------------------------- |
+| `id`           | `uuid`        | Primary key                         |
+| `measured_on`  | `date`        | Fecha del peso                      |
+| `weight_grams` | `integer`     | Entre 1000 y 20000                  |
+| `place`        | `text`        | `hospital`, `pediatra` o `farmacia` |
+| `notes`        | `text`        | Opcional                            |
+| `created_at`   | `timestamptz` | `now()`                             |
+| `updated_at`   | `timestamptz` | `now()`                             |
 
 Indice:
 

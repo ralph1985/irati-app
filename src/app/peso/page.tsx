@@ -69,6 +69,7 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
             <label>
               Lugar
               <select name="place" required defaultValue="pediatra">
+                <option value="hospital">Hospital</option>
                 <option value="pediatra">Pediatra</option>
                 <option value="farmacia">Farmacia</option>
               </select>

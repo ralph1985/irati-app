@@ -188,6 +188,7 @@ Una entrada de peso contiene:
 
 Lugares validos iniciales:
 
+- Hospital.
 - Pediatra.
 - Farmacia.
 

@@ -31,6 +31,7 @@ describe("createWeightEntry", () => {
 
 describe("isWeightPlace", () => {
   it("accepts supported places", () => {
+    expect(isWeightPlace("hospital")).toBe(true);
     expect(isWeightPlace("pediatra")).toBe(true);
     expect(isWeightPlace("farmacia")).toBe(true);
   });
