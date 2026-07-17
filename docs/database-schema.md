@@ -1,6 +1,6 @@
 # Esquema de base de datos
 
-Este documento describe el esquema inicial de Supabase para Irati. La migracion fuente esta en `supabase/migrations/20260717163000_initial_schema.sql`.
+Este documento describe el esquema inicial de Supabase para Irati. La migracion base esta en `supabase/migrations/20260717163000_initial_schema.sql`, con correcciones posteriores documentadas en `supabase/migrations/`.
 
 Proyecto remoto:
 
@@ -55,6 +55,12 @@ Indice:
 ## `planned_vaccine_doses`
 
 Dosis planificadas del calendario editable.
+
+Seed inicial:
+
+- Migracion: `supabase/migrations/20260718101000_seed_initial_vaccine_calendar.sql`
+- Fuente y criterio: `docs/vaccine-calendar.md`
+- Fechas calculadas desde el nacimiento de Irati, `2026-07-02`, salvo entradas de campaña que quedan marcadas con notas para revision manual.
 
 | Campo          | Tipo          | Regla       |
 | -------------- | ------------- | ----------- |

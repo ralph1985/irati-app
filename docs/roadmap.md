@@ -154,7 +154,7 @@ No se copia:
 
 - [x] Definir entidad de peso en dominio.
 - [x] Registrar peso con fecha, gramos y lugar.
-- [x] Restringir lugar a Pediatra o Farmacia.
+- [x] Restringir lugar a Hospital, Pediatra o Farmacia.
 - [x] Listar historico de pesos.
 - [x] Editar una entrada de peso.
 - [x] Borrar una entrada de peso con confirmacion.
@@ -173,14 +173,14 @@ No se copia:
 
 ## Hito 8 - Calendario inicial de vacunas
 
-- [ ] Buscar y verificar la fuente oficial vigente de la Comunidad de Madrid.
-- [ ] Documentar la fuente y fecha de verificacion.
-- [ ] Traducir el calendario a datos iniciales editables.
-- [ ] Crear seed o migracion de dosis planificadas.
-- [ ] Calcular fechas planificadas desde el nacimiento de Irati.
-- [ ] Permitir editar dosis planificadas.
-- [ ] Mantener claro que los datos pueden necesitar revision manual.
-- [ ] Añadir tests basicos de calculo de fechas y carga inicial.
+- [x] Buscar y verificar la fuente oficial vigente de la Comunidad de Madrid.
+- [x] Documentar la fuente y fecha de verificacion.
+- [x] Traducir el calendario a datos iniciales editables.
+- [x] Crear seed o migracion de dosis planificadas.
+- [x] Calcular fechas planificadas desde el nacimiento de Irati.
+- [x] Permitir editar dosis planificadas.
+- [x] Mantener claro que los datos pueden necesitar revision manual.
+- [x] Añadir tests basicos de calculo de fechas y carga inicial.
 
 ## Hito 9 - Vacunas planificadas y estados
 

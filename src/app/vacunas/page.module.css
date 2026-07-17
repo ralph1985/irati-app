@@ -1,0 +1,252 @@
+.page {
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at top left, rgba(245, 158, 11, 0.18), transparent 32rem),
+    linear-gradient(180deg, #fdf8ff 0%, #fff 48%, #f8fafc 100%);
+  color: #2e1748;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  padding: 24px 18px 92px;
+}
+
+.main {
+  display: grid;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  gap: 18px;
+}
+
+.header {
+  display: grid;
+  gap: 6px;
+  padding-top: 10px;
+}
+
+.header p {
+  color: #7c3aed;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  font-size: 38px;
+  line-height: 1;
+}
+
+.panel {
+  display: grid;
+  gap: 16px;
+  border: 1px solid rgba(124, 58, 237, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 16px 44px rgba(76, 29, 149, 0.08);
+  padding: 16px;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sectionTitle h2 {
+  font-size: 20px;
+}
+
+.sectionTitle span {
+  color: #6b587c;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.copy {
+  color: #604873;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.success,
+.error,
+.empty {
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.4;
+  padding: 12px 14px;
+}
+
+.success {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.error {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.empty {
+  background: #f8fafc;
+  color: #604873;
+}
+
+.doseList {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+}
+
+.doseList li {
+  display: grid;
+  gap: 12px;
+  border-radius: 14px;
+  background: #fff;
+  padding: 14px;
+}
+
+.doseSummary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.doseSummary div {
+  display: grid;
+  gap: 4px;
+}
+
+.doseSummary strong {
+  font-size: 17px;
+}
+
+.doseSummary span,
+.doseSummary time,
+.notes {
+  color: #6b587c;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.doseSummary time {
+  flex: 0 0 auto;
+  text-align: right;
+}
+
+.notes {
+  border-radius: 12px;
+  background: #f8fafc;
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 10px;
+}
+
+.editor {
+  border-top: 1px solid rgba(124, 58, 237, 0.12);
+  padding-top: 10px;
+}
+
+.editor summary {
+  color: #7c3aed;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.editor form {
+  display: grid;
+  gap: 12px;
+  padding-top: 12px;
+}
+
+.editor label {
+  display: grid;
+  gap: 7px;
+  color: #5b426f;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.editor input,
+.editor textarea {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(124, 58, 237, 0.24);
+  border-radius: 14px;
+  background: #fff;
+  color: #241335;
+  font: inherit;
+  padding: 0 12px;
+}
+
+.editor textarea {
+  min-height: 84px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.editor button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 14px;
+  background: #7c3aed;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.nav {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  left: 14px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 560px;
+  margin: 0 auto;
+  border: 1px solid rgba(124, 58, 237, 0.14);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 8px;
+  box-shadow: 0 18px 54px rgba(76, 29, 149, 0.18);
+  backdrop-filter: blur(18px);
+}
+
+.nav a {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  color: #604873;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.nav a[aria-current="page"] {
+  background: #7c3aed;
+  color: #fff;
+}
+
+@media (min-width: 620px) {
+  .page {
+    padding-top: 48px;
+  }
+
+  .editor form {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

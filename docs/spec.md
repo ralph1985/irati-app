@@ -216,12 +216,14 @@ Criterios de aceptacion:
 
 La app gestiona vacunas planificadas y vacunas aplicadas.
 
-El calendario inicial sera una tarea del roadmap:
+El calendario inicial del MVP queda basado en estas fuentes y decisiones:
 
-- Buscar fuente oficial vigente de la Comunidad de Madrid.
-- Verificar datos antes de implementarlos.
-- Registrar fuente y fecha de verificacion.
-- Cargar datos iniciales editables.
+- Fuente principal: Comunidad de Madrid, `Calendario de vacunacion / inmunizacion a lo largo de toda la vida. Año 2026 (Cartel)`, ref. `51768`.
+- Fuente tecnica de apoyo: Comunidad de Madrid, `Calendario de vacunacion e inmunizacion para toda la vida 2026 (Documento tecnico)`, ref. `51747`.
+- Fecha de verificacion para este proyecto: `2026-07-18`.
+- El detalle de traduccion vive en `docs/vaccine-calendar.md`.
+- Los datos iniciales se cargan en `planned_vaccine_doses` mediante migracion y son editables desde la pantalla de Vacunas.
+- Las fechas se calculan desde el nacimiento de Irati salvo entradas de campaña que requieren revision manual.
 
 Una dosis planificada contiene, como minimo:
 
@@ -258,6 +260,7 @@ Reglas de estado iniciales:
 Criterios de aceptacion:
 
 - Puedo ver vacunas planificadas ordenadas por fecha.
+- Puedo editar vacuna, dosis, fecha planificada, edad y notas de una dosis planificada.
 - Puedo distinguir pendientes, proximas, aplicadas y retrasadas.
 - Puedo marcar una dosis como aplicada.
 - Al aplicar una dosis puedo registrar fecha, vacuna, dosis, lugar, lote y notas.
