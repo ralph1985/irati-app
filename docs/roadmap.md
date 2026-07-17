@@ -152,15 +152,15 @@ No se copia:
 
 ## Hito 6 - Registro de peso
 
-- [ ] Definir entidad de peso en dominio.
-- [ ] Registrar peso con fecha, gramos y lugar.
-- [ ] Restringir lugar a Pediatra o Farmacia.
-- [ ] Listar historico de pesos.
-- [ ] Editar una entrada de peso.
-- [ ] Borrar una entrada de peso con confirmacion.
-- [ ] Validar que el peso sea numerico y razonable.
-- [ ] Mostrar estado de carga y error.
-- [ ] Añadir tests basicos de dominio, caso de uso y componente.
+- [x] Definir entidad de peso en dominio.
+- [x] Registrar peso con fecha, gramos y lugar.
+- [x] Restringir lugar a Pediatra o Farmacia.
+- [x] Listar historico de pesos.
+- [x] Editar una entrada de peso.
+- [x] Borrar una entrada de peso con confirmacion.
+- [x] Validar que el peso sea numerico y razonable.
+- [x] Mostrar estado de carga y error.
+- [x] Añadir tests basicos de dominio, caso de uso y componente.
 
 ## Hito 7 - Grafica de peso
 

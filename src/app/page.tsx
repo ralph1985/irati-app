@@ -1,11 +1,10 @@
-import { cookies } from "next/headers";
 import { getBabyProfile } from "@/modules/profile/application/get-baby-profile";
 import { formatBirthDate } from "@/modules/profile/domain/baby-profile";
 import { SupabaseProfileRepository } from "@/modules/profile/infrastructure/supabase-profile-repository";
-import { AUTH_SESSION_COOKIE } from "@/modules/auth/domain/auth-session";
-import { getRequiredEnv } from "@/modules/auth/infrastructure/env";
-import { verifySessionToken } from "@/modules/auth/infrastructure/session-token";
+import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
+import { listWeightEntries } from "@/modules/weight/application/list-weight-entries";
+import { SupabaseWeightRepository } from "@/modules/weight/infrastructure/supabase-weight-repository";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
 import Link from "next/link";
 import styles from "./page.module.css";
@@ -17,17 +16,15 @@ type HomeProps = {
 };
 
 export default async function Home({ searchParams }: HomeProps) {
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get(AUTH_SESSION_COOKIE)?.value;
   const { error } = await searchParams;
 
-  if (!isAuthenticated(sessionToken)) {
+  if (!(await hasValidSession())) {
     return <LoginScreen error={error} />;
   }
 
-  const { profile, source } = await getBabyProfile(
-    new SupabaseProfileRepository(createServerSupabaseClient()),
-  );
+  const supabase = createServerSupabaseClient();
+  const { profile, source } = await getBabyProfile(new SupabaseProfileRepository(supabase));
+  const latestWeight = await getLatestWeight(new SupabaseWeightRepository(supabase));
 
   return (
     <div className={styles.page}>
@@ -44,7 +41,11 @@ export default async function Home({ searchParams }: HomeProps) {
         <section className={styles.summary} aria-label="Resumen inicial">
           <article>
             <span>Peso</span>
-            <strong>Sin registros</strong>
+            <strong>
+              {latestWeight
+                ? `${latestWeight.weightGrams.toLocaleString("es-ES")} g`
+                : "Sin registros"}
+            </strong>
           </article>
           <article>
             <span>Vacunas</span>
@@ -71,10 +72,12 @@ export default async function Home({ searchParams }: HomeProps) {
   );
 }
 
-function isAuthenticated(sessionToken: string | undefined): boolean {
+async function getLatestWeight(repository: SupabaseWeightRepository) {
   try {
-    return verifySessionToken(sessionToken, getRequiredEnv("SESSION_SECRET"));
+    const [latestWeight] = await listWeightEntries(repository);
+
+    return latestWeight;
   } catch {
-    return false;
+    return undefined;
   }
 }

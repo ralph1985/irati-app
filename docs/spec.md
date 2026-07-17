@@ -203,6 +203,8 @@ Criterios de aceptacion:
 
 - Puedo añadir un peso con fecha, gramos y lugar.
 - Puedo ver el historico de pesos.
+- Puedo editar un peso registrado.
+- Puedo borrar un peso registrado con confirmacion.
 - Puedo ver una grafica simple con todos los pesos.
 - Puedo filtrar la grafica por Farmacia.
 - Puedo filtrar la grafica por Pediatra.
