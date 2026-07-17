@@ -7,6 +7,7 @@ import {
   recordFailedLogin,
 } from "@/modules/auth/infrastructure/login-rate-limit";
 import { verifyPasscode } from "@/modules/auth/infrastructure/passcode-hash";
+import { shouldUseSecureSessionCookie } from "@/modules/auth/infrastructure/session-cookie-security";
 import { createSessionToken } from "@/modules/auth/infrastructure/session-token";
 
 export async function POST(request: NextRequest) {
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
     maxAge: SESSION_DURATION_SECONDS,
     path: "/",
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: shouldUseSecureSessionCookie(request),
   });
 
   return response;
