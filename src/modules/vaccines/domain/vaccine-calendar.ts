@@ -7,6 +7,23 @@ export type PlannedVaccineDose = {
   notes: string | null;
 };
 
+export type AppliedVaccineDose = {
+  id: string;
+  plannedDoseId: string | null;
+  appliedOn: string;
+};
+
+export const vaccineDoseStatuses = ["retrasada", "proxima", "pendiente", "aplicada"] as const;
+
+export type VaccineDoseStatus = (typeof vaccineDoseStatuses)[number];
+
+export type PlannedVaccineDoseWithStatus = PlannedVaccineDose & {
+  appliedOn: string | null;
+  status: VaccineDoseStatus;
+};
+
+export type PlannedVaccineDoseGroups = Record<VaccineDoseStatus, PlannedVaccineDoseWithStatus[]>;
+
 export type NewPlannedVaccineDose = Omit<PlannedVaccineDose, "id">;
 
 export type MadridCalendarDoseDefinition = {
@@ -216,6 +233,71 @@ export function calculatePlannedDate(
   return addMonths(birthDate, definition.monthsFromBirth);
 }
 
+export function assignPlannedVaccineDoseStatuses(
+  doses: PlannedVaccineDose[],
+  applications: AppliedVaccineDose[],
+  today: Date,
+): PlannedVaccineDoseWithStatus[] {
+  const applicationsByPlannedDose = new Map(
+    applications
+      .filter((application) => application.plannedDoseId)
+      .map((application) => [application.plannedDoseId, application]),
+  );
+
+  return doses
+    .map((dose) => {
+      const application = applicationsByPlannedDose.get(dose.id);
+      const status = getPlannedVaccineDoseStatus(dose, application, today);
+
+      return {
+        ...dose,
+        appliedOn: application?.appliedOn ?? null,
+        status,
+      };
+    })
+    .sort(comparePlannedDoses);
+}
+
+export function groupPlannedVaccineDosesByStatus(
+  doses: PlannedVaccineDoseWithStatus[],
+): PlannedVaccineDoseGroups {
+  return {
+    retrasada: doses.filter((dose) => dose.status === "retrasada"),
+    proxima: doses.filter((dose) => dose.status === "proxima"),
+    pendiente: doses.filter((dose) => dose.status === "pendiente"),
+    aplicada: doses.filter((dose) => dose.status === "aplicada"),
+  };
+}
+
+export function getVaccineDoseStatusLabel(status: VaccineDoseStatus): string {
+  const labels: Record<VaccineDoseStatus, string> = {
+    retrasada: "Retrasada",
+    proxima: "Proxima",
+    pendiente: "Pendiente",
+    aplicada: "Aplicada",
+  };
+
+  return labels[status];
+}
+
+export function getPlannedVaccineDoseStatus(
+  dose: PlannedVaccineDose,
+  application: AppliedVaccineDose | undefined,
+  today: Date,
+): VaccineDoseStatus {
+  if (application) {
+    return "aplicada";
+  }
+
+  const todayIso = today.toISOString().slice(0, 10);
+
+  if (dose.plannedDate < todayIso) {
+    return "retrasada";
+  }
+
+  return daysBetween(todayIso, dose.plannedDate) <= 14 ? "proxima" : "pendiente";
+}
+
 function validatePlannedVaccineDose(input: NewPlannedVaccineDose): string[] {
   const issues: string[] = [];
 
@@ -232,6 +314,26 @@ function validatePlannedVaccineDose(input: NewPlannedVaccineDose): string[] {
   }
 
   return issues;
+}
+
+function comparePlannedDoses(
+  left: PlannedVaccineDoseWithStatus,
+  right: PlannedVaccineDoseWithStatus,
+): number {
+  const dateComparison = left.plannedDate.localeCompare(right.plannedDate);
+
+  if (dateComparison !== 0) {
+    return dateComparison;
+  }
+
+  return left.vaccineName.localeCompare(right.vaccineName, "es");
+}
+
+function daysBetween(startDate: string, endDate: string): number {
+  const start = new Date(`${startDate}T00:00:00.000Z`);
+  const end = new Date(`${endDate}T00:00:00.000Z`);
+
+  return Math.floor((end.getTime() - start.getTime()) / 86_400_000);
 }
 
 function addMonths(date: string, months: number): string {

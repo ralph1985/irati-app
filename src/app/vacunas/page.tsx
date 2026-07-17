@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
-import { listPlannedVaccineDoses } from "@/modules/vaccines/application/list-planned-vaccine-doses";
+import { listVaccinePlan } from "@/modules/vaccines/application/list-vaccine-plan";
 import { madridVaccineCalendarSource } from "@/modules/vaccines/domain/vaccine-calendar";
 import { SupabaseVaccinePlanRepository } from "@/modules/vaccines/infrastructure/supabase-vaccine-plan-repository";
 import { PlannedVaccineList } from "@/modules/vaccines/ui/planned-vaccine-list";
@@ -29,7 +29,7 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
     return <LoginScreen />;
   }
 
-  const { doses, loadError } = await getPlannedDoses();
+  const { plan, loadError } = await getVaccinePlan();
   const currentError = error ?? loadError;
 
   return (
@@ -54,13 +54,32 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
         <section className={styles.panel} aria-labelledby="planned-doses-title">
           <div className={styles.sectionTitle}>
             <h2 id="planned-doses-title">Dosis planificadas</h2>
-            <span>{doses.length} dosis</span>
+            <span>{plan.summary.total} dosis</span>
+          </div>
+
+          <div className={styles.statusSummary} aria-label="Resumen por estado">
+            <article data-status="retrasada">
+              <span>Retrasadas</span>
+              <strong>{plan.summary.retrasada}</strong>
+            </article>
+            <article data-status="proxima">
+              <span>Proximas</span>
+              <strong>{plan.summary.proxima}</strong>
+            </article>
+            <article data-status="pendiente">
+              <span>Pendientes</span>
+              <strong>{plan.summary.pendiente}</strong>
+            </article>
+            <article data-status="aplicada">
+              <span>Aplicadas</span>
+              <strong>{plan.summary.aplicada}</strong>
+            </article>
           </div>
 
           {updated ? <p className={styles.success}>Planificacion actualizada.</p> : null}
           {currentError ? <p className={styles.error}>{errorMessages[currentError]}</p> : null}
 
-          <PlannedVaccineList doses={doses} updateAction={updatePlannedVaccineDoseAction} />
+          <PlannedVaccineList groups={plan.groups} updateAction={updatePlannedVaccineDoseAction} />
         </section>
       </main>
 
@@ -76,14 +95,33 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
   );
 }
 
-async function getPlannedDoses() {
+async function getVaccinePlan() {
   try {
-    const doses = await listPlannedVaccineDoses(
+    const plan = await listVaccinePlan(
       new SupabaseVaccinePlanRepository(createServerSupabaseClient()),
+      new Date(),
     );
 
-    return { doses, loadError: undefined };
+    return { plan, loadError: undefined };
   } catch {
-    return { doses: [], loadError: "load" };
+    return {
+      plan: {
+        doses: [],
+        groups: {
+          retrasada: [],
+          proxima: [],
+          pendiente: [],
+          aplicada: [],
+        },
+        summary: {
+          total: 0,
+          retrasada: 0,
+          proxima: 0,
+          pendiente: 0,
+          aplicada: 0,
+        },
+      },
+      loadError: "load",
+    };
   }
 }

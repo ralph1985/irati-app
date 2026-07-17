@@ -1,6 +1,10 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { VaccinePlanRepository } from "../application/vaccine-plan-repository";
-import { NewPlannedVaccineDose, PlannedVaccineDose } from "../domain/vaccine-calendar";
+import {
+  AppliedVaccineDose,
+  NewPlannedVaccineDose,
+  PlannedVaccineDose,
+} from "../domain/vaccine-calendar";
 import { Database } from "@/shared/infrastructure/supabase/database.types";
 
 export class SupabaseVaccinePlanRepository implements VaccinePlanRepository {
@@ -18,6 +22,23 @@ export class SupabaseVaccinePlanRepository implements VaccinePlanRepository {
     }
 
     return data.map(mapPlannedDose);
+  }
+
+  async listAppliedVaccineDoses(): Promise<AppliedVaccineDose[]> {
+    const { data, error } = await this.supabase
+      .from("applied_vaccine_doses")
+      .select("id,planned_dose_id,applied_on")
+      .order("applied_on", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return data.map((row) => ({
+      id: row.id,
+      plannedDoseId: row.planned_dose_id,
+      appliedOn: row.applied_on,
+    }));
   }
 
   async updatePlannedVaccineDose(

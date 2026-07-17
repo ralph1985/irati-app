@@ -252,10 +252,12 @@ Estados:
 
 Reglas de estado iniciales:
 
-- Aplicada: tiene fecha real de aplicacion registrada.
+- Aplicada: existe una entrada en `applied_vaccine_doses` vinculada a la dosis planificada.
 - Retrasada: no esta aplicada y la fecha planificada es anterior a hoy.
 - Proxima: no esta aplicada y la fecha planificada esta entre hoy y los proximos 14 dias.
 - Pendiente: no esta aplicada y la fecha planificada queda a mas de 14 dias.
+- La pantalla de Vacunas muestra las dosis agrupadas en este orden: retrasadas, proximas, pendientes y aplicadas.
+- La pantalla de Vacunas muestra un resumen numerico de retrasadas, proximas, pendientes y aplicadas.
 
 Criterios de aceptacion:
 

@@ -74,6 +74,40 @@
   line-height: 1.5;
 }
 
+.statusSummary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.statusSummary article {
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  border-radius: 14px;
+  background: #fff;
+  padding: 12px;
+}
+
+.statusSummary span {
+  color: #6b587c;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.statusSummary strong {
+  color: #2e1748;
+  font-size: 22px;
+}
+
+.statusSummary article[data-status="retrasada"] {
+  background: #fdf2f8;
+}
+
+.statusSummary article[data-status="proxima"] {
+  background: #fffbeb;
+}
+
 .success,
 .error,
 .empty {
@@ -96,6 +130,40 @@
 .empty {
   background: #f8fafc;
   color: #604873;
+}
+
+.statusGroups {
+  display: grid;
+  gap: 16px;
+}
+
+.statusGroup {
+  display: grid;
+  gap: 10px;
+}
+
+.statusTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.statusTitle h3 {
+  font-size: 16px;
+}
+
+.statusTitle span {
+  display: inline-flex;
+  min-width: 28px;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #f3e8ff;
+  color: #5b21b6;
+  font-size: 13px;
+  font-weight: 900;
 }
 
 .doseList {
@@ -139,6 +207,43 @@
 .doseSummary time {
   flex: 0 0 auto;
   text-align: right;
+}
+
+.dateStack {
+  display: grid;
+  flex: 0 0 auto;
+  justify-items: end;
+  gap: 6px;
+}
+
+.statusBadge {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 0 10px;
+}
+
+.statusBadge[data-status="retrasada"] {
+  background: #fce7f3;
+  color: #9d174d;
+}
+
+.statusBadge[data-status="proxima"] {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.statusBadge[data-status="pendiente"] {
+  background: #f3e8ff;
+  color: #5b21b6;
+}
+
+.statusBadge[data-status="aplicada"] {
+  background: #ecfdf5;
+  color: #065f46;
 }
 
 .notes {

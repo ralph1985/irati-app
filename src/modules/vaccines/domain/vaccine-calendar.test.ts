@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  assignPlannedVaccineDoseStatuses,
   buildMadridInitialVaccinePlan,
   calculatePlannedDate,
+  groupPlannedVaccineDosesByStatus,
   madridVaccineCalendarSource,
 } from "./vaccine-calendar";
 
@@ -48,4 +50,56 @@ describe("Madrid initial vaccine calendar", () => {
       }),
     ).toBe("2026-02-28");
   });
+
+  it("assigns applied, overdue, upcoming and pending statuses", () => {
+    const today = new Date("2026-07-18T12:00:00.000Z");
+    const doses = assignPlannedVaccineDoseStatuses(
+      [
+        createDose("overdue", "2026-07-17"),
+        createDose("upcoming", "2026-08-01"),
+        createDose("pending", "2026-08-02"),
+        createDose("applied", "2026-07-10"),
+      ],
+      [
+        {
+          id: "application-1",
+          plannedDoseId: "applied",
+          appliedOn: "2026-07-15",
+        },
+      ],
+      today,
+    );
+
+    expect(doses.find((dose) => dose.id === "overdue")?.status).toBe("retrasada");
+    expect(doses.find((dose) => dose.id === "upcoming")?.status).toBe("proxima");
+    expect(doses.find((dose) => dose.id === "pending")?.status).toBe("pendiente");
+    expect(doses.find((dose) => dose.id === "applied")?.status).toBe("aplicada");
+    expect(doses.find((dose) => dose.id === "applied")?.appliedOn).toBe("2026-07-15");
+  });
+
+  it("groups planned doses by state in product priority order", () => {
+    const doses = assignPlannedVaccineDoseStatuses(
+      [createDose("pending", "2026-08-20"), createDose("overdue", "2026-07-17")],
+      [],
+      new Date("2026-07-18T00:00:00.000Z"),
+    );
+
+    expect(groupPlannedVaccineDosesByStatus(doses)).toMatchObject({
+      retrasada: [expect.objectContaining({ id: "overdue" })],
+      proxima: [],
+      pendiente: [expect.objectContaining({ id: "pending" })],
+      aplicada: [],
+    });
+  });
 });
+
+function createDose(id: string, plannedDate: string) {
+  return {
+    id,
+    vaccineName: `Vacuna ${id}`,
+    doseLabel: "1.ª dosis",
+    plannedDate,
+    ageLabel: "Test",
+    notes: null,
+  };
+}

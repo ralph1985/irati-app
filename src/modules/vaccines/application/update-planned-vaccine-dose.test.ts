@@ -8,6 +8,9 @@ describe("updatePlannedVaccineDose", () => {
       async listPlannedVaccineDoses() {
         return [];
       },
+      async listAppliedVaccineDoses() {
+        return [];
+      },
       async updatePlannedVaccineDose(id, dose) {
         return {
           id,

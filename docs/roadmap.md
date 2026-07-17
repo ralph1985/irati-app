@@ -184,14 +184,14 @@ No se copia:
 
 ## Hito 9 - Vacunas planificadas y estados
 
-- [ ] Mostrar vacunas planificadas.
-- [ ] Calcular estado pendiente.
-- [ ] Calcular estado proxima si faltan 14 dias o menos.
-- [ ] Calcular estado retrasada si la fecha planificada ya paso y no esta aplicada.
-- [ ] Mostrar estado aplicada cuando exista fecha real de aplicacion.
-- [ ] Ordenar por fecha planificada.
-- [ ] Mostrar resumen de proximas y retrasadas.
-- [ ] Añadir tests basicos de estados.
+- [x] Mostrar vacunas planificadas.
+- [x] Calcular estado pendiente.
+- [x] Calcular estado proxima si faltan 14 dias o menos.
+- [x] Calcular estado retrasada si la fecha planificada ya paso y no esta aplicada.
+- [x] Mostrar estado aplicada cuando exista fecha real de aplicacion.
+- [x] Ordenar por fecha planificada.
+- [x] Mostrar resumen de proximas y retrasadas.
+- [x] Añadir tests basicos de estados.
 
 ## Hito 10 - Registro de vacunas aplicadas
 
