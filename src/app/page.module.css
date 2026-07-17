@@ -16,14 +16,13 @@
 }
 
 .main {
-  display: flex;
+  display: grid;
   min-height: calc(100dvh - 116px);
   width: 100%;
   max-width: 560px;
   margin: 0 auto;
-  flex-direction: column;
-  justify-content: center;
-  gap: 28px;
+  align-content: center;
+  gap: 24px;
 }
 
 .hero {

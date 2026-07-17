@@ -95,11 +95,12 @@ Stack inicial:
 PWA:
 
 - La aplicacion debe ser instalable desde el inicio.
-- La base inicial incluye manifest, metadata web app e icono provisional SVG.
+- La base incluye manifest, metadata web app, `id`, `scope`, iconos PNG de 192 y 512 px e icono SVG maskable.
 - El shell puede cachearse para instalacion y carga basica en un hito posterior si se incorpora service worker.
 - Los datos requieren conexion en el MVP.
 - No se implementa IndexedDB ni cola de sincronizacion.
 - No se implementa realtime.
+- No se incorpora service worker offline en el MVP porque la aplicacion requiere conexion.
 
 ## Arquitectura
 
@@ -274,6 +275,13 @@ Avisos internos:
 - Los avisos se muestran dentro de la app, sin email, push ni notificaciones externas en el MVP.
 - La pantalla de Inicio muestra hasta tres avisos de vacunas proximas o retrasadas y enlaza a Vacunas.
 - Si no hay vacunas proximas ni retrasadas, Inicio muestra un estado tranquilo.
+
+Pulido MVP:
+
+- La app mantiene foco visible para navegacion por teclado.
+- Inicio informa si no puede cargar parte de los datos remotos.
+- Los estados vacios de peso, vacunas y avisos deben ser visibles y no bloquear la navegacion.
+- El cierre MVP conserva el alcance sin offline, realtime, email ni push.
 
 Criterios de aceptacion:
 

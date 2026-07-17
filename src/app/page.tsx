@@ -27,7 +27,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
   const supabase = createServerSupabaseClient();
   const { profile, source } = await getBabyProfile(new SupabaseProfileRepository(supabase));
-  const latestWeight = await getLatestWeight(new SupabaseWeightRepository(supabase));
+  const weightResult = await getLatestWeight(new SupabaseWeightRepository(supabase));
   const vaccinePlan = await getVaccinePlan(new SupabaseVaccinePlanRepository(supabase));
 
   return (
@@ -39,6 +39,9 @@ export default async function Home({ searchParams }: HomeProps) {
           <p className={styles.birthDate}>Nacida el {formatBirthDate(profile)}</p>
           {source === "fallback" ? (
             <p className={styles.dataNotice}>Mostrando datos locales temporales.</p>
+          ) : null}
+          {weightResult.loadError || vaccinePlan.loadError ? (
+            <p className={styles.dataNotice}>Algunos datos no se pudieron cargar.</p>
           ) : null}
         </section>
 
@@ -69,8 +72,8 @@ export default async function Home({ searchParams }: HomeProps) {
           <article>
             <span>Peso</span>
             <strong>
-              {latestWeight
-                ? `${latestWeight.weightGrams.toLocaleString("es-ES")} g`
+              {weightResult.latestWeight
+                ? `${weightResult.latestWeight.weightGrams.toLocaleString("es-ES")} g`
                 : "Sin registros"}
             </strong>
           </article>
@@ -103,9 +106,9 @@ async function getLatestWeight(repository: SupabaseWeightRepository) {
   try {
     const [latestWeight] = await listWeightEntries(repository);
 
-    return latestWeight;
+    return { latestWeight, loadError: false };
   } catch {
-    return undefined;
+    return { latestWeight: undefined, loadError: true };
   }
 }
 
@@ -118,9 +121,13 @@ async function getVaccinePlan(repository: SupabaseVaccinePlanRepository): Promis
     pendiente: number;
     aplicada: number;
   };
+  loadError: boolean;
 }> {
   try {
-    return await listVaccinePlan(repository, new Date());
+    return {
+      ...(await listVaccinePlan(repository, new Date())),
+      loadError: false,
+    };
   } catch {
     return {
       alerts: [],
@@ -131,6 +138,7 @@ async function getVaccinePlan(repository: SupabaseVaccinePlanRepository): Promis
         pendiente: 0,
         aplicada: 0,
       },
+      loadError: true,
     };
   }
 }

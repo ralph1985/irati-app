@@ -156,7 +156,7 @@ function MarkAppliedForm({
         </label>
         <label>
           Lugar
-          <input name="place" required placeholder="Centro de salud, hospital..." />
+          <input name="place" required placeholder="Centro de salud" />
         </label>
         <label>
           Lote

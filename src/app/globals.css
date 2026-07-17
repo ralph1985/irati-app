@@ -35,6 +35,19 @@ a {
   text-decoration: none;
 }
 
+:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
+}
+
+button,
+input,
+select,
+summary,
+textarea {
+  touch-action: manipulation;
+}
+
 .auth-shell {
   display: grid;
   min-height: 100dvh;

@@ -216,15 +216,15 @@ No se copia:
 
 ## Hito 12 - Pulido del MVP
 
-- [ ] Revisar usabilidad movil.
-- [ ] Revisar accesibilidad basica.
-- [ ] Revisar estados vacios.
-- [ ] Revisar errores de conexion.
-- [ ] Revisar textos visibles.
-- [ ] Revisar instalacion PWA.
-- [ ] Ejecutar typecheck, lint, tests y build.
-- [ ] Actualizar `docs/spec.md`.
-- [ ] Actualizar `docs/roadmap.md`.
+- [x] Revisar usabilidad movil.
+- [x] Revisar accesibilidad basica.
+- [x] Revisar estados vacios.
+- [x] Revisar errores de conexion.
+- [x] Revisar textos visibles.
+- [x] Revisar instalacion PWA.
+- [x] Ejecutar typecheck, lint, tests y build.
+- [x] Actualizar `docs/spec.md`.
+- [x] Actualizar `docs/roadmap.md`.
 
 ## Fuera del MVP inicial
 

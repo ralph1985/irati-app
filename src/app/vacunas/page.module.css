@@ -185,15 +185,18 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
+  min-width: 0;
 }
 
 .doseSummary div {
   display: grid;
   gap: 4px;
+  min-width: 0;
 }
 
 .doseSummary strong {
   font-size: 17px;
+  overflow-wrap: anywhere;
 }
 
 .doseSummary span,
