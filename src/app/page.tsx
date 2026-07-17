@@ -1,8 +1,27 @@
+import { cookies } from "next/headers";
 import { iratiProfile } from "@/modules/profile/domain/baby-profile";
+import { AUTH_SESSION_COOKIE } from "@/modules/auth/domain/auth-session";
+import { getRequiredEnv } from "@/modules/auth/infrastructure/env";
+import { verifySessionToken } from "@/modules/auth/infrastructure/session-token";
+import { LoginScreen } from "@/modules/auth/ui/login-screen";
 import Link from "next/link";
 import styles from "./page.module.css";
 
-export default function Home() {
+type HomeProps = {
+  searchParams: Promise<{
+    error?: string;
+  }>;
+};
+
+export default async function Home({ searchParams }: HomeProps) {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get(AUTH_SESSION_COOKIE)?.value;
+  const { error } = await searchParams;
+
+  if (!isAuthenticated(sessionToken)) {
+    return <LoginScreen error={error} />;
+  }
+
   return (
     <div className={styles.page}>
       <main className={styles.main}>
@@ -22,6 +41,12 @@ export default function Home() {
             <strong>Calendario pendiente</strong>
           </article>
         </section>
+
+        <form action="/logout" method="post">
+          <button className={styles.logout} type="submit">
+            Salir
+          </button>
+        </form>
       </main>
 
       <nav className={styles.nav} aria-label="Navegacion principal">
@@ -34,4 +59,12 @@ export default function Home() {
       </nav>
     </div>
   );
+}
+
+function isAuthenticated(sessionToken: string | undefined): boolean {
+  try {
+    return verifySessionToken(sessionToken, getRequiredEnv("SESSION_SECRET"));
+  } catch {
+    return false;
+  }
 }

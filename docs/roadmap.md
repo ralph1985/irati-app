@@ -116,15 +116,15 @@ No se copia:
 
 ## Hito 3 - Seguridad de acceso
 
-- [ ] Definir el contrato de autenticacion por PIN/passcode en `docs/spec.md`.
-- [ ] Crear hashing del PIN en servidor.
-- [ ] Crear login por passcode.
-- [ ] Crear sesion segura mediante cookie HttpOnly.
-- [ ] Configurar `Secure`, `SameSite` y expiracion de sesion.
-- [ ] Añadir rate limit basico contra intentos fallidos.
-- [ ] Impedir cargar datos privados antes de autenticar.
-- [ ] Añadir logout.
-- [ ] Añadir tests basicos de login, sesion y bloqueo.
+- [x] Definir el contrato de autenticacion por PIN/passcode en `docs/spec.md`.
+- [x] Crear hashing del PIN en servidor.
+- [x] Crear login por passcode.
+- [x] Crear sesion segura mediante cookie HttpOnly.
+- [x] Configurar `Secure`, `SameSite` y expiracion de sesion.
+- [x] Añadir rate limit basico contra intentos fallidos.
+- [x] Impedir cargar datos privados antes de autenticar.
+- [x] Añadir logout.
+- [x] Añadir tests basicos de login, sesion y bloqueo.
 
 ## Hito 4 - Supabase y modelo base
 

@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "format": "prettier --check ."
+    "format": "prettier --check .",
+    "auth:hash": "node scripts/hash-passcode.mjs"
   },
   "dependencies": {
     "next": "16.2.10",

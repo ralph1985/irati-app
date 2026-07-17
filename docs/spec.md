@@ -61,11 +61,20 @@ Requisitos iniciales:
 - Debe existir rate limit basico para intentos fallidos.
 - Debe existir logout.
 
-Decisiones pendientes:
+Contrato de autenticacion:
 
-- Duracion exacta de la sesion.
-- Mecanismo concreto de rate limit en Vercel.
-- Estrategia de rotacion del PIN.
+- El passcode se envia por `POST /login`.
+- El hash del passcode vive en `IRATI_PASSCODE_HASH`.
+- El formato inicial del hash es `scrypt:v1:N:r:p:salt:hash`, generado con `pnpm auth:hash -- <passcode>`.
+- La comparacion del passcode se hace en servidor con comparacion segura.
+- La sesion vive en una cookie HttpOnly llamada `irati_session`.
+- La cookie se firma con `SESSION_SECRET` mediante HMAC SHA-256.
+- La cookie usa `SameSite=Lax`, `Path=/`, expiracion de 30 dias y `Secure` en produccion.
+- El logout se hace por `POST /logout` y borra la cookie de sesion.
+- En desarrollo y primera version MVP, el rate limit es en memoria por IP: 5 intentos fallidos cada 15 minutos.
+- Para Vercel en produccion, si se necesita robustez multi-instancia, el puerto de rate limit debe cambiar a un almacen compartido antes de ampliar acceso.
+- La rotacion del passcode se hace cambiando `IRATI_PASSCODE_HASH`.
+- La rotacion de `SESSION_SECRET` invalida todas las sesiones activas.
 
 ## Plataforma
 
