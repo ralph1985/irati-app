@@ -13,6 +13,7 @@
     "auth:hash": "node scripts/hash-passcode.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.7",
     "next": "16.2.10",
     "react": "19.2.4",
     "react-dom": "19.2.4"
@@ -24,6 +25,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "prettier": "^3.9.5",
+    "supabase": "^2.109.1",
     "typescript": "^5",
     "vitest": "^4.1.10"
   }

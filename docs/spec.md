@@ -84,6 +84,8 @@ Stack inicial:
 - TypeScript.
 - pnpm.
 - Supabase remoto.
+- Supabase CLI 2.109.1.
+- `@supabase/supabase-js` 2.110.7.
 - Vercel.
 - PWA.
 - ESLint.
@@ -147,8 +149,12 @@ src/
     infrastructure/
     ui/
 docs/
+  database-schema.md
   roadmap.md
   spec.md
+supabase/
+  config.toml
+  migrations/
 ```
 
 Scripts de validacion inicial:

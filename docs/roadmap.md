@@ -129,17 +129,17 @@ No se copia:
 ## Hito 4 - Supabase y modelo base
 
 - [ ] Crear proyecto Supabase remoto.
-- [ ] Añadir Supabase CLI al proyecto.
+- [x] Añadir Supabase CLI al proyecto.
 - [ ] Configurar link al proyecto remoto.
-- [ ] Crear migraciones iniciales.
-- [ ] Crear tabla de perfil de Irati.
-- [ ] Guardar nombre y fecha de nacimiento.
-- [ ] Crear tabla de pesos.
-- [ ] Crear tabla de vacunas planificadas.
-- [ ] Crear tabla de vacunas aplicadas o campos equivalentes segun diseño final.
-- [ ] Documentar esquema en `docs/database-schema.md`.
+- [x] Crear migraciones iniciales.
+- [x] Crear tabla de perfil de Irati.
+- [x] Guardar nombre y fecha de nacimiento.
+- [x] Crear tabla de pesos.
+- [x] Crear tabla de vacunas planificadas.
+- [x] Crear tabla de vacunas aplicadas o campos equivalentes segun diseño final.
+- [x] Documentar esquema en `docs/database-schema.md`.
 - [ ] Aplicar migraciones en Supabase remoto.
-- [ ] Añadir tests basicos de adaptadores.
+- [x] Añadir tests basicos de adaptadores.
 
 ## Hito 5 - Perfil de Irati
 
