@@ -3,6 +3,9 @@ import { formatBirthDate } from "@/modules/profile/domain/baby-profile";
 import { SupabaseProfileRepository } from "@/modules/profile/infrastructure/supabase-profile-repository";
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
+import { listVaccinePlan } from "@/modules/vaccines/application/list-vaccine-plan";
+import { VaccineAlert } from "@/modules/vaccines/application/vaccine-alerts";
+import { SupabaseVaccinePlanRepository } from "@/modules/vaccines/infrastructure/supabase-vaccine-plan-repository";
 import { listWeightEntries } from "@/modules/weight/application/list-weight-entries";
 import { SupabaseWeightRepository } from "@/modules/weight/infrastructure/supabase-weight-repository";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
@@ -25,6 +28,7 @@ export default async function Home({ searchParams }: HomeProps) {
   const supabase = createServerSupabaseClient();
   const { profile, source } = await getBabyProfile(new SupabaseProfileRepository(supabase));
   const latestWeight = await getLatestWeight(new SupabaseWeightRepository(supabase));
+  const vaccinePlan = await getVaccinePlan(new SupabaseVaccinePlanRepository(supabase));
 
   return (
     <div className={styles.page}>
@@ -38,6 +42,29 @@ export default async function Home({ searchParams }: HomeProps) {
           ) : null}
         </section>
 
+        <section className={styles.alerts} aria-labelledby="vaccine-alerts-title">
+          <div className={styles.sectionTitle}>
+            <h2 id="vaccine-alerts-title">Avisos</h2>
+            <Link href="/vacunas">Ver vacunas</Link>
+          </div>
+
+          {vaccinePlan.alerts.length > 0 ? (
+            <ol>
+              {vaccinePlan.alerts.slice(0, 3).map((alert) => (
+                <li data-kind={alert.kind} key={alert.id}>
+                  <div>
+                    <strong>{alert.title}</strong>
+                    <span>{alert.detail}</span>
+                  </div>
+                  <time dateTime={alert.plannedDate}>{formatDate(alert.plannedDate)}</time>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p>Sin vacunas proximas ni retrasadas.</p>
+          )}
+        </section>
+
         <section className={styles.summary} aria-label="Resumen inicial">
           <article>
             <span>Peso</span>
@@ -49,7 +76,7 @@ export default async function Home({ searchParams }: HomeProps) {
           </article>
           <article>
             <span>Vacunas</span>
-            <strong>Calendario pendiente</strong>
+            <strong>{formatVaccineSummary(vaccinePlan.summary)}</strong>
           </article>
         </section>
 
@@ -80,4 +107,54 @@ async function getLatestWeight(repository: SupabaseWeightRepository) {
   } catch {
     return undefined;
   }
+}
+
+async function getVaccinePlan(repository: SupabaseVaccinePlanRepository): Promise<{
+  alerts: VaccineAlert[];
+  summary: {
+    total: number;
+    retrasada: number;
+    proxima: number;
+    pendiente: number;
+    aplicada: number;
+  };
+}> {
+  try {
+    return await listVaccinePlan(repository, new Date());
+  } catch {
+    return {
+      alerts: [],
+      summary: {
+        total: 0,
+        retrasada: 0,
+        proxima: 0,
+        pendiente: 0,
+        aplicada: 0,
+      },
+    };
+  }
+}
+
+function formatVaccineSummary(summary: {
+  retrasada: number;
+  proxima: number;
+  pendiente: number;
+}): string {
+  if (summary.retrasada > 0) {
+    return `${summary.retrasada} retrasada${summary.retrasada === 1 ? "" : "s"}`;
+  }
+
+  if (summary.proxima > 0) {
+    return `${summary.proxima} proxima${summary.proxima === 1 ? "" : "s"}`;
+  }
+
+  return `${summary.pendiente} pendiente${summary.pendiente === 1 ? "" : "s"}`;
+}
+
+function formatDate(date: string): string {
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+  }).format(new Date(`${date}T00:00:00.000Z`));
 }

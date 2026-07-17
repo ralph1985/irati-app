@@ -268,6 +268,13 @@ Reglas de estado iniciales:
 - La pantalla de Vacunas muestra las dosis agrupadas en este orden: retrasadas, proximas, pendientes y aplicadas.
 - La pantalla de Vacunas muestra un resumen numerico de retrasadas, proximas, pendientes y aplicadas.
 
+Avisos internos:
+
+- Los avisos internos se derivan de las dosis con estado retrasada o proxima.
+- Los avisos se muestran dentro de la app, sin email, push ni notificaciones externas en el MVP.
+- La pantalla de Inicio muestra hasta tres avisos de vacunas proximas o retrasadas y enlaza a Vacunas.
+- Si no hay vacunas proximas ni retrasadas, Inicio muestra un estado tranquilo.
+
 Criterios de aceptacion:
 
 - Puedo ver vacunas planificadas ordenadas por fecha.

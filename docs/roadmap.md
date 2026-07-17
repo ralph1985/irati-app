@@ -208,11 +208,11 @@ No se copia:
 
 ## Hito 11 - Avisos internos
 
-- [ ] Mostrar avisos dentro de la app para vacunas proximas.
-- [ ] Mostrar avisos dentro de la app para vacunas retrasadas.
-- [ ] Evitar email, push y notificaciones externas en el MVP.
-- [ ] Hacer que los avisos sean visibles en la pantalla inicial.
-- [ ] Añadir tests basicos de avisos.
+- [x] Mostrar avisos dentro de la app para vacunas proximas.
+- [x] Mostrar avisos dentro de la app para vacunas retrasadas.
+- [x] Evitar email, push y notificaciones externas en el MVP.
+- [x] Hacer que los avisos sean visibles en la pantalla inicial.
+- [x] Añadir tests basicos de avisos.
 
 ## Hito 12 - Pulido del MVP
 

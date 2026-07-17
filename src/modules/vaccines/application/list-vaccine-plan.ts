@@ -2,6 +2,7 @@ import {
   assignPlannedVaccineDoseStatuses,
   groupPlannedVaccineDosesByStatus,
 } from "../domain/vaccine-calendar";
+import { buildVaccineAlerts } from "./vaccine-alerts";
 import { VaccinePlanRepository } from "./vaccine-plan-repository";
 
 export async function listVaccinePlan(repository: VaccinePlanRepository, today: Date) {
@@ -12,6 +13,7 @@ export async function listVaccinePlan(repository: VaccinePlanRepository, today: 
   const doses = assignPlannedVaccineDoseStatuses(plannedDoses, appliedDoses, today);
 
   return {
+    alerts: buildVaccineAlerts(doses),
     doses,
     groups: groupPlannedVaccineDosesByStatus(doses),
     summary: {

@@ -61,6 +61,7 @@ describe("listVaccinePlan", () => {
     expect(plan.groups.proxima[0].id).toBe("dose-2");
     expect(plan.groups.pendiente[0].id).toBe("dose-3");
     expect(plan.groups.aplicada[0].id).toBe("dose-4");
+    expect(plan.alerts.map((alert) => alert.id)).toEqual(["dose-1", "dose-2"]);
   });
 });
 
