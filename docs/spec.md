@@ -69,20 +69,23 @@ Decisiones pendientes:
 
 ## Plataforma
 
-Stack previsto:
+Stack inicial:
 
-- Next.js, ultima version estable verificada al crear el proyecto.
+- Next.js 16.2.10, verificada como `latest` estable en npm el 2026-07-17.
 - TypeScript.
 - pnpm.
 - Supabase remoto.
 - Vercel.
 - PWA.
-- Tests basicos.
+- ESLint.
+- Prettier.
+- Vitest para tests basicos de reglas puras.
 
 PWA:
 
 - La aplicacion debe ser instalable desde el inicio.
-- El shell puede cachearse para instalacion y carga basica.
+- La base inicial incluye manifest, metadata web app e icono provisional SVG.
+- El shell puede cachearse para instalacion y carga basica en un hito posterior si se incorpora service worker.
 - Los datos requieren conexion en el MVP.
 - No se implementa IndexedDB ni cola de sincronizacion.
 - No se implementa realtime.
@@ -103,7 +106,7 @@ Regla:
 - Supabase no debe filtrarse como dependencia directa del dominio.
 - Las reglas calculables, como estados de vacuna, deben poder probarse sin navegador ni base de datos.
 
-Estructura orientativa pendiente de confirmar al inicializar Next.js:
+Estructura inicial confirmada al inicializar Next.js:
 
 ```txt
 src/
@@ -138,6 +141,14 @@ docs/
   roadmap.md
   spec.md
 ```
+
+Scripts de validacion inicial:
+
+- `pnpm lint`
+- `pnpm typecheck`
+- `pnpm test`
+- `pnpm build`
+- `pnpm format`
 
 ## Dominio
 

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Irati">
+  <rect width="512" height="512" rx="112" fill="#7c3aed"/>
+  <circle cx="368" cy="132" r="54" fill="#fbbf24"/>
+  <path fill="#fff" d="M146 122h74v268h-74z"/>
+  <path fill="#f5d0fe" d="M274 188c55 0 98 44 98 101s-43 101-98 101h-54v-72h47c18 0 32-13 32-29s-14-29-32-29h-47v-72z"/>
+</svg>

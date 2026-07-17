@@ -102,17 +102,17 @@ No se copia:
 
 ## Hito 2 - Inicializacion tecnica
 
-- [ ] Crear proyecto Next.js con TypeScript usando la ultima version estable.
-- [ ] Configurar pnpm.
-- [ ] Configurar ESLint.
-- [ ] Configurar Prettier.
-- [ ] Configurar testing basico.
-- [ ] Configurar estructura inicial de arquitectura hexagonal.
-- [ ] Crear una pantalla minima con el nombre Irati.
-- [ ] Configurar PWA instalable desde el inicio.
-- [ ] Añadir manifest, metadata e iconos provisionales.
-- [ ] Preparar variables de entorno de ejemplo.
-- [ ] Verificar typecheck, lint, tests y build.
+- [x] Crear proyecto Next.js con TypeScript usando la ultima version estable.
+- [x] Configurar pnpm.
+- [x] Configurar ESLint.
+- [x] Configurar Prettier.
+- [x] Configurar testing basico.
+- [x] Configurar estructura inicial de arquitectura hexagonal.
+- [x] Crear una pantalla minima con el nombre Irati.
+- [x] Configurar PWA instalable desde el inicio.
+- [x] Añadir manifest, metadata e iconos provisionales.
+- [x] Preparar variables de entorno de ejemplo.
+- [x] Verificar typecheck, lint, tests y build.
 
 ## Hito 3 - Seguridad de acceso
 
