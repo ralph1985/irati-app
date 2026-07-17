@@ -176,6 +176,8 @@ Datos iniciales:
 
 La fecha de nacimiento se usa para calcular la planificacion inicial de vacunas desde el calendario de la Comunidad de Madrid.
 
+El perfil se lee desde Supabase mediante el repositorio de perfil. Si Supabase no devuelve perfil, la app puede mostrar un fallback local temporal con los datos iniciales para evitar una pantalla rota en desarrollo.
+
 ### Peso
 
 Una entrada de peso contiene:

@@ -23,6 +23,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       weight_entries: {
         Row: {
@@ -52,6 +53,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       planned_vaccine_doses: {
         Row: {
@@ -84,6 +86,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       applied_vaccine_doses: {
         Row: {
@@ -122,7 +125,20 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "applied_vaccine_doses_planned_dose_id_fkey";
+            columns: ["planned_dose_id"];
+            isOneToOne: false;
+            referencedRelation: "planned_vaccine_doses";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 };

@@ -8,6 +8,17 @@ export const iratiProfile: BabyProfile = {
   birthDate: "2026-07-02",
 };
 
+export function formatBirthDate(profile: BabyProfile): string {
+  const birthDate = parseUtcDate(profile.birthDate);
+
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(birthDate);
+}
+
 export function calculateAgeInDays(profile: BabyProfile, today: Date): number {
   const birthDate = parseUtcDate(profile.birthDate);
   const currentDate = parseUtcDate(today.toISOString().slice(0, 10));

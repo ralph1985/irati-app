@@ -143,12 +143,12 @@ No se copia:
 
 ## Hito 5 - Perfil de Irati
 
-- [ ] Mostrar perfil basico de Irati.
-- [ ] Guardar fecha de nacimiento `2026-07-02`.
+- [x] Mostrar perfil basico de Irati.
+- [x] Guardar fecha de nacimiento `2026-07-02`.
 - [ ] Permitir editar datos basicos si fuera necesario.
-- [ ] Usar la fecha de nacimiento para calcular planificaciones futuras.
-- [ ] Añadir validaciones basicas.
-- [ ] Añadir tests del caso de uso de perfil.
+- [x] Usar la fecha de nacimiento para calcular planificaciones futuras.
+- [x] Añadir validaciones basicas.
+- [x] Añadir tests del caso de uso de perfil.
 
 ## Hito 6 - Registro de peso
 
