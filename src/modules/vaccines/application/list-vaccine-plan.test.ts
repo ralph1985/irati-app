@@ -19,9 +19,27 @@ describe("listVaccinePlan", () => {
             id: "application-1",
             plannedDoseId: "dose-4",
             appliedOn: "2026-07-11",
+            vaccineName: "Vacuna dose-4",
+            doseLabel: "1.ª dosis",
+            place: "Centro de salud",
+            lot: null,
+            notes: null,
           },
         ];
       },
+      async createAppliedVaccineDose(dose) {
+        return {
+          id: "application-1",
+          ...dose,
+        };
+      },
+      async updateAppliedVaccineDose(id, dose) {
+        return {
+          id,
+          ...dose,
+        };
+      },
+      async deleteAppliedVaccineDose() {},
       async updatePlannedVaccineDose(id, dose) {
         return {
           id,

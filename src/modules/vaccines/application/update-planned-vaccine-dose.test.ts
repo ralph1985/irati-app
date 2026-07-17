@@ -11,6 +11,19 @@ describe("updatePlannedVaccineDose", () => {
       async listAppliedVaccineDoses() {
         return [];
       },
+      async createAppliedVaccineDose(entry) {
+        return {
+          id: "application-1",
+          ...entry,
+        };
+      },
+      async updateAppliedVaccineDose(id, entry) {
+        return {
+          id,
+          ...entry,
+        };
+      },
+      async deleteAppliedVaccineDose() {},
       async updatePlannedVaccineDose(id, dose) {
         return {
           id,

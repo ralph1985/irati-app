@@ -98,3 +98,4 @@ Indices:
 
 - `applied_vaccine_doses_planned_dose_id_idx`
 - `applied_vaccine_doses_applied_on_idx`
+- `applied_vaccine_doses_planned_dose_id_unique`, unico parcial para evitar mas de una aplicacion vinculada a la misma dosis planificada.

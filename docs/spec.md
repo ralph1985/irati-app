@@ -243,6 +243,15 @@ Una vacuna aplicada contiene:
 
 El lugar de vacunacion es texto libre.
 
+Flujo aplicado/pendiente:
+
+- Una dosis planificada puede marcarse como aplicada desde la pantalla de Vacunas.
+- Al marcarla como aplicada se registra fecha de aplicacion, vacuna, dosis, lugar, lote y notas.
+- La vacuna y la dosis se rellenan desde la dosis planificada, pero pueden editarse en el registro de aplicacion.
+- Una aplicacion vinculada a una dosis planificada puede editarse.
+- Volver una dosis aplicada a pendiente borra la aplicacion vinculada despues de confirmacion.
+- Solo debe existir una aplicacion vinculada por dosis planificada.
+
 Estados:
 
 - Pendiente.

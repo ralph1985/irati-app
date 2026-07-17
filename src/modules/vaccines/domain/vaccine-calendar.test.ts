@@ -65,6 +65,11 @@ describe("Madrid initial vaccine calendar", () => {
           id: "application-1",
           plannedDoseId: "applied",
           appliedOn: "2026-07-15",
+          vaccineName: "Vacuna applied",
+          doseLabel: "1.ª dosis",
+          place: "Centro de salud",
+          lot: "L123",
+          notes: null,
         },
       ],
       today,
@@ -75,6 +80,7 @@ describe("Madrid initial vaccine calendar", () => {
     expect(doses.find((dose) => dose.id === "pending")?.status).toBe("pendiente");
     expect(doses.find((dose) => dose.id === "applied")?.status).toBe("aplicada");
     expect(doses.find((dose) => dose.id === "applied")?.appliedOn).toBe("2026-07-15");
+    expect(doses.find((dose) => dose.id === "applied")?.application?.place).toBe("Centro de salud");
   });
 
   it("groups planned doses by state in product priority order", () => {

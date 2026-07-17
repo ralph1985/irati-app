@@ -195,16 +195,16 @@ No se copia:
 
 ## Hito 10 - Registro de vacunas aplicadas
 
-- [ ] Marcar una dosis planificada como aplicada.
-- [ ] Registrar fecha de aplicacion.
-- [ ] Registrar vacuna.
-- [ ] Registrar dosis.
-- [ ] Registrar lugar como texto libre.
-- [ ] Registrar lote.
-- [ ] Registrar notas.
-- [ ] Permitir editar datos de aplicacion.
-- [ ] Permitir volver una vacuna a pendiente con confirmacion.
-- [ ] Añadir tests basicos del flujo aplicado/pendiente.
+- [x] Marcar una dosis planificada como aplicada.
+- [x] Registrar fecha de aplicacion.
+- [x] Registrar vacuna.
+- [x] Registrar dosis.
+- [x] Registrar lugar como texto libre.
+- [x] Registrar lote.
+- [x] Registrar notas.
+- [x] Permitir editar datos de aplicacion.
+- [x] Permitir volver una vacuna a pendiente con confirmacion.
+- [x] Añadir tests basicos del flujo aplicado/pendiente.
 
 ## Hito 11 - Avisos internos
 

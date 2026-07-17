@@ -11,6 +11,11 @@ export type AppliedVaccineDose = {
   id: string;
   plannedDoseId: string | null;
   appliedOn: string;
+  vaccineName: string;
+  doseLabel: string;
+  place: string;
+  lot: string | null;
+  notes: string | null;
 };
 
 export const vaccineDoseStatuses = ["retrasada", "proxima", "pendiente", "aplicada"] as const;
@@ -18,6 +23,7 @@ export const vaccineDoseStatuses = ["retrasada", "proxima", "pendiente", "aplica
 export type VaccineDoseStatus = (typeof vaccineDoseStatuses)[number];
 
 export type PlannedVaccineDoseWithStatus = PlannedVaccineDose & {
+  application: AppliedVaccineDose | null;
   appliedOn: string | null;
   status: VaccineDoseStatus;
 };
@@ -25,6 +31,8 @@ export type PlannedVaccineDoseWithStatus = PlannedVaccineDose & {
 export type PlannedVaccineDoseGroups = Record<VaccineDoseStatus, PlannedVaccineDoseWithStatus[]>;
 
 export type NewPlannedVaccineDose = Omit<PlannedVaccineDose, "id">;
+
+export type NewAppliedVaccineDose = Omit<AppliedVaccineDose, "id">;
 
 export type MadridCalendarDoseDefinition = {
   vaccineName: string;
@@ -39,6 +47,13 @@ export class PlannedVaccineDoseValidationError extends Error {
   constructor(readonly issues: string[]) {
     super(issues.join(" "));
     this.name = "PlannedVaccineDoseValidationError";
+  }
+}
+
+export class AppliedVaccineDoseValidationError extends Error {
+  constructor(readonly issues: string[]) {
+    super(issues.join(" "));
+    this.name = "AppliedVaccineDoseValidationError";
   }
 }
 
@@ -218,6 +233,24 @@ export function createPlannedVaccineDose(input: NewPlannedVaccineDose): NewPlann
   };
 }
 
+export function createAppliedVaccineDose(input: NewAppliedVaccineDose): NewAppliedVaccineDose {
+  const issues = validateAppliedVaccineDose(input);
+
+  if (issues.length > 0) {
+    throw new AppliedVaccineDoseValidationError(issues);
+  }
+
+  return {
+    plannedDoseId: input.plannedDoseId || null,
+    appliedOn: input.appliedOn,
+    vaccineName: input.vaccineName.trim(),
+    doseLabel: input.doseLabel.trim(),
+    place: input.place.trim(),
+    lot: input.lot?.trim() || null,
+    notes: input.notes?.trim() || null,
+  };
+}
+
 export function calculatePlannedDate(
   birthDate: string,
   definition: MadridCalendarDoseDefinition,
@@ -251,6 +284,7 @@ export function assignPlannedVaccineDoseStatuses(
 
       return {
         ...dose,
+        application: application ?? null,
         appliedOn: application?.appliedOn ?? null,
         status,
       };
@@ -311,6 +345,28 @@ function validatePlannedVaccineDose(input: NewPlannedVaccineDose): string[] {
 
   if (!isIsoDate(input.plannedDate)) {
     issues.push("La fecha planificada no es valida.");
+  }
+
+  return issues;
+}
+
+function validateAppliedVaccineDose(input: NewAppliedVaccineDose): string[] {
+  const issues: string[] = [];
+
+  if (!isIsoDate(input.appliedOn)) {
+    issues.push("La fecha de aplicacion no es valida.");
+  }
+
+  if (!input.vaccineName.trim()) {
+    issues.push("La vacuna es obligatoria.");
+  }
+
+  if (!input.doseLabel.trim()) {
+    issues.push("La dosis es obligatoria.");
+  }
+
+  if (!input.place.trim()) {
+    issues.push("El lugar de vacunacion es obligatorio.");
   }
 
   return issues;

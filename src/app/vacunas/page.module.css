@@ -309,6 +309,17 @@
   font-weight: 800;
 }
 
+.reopenForm {
+  display: grid;
+  padding-top: 12px;
+}
+
+.editor .reopenButton {
+  width: 100%;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
 .full {
   grid-column: 1 / -1;
 }

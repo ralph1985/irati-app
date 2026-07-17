@@ -6,12 +6,20 @@ import { madridVaccineCalendarSource } from "@/modules/vaccines/domain/vaccine-c
 import { SupabaseVaccinePlanRepository } from "@/modules/vaccines/infrastructure/supabase-vaccine-plan-repository";
 import { PlannedVaccineList } from "@/modules/vaccines/ui/planned-vaccine-list";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
-import { updatePlannedVaccineDoseAction } from "./actions";
+import {
+  markVaccineDoseAppliedAction,
+  reopenPlannedVaccineDoseAction,
+  updateAppliedVaccineDoseAction,
+  updatePlannedVaccineDoseAction,
+} from "./actions";
 import styles from "./page.module.css";
 
 type VaccinesPageProps = {
   searchParams: Promise<{
+    applied?: string;
+    applicationUpdated?: string;
     error?: string;
+    reopened?: string;
     updated?: string;
   }>;
 };
@@ -20,10 +28,13 @@ const errorMessages: Record<string, string> = {
   validation: "Revisa la vacuna, la dosis y la fecha planificada.",
   save: "No se pudo guardar la planificacion. Prueba otra vez.",
   load: "No se pudo cargar el calendario de vacunas.",
+  "application-validation": "Revisa fecha, lugar, vacuna y dosis de la aplicacion.",
+  "application-save": "No se pudo guardar la vacuna aplicada. Prueba otra vez.",
+  reopen: "No se pudo volver la vacuna a pendiente. Prueba otra vez.",
 };
 
 export default async function VaccinesPage({ searchParams }: VaccinesPageProps) {
-  const { error, updated } = await searchParams;
+  const { applied, applicationUpdated, error, reopened, updated } = await searchParams;
 
   if (!(await hasValidSession())) {
     return <LoginScreen />;
@@ -77,9 +88,20 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
           </div>
 
           {updated ? <p className={styles.success}>Planificacion actualizada.</p> : null}
+          {applied ? <p className={styles.success}>Vacuna marcada como aplicada.</p> : null}
+          {applicationUpdated ? (
+            <p className={styles.success}>Datos de aplicacion actualizados.</p>
+          ) : null}
+          {reopened ? <p className={styles.success}>Vacuna devuelta a pendiente.</p> : null}
           {currentError ? <p className={styles.error}>{errorMessages[currentError]}</p> : null}
 
-          <PlannedVaccineList groups={plan.groups} updateAction={updatePlannedVaccineDoseAction} />
+          <PlannedVaccineList
+            groups={plan.groups}
+            markAppliedAction={markVaccineDoseAppliedAction}
+            reopenAction={reopenPlannedVaccineDoseAction}
+            updateAction={updatePlannedVaccineDoseAction}
+            updateApplicationAction={updateAppliedVaccineDoseAction}
+          />
         </section>
       </main>
 
