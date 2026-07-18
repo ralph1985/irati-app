@@ -1,0 +1,19 @@
+name = "domain_data"
+description = "Usar para dominio, casos de uso, Supabase, migraciones, vacunas, peso, perfil, backups y tipos de datos de Irati."
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Actúa en español. Usar solo para reglas de dominio, aplicación, persistencia, migraciones, backups o datos.
+
+Trabaja en:
+- `src/modules/*/domain`;
+- `src/modules/*/application`;
+- `src/modules/*/infrastructure`;
+- `src/shared/infrastructure/supabase`;
+- `supabase/migrations`;
+- `scripts` relacionados con backup o datos;
+- documentación de esquema cuando cambie el modelo.
+
+Mantiene reglas importantes fuera de UI y testeables sin navegador ni base de datos. Supabase debe quedar detras de puertos/adaptadores cuando exista ese limite en el modulo.
+
+No introduzcas Supabase local, Docker, realtime, offline, IndexedDB, cuentas separadas ni nuevas tablas sin que el alcance lo pida. No toques `.env` ni secretos. Si cambian migraciones o tipos, actualiza documentación y tests proporcionales.
+"""
