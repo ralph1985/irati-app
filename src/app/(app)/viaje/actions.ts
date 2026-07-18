@@ -9,6 +9,7 @@ import { setTravelChecklistItemPacked } from "@/modules/travel/application/set-t
 import { updateTravelChecklistItem } from "@/modules/travel/application/update-travel-checklist-item";
 import {
   isTravelChecklistCategory,
+  TravelChecklistCategory,
   TravelChecklistItemValidationError,
 } from "@/modules/travel/domain/travel-checklist-item";
 import { SupabaseTravelChecklistRepository } from "@/modules/travel/infrastructure/supabase-travel-checklist-repository";
@@ -27,11 +28,13 @@ export async function createTravelChecklistItemAction(formData: FormData) {
     redirect("/viaje?error=validation");
   }
 
+  const repository = newRepository();
+
   try {
-    await createTravelChecklistItem(newRepository(), {
+    await createTravelChecklistItem(repository, {
       label: String(formData.get("label") ?? ""),
       category,
-      sortOrder: Number(formData.get("sortOrder") ?? 1000),
+      sortOrder: await getNextSortOrder(repository, category),
       notes: String(formData.get("notes") ?? ""),
     });
   } catch (error) {
@@ -57,11 +60,19 @@ export async function updateTravelChecklistItemAction(formData: FormData) {
     redirect("/viaje?error=validation");
   }
 
+  const repository = newRepository();
+  const currentSortOrder = Number(formData.get("sortOrder") ?? 0);
+  const previousCategory = String(formData.get("previousCategory") ?? "");
+  const sortOrder =
+    previousCategory === category && Number.isInteger(currentSortOrder)
+      ? currentSortOrder
+      : await getNextSortOrder(repository, category);
+
   try {
-    await updateTravelChecklistItem(newRepository(), String(formData.get("id") ?? ""), {
+    await updateTravelChecklistItem(repository, String(formData.get("id") ?? ""), {
       label: String(formData.get("label") ?? ""),
       category,
-      sortOrder: Number(formData.get("sortOrder") ?? 1000),
+      sortOrder,
       isPacked: formData.get("isPacked") === "true",
       notes: String(formData.get("notes") ?? ""),
     });
@@ -128,6 +139,18 @@ export async function resetTravelChecklistAction() {
 
 function newRepository() {
   return new SupabaseTravelChecklistRepository(createServerSupabaseClient());
+}
+
+async function getNextSortOrder(
+  repository: Pick<SupabaseTravelChecklistRepository, "listTravelChecklistItems">,
+  category: TravelChecklistCategory,
+): Promise<number> {
+  const items = await repository.listTravelChecklistItems();
+  const lastSortOrder = items
+    .filter((item) => item.category === category)
+    .reduce((maxSortOrder, item) => Math.max(maxSortOrder, item.sortOrder), 0);
+
+  return lastSortOrder + 10;
 }
 
 function invalidateTravelChecklistReads() {

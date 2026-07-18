@@ -457,10 +457,12 @@ No debe absorber la gestion completa del calendario de vacunas en el MVP.
 La pantalla de Viaje debe priorizar:
 
 - Progreso de preparacion de la lista.
+- Categorias en modo acordeon.
 - Items pendientes antes que items ya preparados dentro de cada categoria.
-- Acciones rapidas para añadir item y reiniciar la lista.
+- Acciones rapidas para añadir item y reiniciar la lista con botones de icono accesibles.
 - Añadir y editar items mediante bottom sheet, no con formularios inline.
 - Listado compacto para revisar muchos items sin demasiado scroll.
+- El orden se gestiona automaticamente: los nuevos items se añaden al final de la categoria y no se muestra un campo manual de orden.
 
 ### Formularios
 

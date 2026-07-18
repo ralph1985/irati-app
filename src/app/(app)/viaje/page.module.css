@@ -57,21 +57,18 @@
   box-shadow: 0 20px 60px rgba(76, 29, 149, 0.08);
 }
 
-.sectionTitle,
-.groupHeader {
+.sectionTitle {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
 }
 
-.sectionTitle h2,
-.groupHeader h3 {
+.sectionTitle h2 {
   margin: 0;
 }
 
-.sectionTitle span,
-.groupHeader span {
+.sectionTitle span {
   color: #6b587d;
   font-size: 13px;
   font-weight: 800;
@@ -105,21 +102,68 @@
   gap: 8px;
 }
 
+.actions form {
+  display: contents;
+}
+
 .groups {
   display: grid;
-  gap: 14px;
+  gap: 8px;
 }
 
 .group {
   display: grid;
-  gap: 8px;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.groupHeader {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  cursor: pointer;
+  padding: 10px 12px;
+  color: #2e1748;
+  font-weight: 800;
+  list-style: none;
+}
+
+.groupHeader::-webkit-details-marker {
+  display: none;
+}
+
+.groupHeader::before {
+  content: "›";
+  grid-column: 1 / -1;
+  display: none;
+}
+
+.groupHeader span:last-child {
+  color: #6b587d;
+  font-size: 13px;
+}
+
+.groupTitle::before {
+  content: "›";
+  display: inline-block;
+  margin-right: 8px;
+  color: #7c3aed;
+  transform: rotate(0deg);
+}
+
+.group[open] .groupTitle::before {
+  transform: rotate(90deg);
 }
 
 .items {
   display: grid;
   gap: 7px;
   margin: 0;
-  padding: 0;
+  padding: 0 10px 10px;
   list-style: none;
 }
 
@@ -128,10 +172,9 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
-  border: 1px solid rgba(124, 58, 237, 0.12);
-  border-radius: 14px;
-  background: #fff;
-  padding: 8px 10px;
+  border-radius: 12px;
+  background: #fafafa;
+  padding: 7px 8px;
 }
 
 .items li[data-packed="true"] {
@@ -140,8 +183,8 @@
 
 .itemCheck button {
   display: grid;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   place-items: center;
   overflow: hidden;
   border: 1px solid #c4b5fd;
@@ -190,7 +233,7 @@
 .itemActions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .form {
@@ -226,8 +269,9 @@
 
 .primaryButton,
 .secondaryButton,
-.deleteButton,
-.linkButton {
+.iconCommandButton,
+.iconButton,
+.dangerIconButton {
   min-height: 38px;
   border: 0;
   border-radius: 12px;
@@ -240,6 +284,7 @@
   background: #7c3aed;
   color: #fff;
   padding: 0 14px;
+  font-size: 18px;
 }
 
 .secondaryButton {
@@ -248,20 +293,34 @@
   background: #fff;
   color: #6d28d9;
   padding: 0 14px;
+  font-size: 18px;
 }
 
-.deleteButton,
-.linkButton {
-  background: transparent;
+.iconCommandButton,
+.iconButton,
+.dangerIconButton {
+  display: grid;
+  place-items: center;
+  width: 38px;
   padding: 0;
 }
 
-.deleteButton {
-  color: #be123c;
+.iconCommandButton {
+  background: #7c3aed;
+  color: #fff;
+  font-size: 22px;
 }
 
-.linkButton {
+.iconButton {
+  background: #f5f3ff;
   color: #6d28d9;
+  font-size: 17px;
+}
+
+.dangerIconButton {
+  background: #fff1f2;
+  color: #be123c;
+  font-size: 20px;
 }
 
 .sheetBackdrop {
@@ -338,15 +397,13 @@
   .actions,
   .itemActions,
   .sheetActions {
-    display: grid;
+    display: flex;
   }
 
   .itemCheck button {
-    width: 100%;
+    width: 32px;
     height: 36px;
     border-radius: 12px;
-    color: #6d28d9;
-    font-size: 13px;
   }
 
   .itemCheck button[aria-pressed="true"] {

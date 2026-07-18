@@ -46,11 +46,13 @@ export function TravelChecklistView({
         />
         <div className={styles.actions}>
           <button
-            className={styles.primaryButton}
+            aria-label="Añadir item"
+            className={styles.iconCommandButton}
             onClick={() => setSheetState({ mode: "create" })}
+            title="Añadir item"
             type="button"
           >
-            Añadir item
+            <span aria-hidden="true">+</span>
           </button>
           <form
             action={resetAction}
@@ -60,8 +62,13 @@ export function TravelChecklistView({
               }
             }}
           >
-            <button className={styles.secondaryButton} type="submit">
-              Reiniciar lista
+            <button
+              aria-label="Reiniciar lista"
+              className={styles.iconCommandButton}
+              title="Reiniciar lista"
+              type="submit"
+            >
+              <span aria-hidden="true">↺</span>
             </button>
           </form>
         </div>
@@ -112,11 +119,11 @@ function TravelChecklistGroupView({
   setPackedAction: (formData: FormData) => void | Promise<void>;
 }) {
   return (
-    <article className={styles.group}>
-      <div className={styles.groupHeader}>
-        <h3>{formatTravelChecklistCategory(group.category)}</h3>
+    <details className={styles.group} open={group.progress.pending > 0}>
+      <summary className={styles.groupHeader}>
+        <span className={styles.groupTitle}>{formatTravelChecklistCategory(group.category)}</span>
         <span>{formatProgress(group.progress)}</span>
-      </div>
+      </summary>
 
       <ol className={styles.items}>
         {group.items.map((item) => (
@@ -124,9 +131,13 @@ function TravelChecklistGroupView({
             <form action={setPackedAction} className={styles.itemCheck}>
               <input name="id" type="hidden" value={item.id} />
               <input name="isPacked" type="hidden" value={item.isPacked ? "false" : "true"} />
-              <button aria-pressed={item.isPacked} type="submit">
+              <button
+                aria-label={item.isPacked ? "Marcar como pendiente" : "Marcar como preparado"}
+                aria-pressed={item.isPacked}
+                title={item.isPacked ? "Marcar como pendiente" : "Marcar como preparado"}
+                type="submit"
+              >
                 <span aria-hidden="true">{item.isPacked ? "✓" : ""}</span>
-                {item.isPacked ? "Preparado" : "Pendiente"}
               </button>
             </form>
 
@@ -137,11 +148,13 @@ function TravelChecklistGroupView({
 
             <div className={styles.itemActions}>
               <button
-                className={styles.linkButton}
+                aria-label={`Editar ${item.label}`}
+                className={styles.iconButton}
                 onClick={() => openEditSheet(item)}
+                title="Editar"
                 type="button"
               >
-                Editar
+                <span aria-hidden="true">✎</span>
               </button>
               <form
                 action={deleteAction}
@@ -152,15 +165,20 @@ function TravelChecklistGroupView({
                 }}
               >
                 <input name="id" type="hidden" value={item.id} />
-                <button className={styles.deleteButton} type="submit">
-                  Borrar
+                <button
+                  aria-label={`Borrar ${item.label}`}
+                  className={styles.dangerIconButton}
+                  title="Borrar"
+                  type="submit"
+                >
+                  <span aria-hidden="true">×</span>
                 </button>
               </form>
             </div>
           </li>
         ))}
       </ol>
-    </article>
+    </details>
   );
 }
 
@@ -318,7 +336,11 @@ function TravelChecklistItemForm({
     <form action={action} className={styles.form}>
       {defaults ? <input name="id" type="hidden" value={defaults.id} /> : null}
       {defaults ? (
-        <input name="isPacked" type="hidden" value={defaults.isPacked ? "true" : "false"} />
+        <>
+          <input name="isPacked" type="hidden" value={defaults.isPacked ? "true" : "false"} />
+          <input name="sortOrder" type="hidden" value={defaults.sortOrder} />
+          <input name="previousCategory" type="hidden" value={defaults.category} />
+        </>
       ) : null}
 
       <label>
@@ -337,30 +359,28 @@ function TravelChecklistItemForm({
         </select>
       </label>
 
-      <label>
-        Orden
-        <input
-          inputMode="numeric"
-          min="0"
-          max="10000"
-          name="sortOrder"
-          required
-          type="number"
-          defaultValue={defaults?.sortOrder ?? 1000}
-        />
-      </label>
-
       <label className={styles.full}>
         Notas
         <textarea name="notes" rows={3} defaultValue={defaults?.notes ?? ""} />
       </label>
 
       <div className={styles.sheetActions}>
-        <button className={styles.secondaryButton} onClick={onCancel} type="button">
-          Cancelar
+        <button
+          aria-label="Cancelar"
+          className={styles.secondaryButton}
+          onClick={onCancel}
+          title="Cancelar"
+          type="button"
+        >
+          <span aria-hidden="true">×</span>
         </button>
-        <button className={styles.primaryButton} type="submit">
-          {submitLabel}
+        <button
+          aria-label={submitLabel}
+          className={styles.primaryButton}
+          title={submitLabel}
+          type="submit"
+        >
+          <span aria-hidden="true">✓</span>
         </button>
       </div>
     </form>

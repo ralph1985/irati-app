@@ -21,4 +21,4 @@ Este archivo guarda decisiones estables y acotadas que deben sobrevivir a futura
 - La app es PWA instalable, pero los datos requieren conexión en el MVP.
 - Supabase remoto es la fuente principal; no usar Docker, Supabase local, offline ni realtime por defecto.
 - Para cambios de producto relevantes, `docs/spec.md` y `docs/roadmap.md` deben quedar alineados con el comportamiento esperado.
-- La vista Viaje debe usar bottom sheet para añadir y editar items, y mantener el listado compacto.
+- La vista Viaje debe usar bottom sheet para añadir y editar items, categorias en acordeon, botones de icono accesibles y listado compacto; no mostrar un campo manual de orden.
