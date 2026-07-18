@@ -10,6 +10,7 @@ import { LoginScreen } from "@/modules/auth/ui/login-screen";
 import { listWeightEntries } from "@/modules/weight/application/list-weight-entries";
 import { SupabaseWeightRepository } from "@/modules/weight/infrastructure/supabase-weight-repository";
 import { WeightChart } from "@/modules/weight/ui/weight-chart";
+import { WeightCreateSheet } from "@/modules/weight/ui/weight-create-sheet";
 import { WeightHistory } from "@/modules/weight/ui/weight-history";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
 import {
@@ -56,48 +57,14 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
           <h1>Registro de peso</h1>
         </header>
 
-        <section className={styles.panel} aria-labelledby="new-weight-title">
-          <h2 id="new-weight-title">Nuevo peso</h2>
-          <form className={styles.form} action={createWeightEntryAction}>
-            <label>
-              Fecha
-              <input name="measuredOn" required type="date" />
-            </label>
-
-            <label>
-              Gramos
-              <input
-                inputMode="numeric"
-                min="1000"
-                max="20000"
-                name="weightGrams"
-                required
-                type="number"
-              />
-            </label>
-
-            <label>
-              Lugar
-              <select name="place" required defaultValue="pediatra">
-                <option value="hospital">Hospital</option>
-                <option value="pediatra">Pediatra</option>
-                <option value="farmacia">Farmacia</option>
-              </select>
-            </label>
-
-            <label className={styles.full}>
-              Notas
-              <textarea name="notes" rows={3} />
-            </label>
-
+        {created || updated || deleted || currentError ? (
+          <section className={styles.feedback} aria-live="polite">
             {created ? <p className={styles.success}>Peso guardado.</p> : null}
             {updated ? <p className={styles.success}>Peso actualizado.</p> : null}
             {deleted ? <p className={styles.success}>Peso borrado.</p> : null}
             {currentError ? <p className={styles.error}>{errorMessages[currentError]}</p> : null}
-
-            <button type="submit">Guardar peso</button>
-          </form>
-        </section>
+          </section>
+        ) : null}
 
         <section className={styles.panel} aria-labelledby="chart-title">
           <div className={styles.sectionTitle}>
@@ -142,6 +109,7 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
         <Link href="/vacunas">Vacunas</Link>
         <Link href="/ajustes">Ajustes</Link>
       </nav>
+      <WeightCreateSheet action={createWeightEntryAction} styles={styles} />
     </div>
   );
 }

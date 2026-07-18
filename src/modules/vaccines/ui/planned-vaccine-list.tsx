@@ -1,5 +1,6 @@
 "use client";
 
+import { KeyboardEvent, PointerEvent, useRef, useState } from "react";
 import {
   getVaccineDoseStatusLabel,
   PlannedVaccineDoseGroups,
@@ -105,34 +106,152 @@ function PlannedVaccineItem({
         <MarkAppliedForm dose={dose} markAppliedAction={markAppliedAction} />
       )}
 
-      <details className={styles.editor}>
-        <summary>Editar planificacion</summary>
-        <form action={updateAction}>
-          <input name="id" type="hidden" value={dose.id} />
-          <label>
-            Vacuna
-            <input name="vaccineName" required defaultValue={dose.vaccineName} />
-          </label>
-          <label>
-            Dosis
-            <input name="doseLabel" required defaultValue={dose.doseLabel} />
-          </label>
-          <label>
-            Fecha planificada
-            <input name="plannedDate" required type="date" defaultValue={dose.plannedDate} />
-          </label>
-          <label>
-            Edad
-            <input name="ageLabel" defaultValue={dose.ageLabel ?? ""} />
-          </label>
-          <label className={styles.full}>
-            Notas
-            <textarea name="notes" rows={3} defaultValue={dose.notes ?? ""} />
-          </label>
-          <button type="submit">Guardar cambios</button>
-        </form>
-      </details>
+      <PlannedVaccineEditor dose={dose} updateAction={updateAction} />
     </li>
+  );
+}
+
+function PlannedVaccineEditor({
+  dose,
+  updateAction,
+}: {
+  dose: PlannedVaccineDoseWithStatus;
+  updateAction: (formData: FormData) => void | Promise<void>;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const dragStartYRef = useRef<number | null>(null);
+  const titleId = `edit-planned-${dose.id}`;
+
+  function openSheet() {
+    setDragOffset(0);
+    setIsOpen(true);
+  }
+
+  function closeSheet() {
+    setDragOffset(0);
+    dragStartYRef.current = null;
+    setIsOpen(false);
+  }
+
+  function handleSheetKeyDown(event: KeyboardEvent<HTMLElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeSheet();
+    }
+  }
+
+  function handleHandleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      closeSheet();
+    }
+  }
+
+  function handleDragStart(event: PointerEvent<HTMLDivElement>) {
+    dragStartYRef.current = event.clientY;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function handleDragMove(event: PointerEvent<HTMLDivElement>) {
+    if (dragStartYRef.current === null) {
+      return;
+    }
+
+    setDragOffset(Math.max(0, event.clientY - dragStartYRef.current));
+  }
+
+  function handleDragEnd() {
+    if (dragOffset > 70) {
+      closeSheet();
+      return;
+    }
+
+    dragStartYRef.current = null;
+    setDragOffset(0);
+  }
+
+  return (
+    <>
+      <button className={styles.secondaryActionButton} onClick={openSheet} type="button">
+        Editar planificacion
+      </button>
+
+      {isOpen ? (
+        <div className={styles.sheetBackdrop} onClick={closeSheet}>
+          <form
+            action={updateAction}
+            aria-labelledby={titleId}
+            aria-modal="false"
+            className={styles.sheet}
+            onClick={(event) => event.stopPropagation()}
+            onKeyDown={handleSheetKeyDown}
+            role="dialog"
+            style={
+              {
+                "--sheet-drag-offset": `${dragOffset}px`,
+              } as React.CSSProperties
+            }
+          >
+            <div
+              aria-label="Cerrar panel de planificacion"
+              className={styles.sheetHandle}
+              onKeyDown={handleHandleKeyDown}
+              onPointerCancel={handleDragEnd}
+              onPointerDown={handleDragStart}
+              onPointerMove={handleDragMove}
+              onPointerUp={handleDragEnd}
+              role="button"
+              tabIndex={0}
+            >
+              <span />
+            </div>
+
+            <div className={styles.sheetHeader}>
+              <p>Planificacion</p>
+              <h2 id={titleId}>Editar dosis planificada</h2>
+              <span>
+                {dose.vaccineName} · {dose.doseLabel}
+              </span>
+            </div>
+
+            <input name="id" type="hidden" value={dose.id} />
+
+            <div className={styles.sheetFields}>
+              <label>
+                Vacuna
+                <input name="vaccineName" required defaultValue={dose.vaccineName} />
+              </label>
+              <label>
+                Dosis
+                <input name="doseLabel" required defaultValue={dose.doseLabel} />
+              </label>
+              <label>
+                Fecha planificada
+                <input name="plannedDate" required type="date" defaultValue={dose.plannedDate} />
+              </label>
+              <label>
+                Edad
+                <input name="ageLabel" defaultValue={dose.ageLabel ?? ""} />
+              </label>
+              <label className={styles.full}>
+                Notas
+                <textarea name="notes" rows={3} defaultValue={dose.notes ?? ""} />
+              </label>
+            </div>
+
+            <div className={styles.sheetActions}>
+              <button className={styles.secondaryButton} onClick={closeSheet} type="button">
+                Cancelar
+              </button>
+              <button className={styles.primaryButton} type="submit">
+                Guardar cambios
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : null}
+    </>
   );
 }
 
@@ -143,32 +262,138 @@ function MarkAppliedForm({
   dose: PlannedVaccineDoseWithStatus;
   markAppliedAction: (formData: FormData) => void | Promise<void>;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const dragStartYRef = useRef<number | null>(null);
+  const titleId = `mark-applied-${dose.id}`;
+
+  function openSheet() {
+    setDragOffset(0);
+    setIsOpen(true);
+  }
+
+  function closeSheet() {
+    setDragOffset(0);
+    dragStartYRef.current = null;
+    setIsOpen(false);
+  }
+
+  function handleSheetKeyDown(event: KeyboardEvent<HTMLElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeSheet();
+    }
+  }
+
+  function handleHandleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      closeSheet();
+    }
+  }
+
+  function handleDragStart(event: PointerEvent<HTMLDivElement>) {
+    dragStartYRef.current = event.clientY;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function handleDragMove(event: PointerEvent<HTMLDivElement>) {
+    if (dragStartYRef.current === null) {
+      return;
+    }
+
+    setDragOffset(Math.max(0, event.clientY - dragStartYRef.current));
+  }
+
+  function handleDragEnd() {
+    if (dragOffset > 70) {
+      closeSheet();
+      return;
+    }
+
+    dragStartYRef.current = null;
+    setDragOffset(0);
+  }
+
   return (
-    <details className={styles.editor}>
-      <summary>Marcar como aplicada</summary>
-      <form action={markAppliedAction}>
-        <input name="plannedDoseId" type="hidden" value={dose.id} />
-        <input name="vaccineName" type="hidden" value={dose.vaccineName} />
-        <input name="doseLabel" type="hidden" value={dose.doseLabel} />
-        <label>
-          Fecha de aplicacion
-          <input name="appliedOn" required type="date" defaultValue={dose.plannedDate} />
-        </label>
-        <label>
-          Lugar
-          <input name="place" required placeholder="Centro de salud" />
-        </label>
-        <label>
-          Lote
-          <input name="lot" />
-        </label>
-        <label className={styles.full}>
-          Notas
-          <textarea name="notes" rows={3} />
-        </label>
-        <button type="submit">Guardar aplicacion</button>
-      </form>
-    </details>
+    <>
+      <button className={styles.actionButton} onClick={openSheet} type="button">
+        Marcar como aplicada
+      </button>
+
+      {isOpen ? (
+        <div className={styles.sheetBackdrop} onClick={closeSheet}>
+          <form
+            action={markAppliedAction}
+            aria-labelledby={titleId}
+            aria-modal="false"
+            className={styles.sheet}
+            onClick={(event) => event.stopPropagation()}
+            onKeyDown={handleSheetKeyDown}
+            role="dialog"
+            style={
+              {
+                "--sheet-drag-offset": `${dragOffset}px`,
+              } as React.CSSProperties
+            }
+          >
+            <div
+              aria-label="Cerrar panel de vacuna"
+              className={styles.sheetHandle}
+              onKeyDown={handleHandleKeyDown}
+              onPointerCancel={handleDragEnd}
+              onPointerDown={handleDragStart}
+              onPointerMove={handleDragMove}
+              onPointerUp={handleDragEnd}
+              role="button"
+              tabIndex={0}
+            >
+              <span />
+            </div>
+
+            <div className={styles.sheetHeader}>
+              <p>Aplicacion</p>
+              <h2 id={titleId}>Registrar vacuna aplicada</h2>
+              <span>
+                {dose.vaccineName} · {dose.doseLabel}
+              </span>
+            </div>
+
+            <input name="plannedDoseId" type="hidden" value={dose.id} />
+            <input name="vaccineName" type="hidden" value={dose.vaccineName} />
+            <input name="doseLabel" type="hidden" value={dose.doseLabel} />
+
+            <div className={styles.sheetFields}>
+              <label>
+                Fecha de aplicacion
+                <input name="appliedOn" required type="date" defaultValue={dose.plannedDate} />
+              </label>
+              <label>
+                Lugar
+                <input name="place" required placeholder="Centro de salud" />
+              </label>
+              <label>
+                Lote
+                <input name="lot" />
+              </label>
+              <label className={styles.full}>
+                Notas
+                <textarea name="notes" rows={3} />
+              </label>
+            </div>
+
+            <div className={styles.sheetActions}>
+              <button className={styles.secondaryButton} onClick={closeSheet} type="button">
+                Cancelar
+              </button>
+              <button className={styles.primaryButton} type="submit">
+                Guardar aplicacion
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : null}
+    </>
   );
 }
 
