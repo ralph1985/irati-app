@@ -1,8 +1,9 @@
 "use client";
 
+import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import styles from "./app-shell.module.css";
 
 const tabs = [
@@ -16,82 +17,69 @@ const tabOrder = new Map<string, number>(tabs.map((tab, index) => [tab.href, ind
 
 type Direction = "backward" | "forward" | "none";
 
-type ViewLayer = {
+type NavigationState = {
   direction: Direction;
-  id: number;
-  node: ReactNode;
   pathname: string;
-  state: "current" | "exiting";
+};
+
+const viewVariants: Variants = {
+  enter: (direction: Direction) => ({
+    opacity: direction === "none" ? 1 : 0,
+    x: getOffset(direction, "enter"),
+  }),
+  center: {
+    opacity: 1,
+    x: 0,
+  },
+  exit: (direction: Direction) => ({
+    opacity: direction === "none" ? 1 : 0,
+    x: getOffset(direction, "exit"),
+  }),
+};
+
+const reducedMotionVariants: Variants = {
+  enter: { opacity: 1, x: 0 },
+  center: { opacity: 1, x: 0 },
+  exit: { opacity: 1, x: 0 },
 };
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const nextLayerId = useRef(0);
-  const [layers, setLayers] = useState<ViewLayer[]>([
-    {
-      direction: "none",
-      id: 0,
-      node: children,
+  const [navigationState, setNavigationState] = useState<NavigationState>(() => ({
+    direction: "none",
+    pathname,
+  }));
+  const shouldReduceMotion = useReducedMotion();
+
+  let currentNavigationState = navigationState;
+
+  if (navigationState.pathname !== pathname) {
+    currentNavigationState = {
+      direction: getDirection(navigationState.pathname, pathname),
       pathname,
-      state: "current",
-    },
-  ]);
+    };
+    setNavigationState(currentNavigationState);
+  }
 
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      setLayers((currentLayers) => currentLayers.filter((layer) => layer.state === "current"));
-    }, 220);
-
-    setLayers((currentLayers) => {
-      const currentLayer = currentLayers.find((layer) => layer.state === "current");
-
-      if (!currentLayer || currentLayer.pathname === pathname) {
-        return [
-          {
-            direction: "none",
-            id: currentLayer?.id ?? nextLayerId.current,
-            node: children,
-            pathname,
-            state: "current",
-          },
-        ];
-      }
-
-      const direction = getDirection(currentLayer.pathname, pathname);
-      nextLayerId.current += 1;
-
-      return [
-        {
-          ...currentLayer,
-          direction,
-          state: "exiting",
-        },
-        {
-          direction,
-          id: nextLayerId.current,
-          node: children,
-          pathname,
-          state: "current",
-        },
-      ];
-    });
-
-    return () => window.clearTimeout(timeoutId);
-  }, [children, pathname]);
+  const direction = currentNavigationState.direction;
 
   return (
     <div className={styles.page}>
       <div className={styles.view}>
-        {layers.map((layer) => (
-          <div
+        <AnimatePresence custom={direction} initial={false} mode="popLayout">
+          <motion.div
+            animate="center"
             className={styles.viewLayer}
-            data-direction={layer.direction}
-            data-state={layer.state}
-            key={layer.id}
+            custom={direction}
+            exit="exit"
+            initial="enter"
+            key={pathname}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.26, ease: [0.32, 0.72, 0, 1] }}
+            variants={shouldReduceMotion ? reducedMotionVariants : viewVariants}
           >
-            {layer.node}
-          </div>
-        ))}
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       <nav className={styles.nav} aria-label="Navegacion principal">
@@ -122,4 +110,16 @@ function getDirection(previousPathname: string, pathname: string): Direction {
   }
 
   return currentIndex > previousIndex ? "forward" : "backward";
+}
+
+function getOffset(direction: Direction, phase: "enter" | "exit"): string {
+  if (direction === "none") {
+    return "0%";
+  }
+
+  if (phase === "enter") {
+    return direction === "forward" ? "100%" : "-100%";
+  }
+
+  return direction === "forward" ? "-100%" : "100%";
 }

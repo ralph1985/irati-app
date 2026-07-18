@@ -18,20 +18,17 @@
 
 .view {
   min-height: calc(100dvh - 116px);
+  overflow-x: clip;
   position: relative;
 }
 
-.viewLayer[data-state="current"][data-direction="forward"],
-.viewLayer[data-state="current"][data-direction="backward"] {
-  animation: viewFadeIn 0.2s ease-out both;
+.viewLayer {
+  width: 100%;
 }
 
-.viewLayer[data-state="exiting"] {
-  position: absolute;
+.viewLayer[style*="position: absolute"] {
   inset: 0;
-  width: 100%;
   pointer-events: none;
-  animation: viewFadeOut 0.2s ease-out both;
 }
 
 .nav {
@@ -70,32 +67,5 @@
 @media (min-width: 620px) {
   .page {
     padding-top: 48px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .viewLayer[data-state="current"],
-  .viewLayer[data-state="exiting"] {
-    animation: none;
-  }
-}
-
-@keyframes viewFadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes viewFadeOut {
-  from {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 0;
   }
 }
