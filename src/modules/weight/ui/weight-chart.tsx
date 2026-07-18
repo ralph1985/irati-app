@@ -1,6 +1,6 @@
 import { buildWeightChartPath, buildWeightChartSeries } from "../application/weight-chart-series";
 import { WeightEntry } from "../domain/weight-entry";
-import styles from "../../../app/peso/page.module.css";
+import styles from "../../../app/(app)/peso/page.module.css";
 
 type WeightChartProps = {
   entries: WeightEntry[];

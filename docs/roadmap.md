@@ -250,6 +250,14 @@ No se copia:
 - [x] Invalidar cache de vacunas despues de editar planificacion, marcar aplicada, editar aplicacion o reabrir dosis.
 - [x] Mantener el alcance sin modo offline de datos.
 
+## Hito 15 - Transicion lateral entre vistas
+
+- [x] Crear un layout compartido para las pestañas principales sin cambiar URLs.
+- [x] Extraer la navegacion inferior a un shell comun.
+- [x] Animar lateralmente el contenido al cambiar entre Inicio, Peso, Vacunas y Ajustes.
+- [x] Mantener login, modales y cambios de query fuera de la animacion de pestañas.
+- [x] Respetar `prefers-reduced-motion`.
+
 ## Fuera del MVP inicial
 
 - Exportacion o impresion para pediatra.

@@ -355,6 +355,8 @@ Pestañas iniciales:
 
 La estructura puede crecer despues con mas pestañas o menus secundarios, pero el MVP parte de estas cuatro.
 
+La transicion entre pestañas principales usa una animacion lateral ligera sobre el contenido, manteniendo fijo el menu inferior. La direccion sigue el orden Inicio, Peso, Vacunas y Ajustes. La animacion no se aplica a login, logout, modales, filtros ni cambios de query, y debe desactivarse cuando el usuario prefiera reducir movimiento.
+
 ### Inicio
 
 El inicio debe priorizar:

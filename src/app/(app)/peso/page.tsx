@@ -49,7 +49,7 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
   const filteredEntries = filterWeightEntries(entries, activeFilter);
 
   return (
-    <div className={styles.page}>
+    <>
       <main className={styles.main}>
         <header className={styles.header}>
           <p>Peso</p>
@@ -100,16 +100,8 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
         </section>
       </main>
 
-      <nav className={styles.nav} aria-label="Navegacion principal">
-        <Link href="/">Inicio</Link>
-        <Link aria-current="page" href="/peso">
-          Peso
-        </Link>
-        <Link href="/vacunas">Vacunas</Link>
-        <Link href="/ajustes">Ajustes</Link>
-      </nav>
       <WeightCreateSheet action={createWeightEntryAction} styles={styles} />
-    </div>
+    </>
   );
 }
 

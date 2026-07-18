@@ -29,74 +29,63 @@ export default async function Home({ searchParams }: HomeProps) {
   const vaccinePlan = await getVaccinePlan(new CachedVaccinePlanReadRepository());
 
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <section className={styles.hero} aria-labelledby="home-title">
-          <p className={styles.kicker}>App privada familiar</p>
-          <h1 id="home-title">{profile.name}</h1>
-          <p className={styles.birthDate}>Nacida el {formatBirthDate(profile)}</p>
-          {source === "fallback" ? (
-            <p className={styles.dataNotice}>Mostrando datos locales temporales.</p>
-          ) : null}
-          {weightResult.loadError || vaccinePlan.loadError ? (
-            <p className={styles.dataNotice}>Algunos datos no se pudieron cargar.</p>
-          ) : null}
-        </section>
+    <main className={styles.main}>
+      <section className={styles.hero} aria-labelledby="home-title">
+        <p className={styles.kicker}>App privada familiar</p>
+        <h1 id="home-title">{profile.name}</h1>
+        <p className={styles.birthDate}>Nacida el {formatBirthDate(profile)}</p>
+        {source === "fallback" ? (
+          <p className={styles.dataNotice}>Mostrando datos locales temporales.</p>
+        ) : null}
+        {weightResult.loadError || vaccinePlan.loadError ? (
+          <p className={styles.dataNotice}>Algunos datos no se pudieron cargar.</p>
+        ) : null}
+      </section>
 
-        <section className={styles.alerts} aria-labelledby="vaccine-alerts-title">
-          <div className={styles.sectionTitle}>
-            <h2 id="vaccine-alerts-title">Avisos</h2>
-            <Link href="/vacunas">Ver vacunas</Link>
-          </div>
+      <section className={styles.alerts} aria-labelledby="vaccine-alerts-title">
+        <div className={styles.sectionTitle}>
+          <h2 id="vaccine-alerts-title">Avisos</h2>
+          <Link href="/vacunas">Ver vacunas</Link>
+        </div>
 
-          {vaccinePlan.alerts.length > 0 ? (
-            <ol>
-              {vaccinePlan.alerts.slice(0, 3).map((alert) => (
-                <li data-kind={alert.kind} key={alert.id}>
-                  <div>
-                    <strong>{alert.title}</strong>
-                    <span>{alert.detail}</span>
-                  </div>
-                  <time dateTime={alert.plannedDate}>{formatDate(alert.plannedDate)}</time>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p>Sin vacunas proximas ni retrasadas.</p>
-          )}
-        </section>
+        {vaccinePlan.alerts.length > 0 ? (
+          <ol>
+            {vaccinePlan.alerts.slice(0, 3).map((alert) => (
+              <li data-kind={alert.kind} key={alert.id}>
+                <div>
+                  <strong>{alert.title}</strong>
+                  <span>{alert.detail}</span>
+                </div>
+                <time dateTime={alert.plannedDate}>{formatDate(alert.plannedDate)}</time>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p>Sin vacunas proximas ni retrasadas.</p>
+        )}
+      </section>
 
-        <section className={styles.summary} aria-label="Resumen inicial">
-          <article>
-            <span>Peso</span>
-            <strong>
-              {weightResult.latestWeight
-                ? `${weightResult.latestWeight.weightGrams.toLocaleString("es-ES")} g`
-                : "Sin registros"}
-            </strong>
-          </article>
-          <article>
-            <span>Vacunas</span>
-            <strong>{formatVaccineSummary(vaccinePlan.summary)}</strong>
-          </article>
-        </section>
+      <section className={styles.summary} aria-label="Resumen inicial">
+        <article>
+          <span>Peso</span>
+          <strong>
+            {weightResult.latestWeight
+              ? `${weightResult.latestWeight.weightGrams.toLocaleString("es-ES")} g`
+              : "Sin registros"}
+          </strong>
+        </article>
+        <article>
+          <span>Vacunas</span>
+          <strong>{formatVaccineSummary(vaccinePlan.summary)}</strong>
+        </article>
+      </section>
 
-        <form action="/logout" method="post" suppressHydrationWarning>
-          <button className={styles.logout} type="submit">
-            Salir
-          </button>
-        </form>
-      </main>
-
-      <nav className={styles.nav} aria-label="Navegacion principal">
-        <Link aria-current="page" href="/">
-          Inicio
-        </Link>
-        <Link href="/peso">Peso</Link>
-        <Link href="/vacunas">Vacunas</Link>
-        <Link href="/ajustes">Ajustes</Link>
-      </nav>
-    </div>
+      <form action="/logout" method="post" suppressHydrationWarning>
+        <button className={styles.logout} type="submit">
+          Salir
+        </button>
+      </form>
+    </main>
   );
 }
 

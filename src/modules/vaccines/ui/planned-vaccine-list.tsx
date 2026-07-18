@@ -7,7 +7,7 @@ import {
   PlannedVaccineDoseWithStatus,
   vaccineDoseStatuses,
 } from "../domain/vaccine-calendar";
-import styles from "../../../app/vacunas/page.module.css";
+import styles from "../../../app/(app)/vacunas/page.module.css";
 
 type PlannedVaccineListProps = {
   groups: PlannedVaccineDoseGroups;
