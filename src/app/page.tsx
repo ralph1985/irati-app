@@ -1,14 +1,13 @@
 import { getBabyProfile } from "@/modules/profile/application/get-baby-profile";
 import { formatBirthDate } from "@/modules/profile/domain/baby-profile";
-import { SupabaseProfileRepository } from "@/modules/profile/infrastructure/supabase-profile-repository";
+import { CachedProfileRepository } from "@/modules/profile/infrastructure/cached-profile-repository";
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
 import { listVaccinePlan } from "@/modules/vaccines/application/list-vaccine-plan";
 import { VaccineAlert } from "@/modules/vaccines/application/vaccine-alerts";
-import { SupabaseVaccinePlanRepository } from "@/modules/vaccines/infrastructure/supabase-vaccine-plan-repository";
+import { CachedVaccinePlanReadRepository } from "@/modules/vaccines/infrastructure/cached-vaccine-plan-read-repository";
 import { listWeightEntries } from "@/modules/weight/application/list-weight-entries";
-import { SupabaseWeightRepository } from "@/modules/weight/infrastructure/supabase-weight-repository";
-import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
+import { CachedWeightReadRepository } from "@/modules/weight/infrastructure/cached-weight-repository";
 import Link from "next/link";
 import styles from "./page.module.css";
 
@@ -25,10 +24,9 @@ export default async function Home({ searchParams }: HomeProps) {
     return <LoginScreen error={error} />;
   }
 
-  const supabase = createServerSupabaseClient();
-  const { profile, source } = await getBabyProfile(new SupabaseProfileRepository(supabase));
-  const weightResult = await getLatestWeight(new SupabaseWeightRepository(supabase));
-  const vaccinePlan = await getVaccinePlan(new SupabaseVaccinePlanRepository(supabase));
+  const { profile, source } = await getBabyProfile(new CachedProfileRepository());
+  const weightResult = await getLatestWeight(new CachedWeightReadRepository());
+  const vaccinePlan = await getVaccinePlan(new CachedVaccinePlanReadRepository());
 
   return (
     <div className={styles.page}>
@@ -102,7 +100,7 @@ export default async function Home({ searchParams }: HomeProps) {
   );
 }
 
-async function getLatestWeight(repository: SupabaseWeightRepository) {
+async function getLatestWeight(repository: CachedWeightReadRepository) {
   try {
     const [latestWeight] = await listWeightEntries(repository);
 
@@ -112,7 +110,7 @@ async function getLatestWeight(repository: SupabaseWeightRepository) {
   }
 }
 
-async function getVaccinePlan(repository: SupabaseVaccinePlanRepository): Promise<{
+async function getVaccinePlan(repository: CachedVaccinePlanReadRepository): Promise<{
   alerts: VaccineAlert[];
   summary: {
     total: number;

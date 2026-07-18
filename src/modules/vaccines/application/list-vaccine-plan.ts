@@ -5,7 +5,12 @@ import {
 import { buildVaccineAlerts } from "./vaccine-alerts";
 import { VaccinePlanRepository } from "./vaccine-plan-repository";
 
-export async function listVaccinePlan(repository: VaccinePlanRepository, today: Date) {
+type VaccinePlanReadRepository = Pick<
+  VaccinePlanRepository,
+  "listAppliedVaccineDoses" | "listPlannedVaccineDoses"
+>;
+
+export async function listVaccinePlan(repository: VaccinePlanReadRepository, today: Date) {
   const [plannedDoses, appliedDoses] = await Promise.all([
     repository.listPlannedVaccineDoses(),
     repository.listAppliedVaccineDoses(),

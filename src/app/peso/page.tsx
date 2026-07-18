@@ -8,11 +8,10 @@ import {
 } from "@/modules/weight/application/weight-filter";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
 import { listWeightEntries } from "@/modules/weight/application/list-weight-entries";
-import { SupabaseWeightRepository } from "@/modules/weight/infrastructure/supabase-weight-repository";
+import { CachedWeightReadRepository } from "@/modules/weight/infrastructure/cached-weight-repository";
 import { WeightChart } from "@/modules/weight/ui/weight-chart";
 import { WeightCreateSheet } from "@/modules/weight/ui/weight-create-sheet";
 import { WeightHistory } from "@/modules/weight/ui/weight-history";
-import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
 import {
   createWeightEntryAction,
   deleteWeightEntryAction,
@@ -116,9 +115,7 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
 
 async function getWeightEntries() {
   try {
-    const entries = await listWeightEntries(
-      new SupabaseWeightRepository(createServerSupabaseClient()),
-    );
+    const entries = await listWeightEntries(new CachedWeightReadRepository());
 
     return { entries, loadError: undefined };
   } catch {

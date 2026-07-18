@@ -1,13 +1,14 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import { deleteWeightEntry } from "@/modules/weight/application/delete-weight-entry";
 import { registerWeightEntry } from "@/modules/weight/application/register-weight-entry";
 import { updateWeightEntry } from "@/modules/weight/application/update-weight-entry";
 import { isWeightPlace, WeightEntryValidationError } from "@/modules/weight/domain/weight-entry";
 import { SupabaseWeightRepository } from "@/modules/weight/infrastructure/supabase-weight-repository";
+import { CACHE_TAGS } from "@/shared/infrastructure/cache/cache-tags";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
 
 export async function createWeightEntryAction(formData: FormData) {
@@ -39,8 +40,7 @@ export async function createWeightEntryAction(formData: FormData) {
     redirect("/peso?error=save");
   }
 
-  revalidatePath("/peso");
-  revalidatePath("/");
+  invalidateWeightReads();
   redirect("/peso?created=1");
 }
 
@@ -74,8 +74,7 @@ export async function updateWeightEntryAction(formData: FormData) {
     redirect("/peso?error=save");
   }
 
-  revalidatePath("/peso");
-  revalidatePath("/");
+  invalidateWeightReads();
   redirect("/peso?updated=1");
 }
 
@@ -93,7 +92,12 @@ export async function deleteWeightEntryAction(formData: FormData) {
     redirect("/peso?error=delete");
   }
 
+  invalidateWeightReads();
+  redirect("/peso?deleted=1");
+}
+
+function invalidateWeightReads() {
+  updateTag(CACHE_TAGS.weightEntries);
   revalidatePath("/peso");
   revalidatePath("/");
-  redirect("/peso?deleted=1");
 }

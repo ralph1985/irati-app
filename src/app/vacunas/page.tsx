@@ -3,9 +3,8 @@ import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
 import { listVaccinePlan } from "@/modules/vaccines/application/list-vaccine-plan";
 import { madridVaccineCalendarSource } from "@/modules/vaccines/domain/vaccine-calendar";
-import { SupabaseVaccinePlanRepository } from "@/modules/vaccines/infrastructure/supabase-vaccine-plan-repository";
+import { CachedVaccinePlanReadRepository } from "@/modules/vaccines/infrastructure/cached-vaccine-plan-read-repository";
 import { PlannedVaccineList } from "@/modules/vaccines/ui/planned-vaccine-list";
-import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
 import {
   markVaccineDoseAppliedAction,
   reopenPlannedVaccineDoseAction,
@@ -119,10 +118,7 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
 
 async function getVaccinePlan() {
   try {
-    const plan = await listVaccinePlan(
-      new SupabaseVaccinePlanRepository(createServerSupabaseClient()),
-      new Date(),
-    );
+    const plan = await listVaccinePlan(new CachedVaccinePlanReadRepository(), new Date());
 
     return { plan, loadError: undefined };
   } catch {

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import { markVaccineDoseApplied } from "@/modules/vaccines/application/mark-vaccine-dose-applied";
@@ -12,6 +12,7 @@ import {
   PlannedVaccineDoseValidationError,
 } from "@/modules/vaccines/domain/vaccine-calendar";
 import { SupabaseVaccinePlanRepository } from "@/modules/vaccines/infrastructure/supabase-vaccine-plan-repository";
+import { CACHE_TAGS } from "@/shared/infrastructure/cache/cache-tags";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
 
 export async function updatePlannedVaccineDoseAction(formData: FormData) {
@@ -39,8 +40,7 @@ export async function updatePlannedVaccineDoseAction(formData: FormData) {
     redirect("/vacunas?error=save");
   }
 
-  revalidatePath("/vacunas");
-  revalidatePath("/");
+  invalidateVaccineReads();
   redirect("/vacunas?updated=1");
 }
 
@@ -67,8 +67,7 @@ export async function markVaccineDoseAppliedAction(formData: FormData) {
     redirect("/vacunas?error=application-save");
   }
 
-  revalidatePath("/vacunas");
-  revalidatePath("/");
+  invalidateVaccineReads();
   redirect("/vacunas?applied=1");
 }
 
@@ -99,8 +98,7 @@ export async function updateAppliedVaccineDoseAction(formData: FormData) {
     redirect("/vacunas?error=application-save");
   }
 
-  revalidatePath("/vacunas");
-  revalidatePath("/");
+  invalidateVaccineReads();
   redirect("/vacunas?applicationUpdated=1");
 }
 
@@ -118,7 +116,13 @@ export async function reopenPlannedVaccineDoseAction(formData: FormData) {
     redirect("/vacunas?error=reopen");
   }
 
+  invalidateVaccineReads();
+  redirect("/vacunas?reopened=1");
+}
+
+function invalidateVaccineReads() {
+  updateTag(CACHE_TAGS.vaccineAppliedDoses);
+  updateTag(CACHE_TAGS.vaccinePlannedDoses);
   revalidatePath("/vacunas");
   revalidatePath("/");
-  redirect("/vacunas?reopened=1");
 }

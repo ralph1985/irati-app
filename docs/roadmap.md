@@ -243,6 +243,13 @@ No se copia:
 - [x] Ejecutar una primera copia y verificar metadata.
 - [x] Ejecutar typecheck, lint, tests y build.
 
+## Hito 14 - Cache de lecturas de servidor
+
+- [x] Cachear en servidor las lecturas principales de Supabase.
+- [x] Invalidar cache de peso despues de crear, editar o borrar registros.
+- [x] Invalidar cache de vacunas despues de editar planificacion, marcar aplicada, editar aplicacion o reabrir dosis.
+- [x] Mantener el alcance sin modo offline de datos.
+
 ## Fuera del MVP inicial
 
 - Exportacion o impresion para pediatra.

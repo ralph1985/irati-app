@@ -118,6 +118,14 @@ PWA:
 - No se implementa realtime.
 - No se incorpora service worker offline en el MVP porque la aplicacion requiere conexion.
 
+Caches:
+
+- Las lecturas principales de servidor pueden cachearse con tags de Next.js para reducir llamadas repetidas a Supabase.
+- La cache de servidor cubre perfil, historico de peso y listas base del plan de vacunas.
+- Las acciones de escritura invalidan la cache afectada antes de redirigir para conservar lecturas frescas tras guardar, editar o borrar.
+- Los estados derivados de vacunas, como proxima o retrasada, se recalculan por request a partir de las listas cacheadas y la fecha actual.
+- No se cachean datos privados en IndexedDB ni se ofrece lectura de datos sin conexion en el MVP.
+
 ## Arquitectura
 
 Se usara arquitectura hexagonal con separacion pragmatica:
