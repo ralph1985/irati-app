@@ -379,6 +379,8 @@ Decisiones:
 
 La navegacion principal usa menu inferior tipo app movil.
 
+Las pestañas del menu inferior se muestran como iconos accesibles con nombre para tecnologias de asistencia, sin texto visible dentro de cada boton.
+
 Pestañas iniciales:
 
 - Inicio.
