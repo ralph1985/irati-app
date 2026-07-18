@@ -18,14 +18,20 @@
 
 .view {
   min-height: calc(100dvh - 116px);
+  position: relative;
 }
 
-.view[data-direction="forward"] {
-  animation: viewInFromRight 0.2s ease-out both;
+.viewLayer[data-state="current"][data-direction="forward"],
+.viewLayer[data-state="current"][data-direction="backward"] {
+  animation: viewFadeIn 0.2s ease-out both;
 }
 
-.view[data-direction="backward"] {
-  animation: viewInFromLeft 0.2s ease-out both;
+.viewLayer[data-state="exiting"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  pointer-events: none;
+  animation: viewFadeOut 0.2s ease-out both;
 }
 
 .nav {
@@ -68,32 +74,28 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .view[data-direction="forward"],
-  .view[data-direction="backward"] {
+  .viewLayer[data-state="current"],
+  .viewLayer[data-state="exiting"] {
     animation: none;
   }
 }
 
-@keyframes viewInFromRight {
+@keyframes viewFadeIn {
   from {
     opacity: 0;
-    transform: translateX(22px);
   }
 
   to {
     opacity: 1;
-    transform: translateX(0);
   }
 }
 
-@keyframes viewInFromLeft {
+@keyframes viewFadeOut {
   from {
-    opacity: 0;
-    transform: translateX(-22px);
+    opacity: 1;
   }
 
   to {
-    opacity: 1;
-    transform: translateX(0);
+    opacity: 0;
   }
 }
