@@ -177,6 +177,40 @@ export type Database = {
         };
         Relationships: [];
       };
+      travel_checklist_items: {
+        Row: {
+          id: string;
+          label: string;
+          category: "comida" | "higiene" | "cambio" | "sueno" | "salud" | "paseo" | "documentacion";
+          sort_order: number;
+          is_packed: boolean;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          label: string;
+          category: "comida" | "higiene" | "cambio" | "sueno" | "salud" | "paseo" | "documentacion";
+          sort_order?: number;
+          is_packed?: boolean;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          label?: string;
+          category?:
+            "comida" | "higiene" | "cambio" | "sueno" | "salud" | "paseo" | "documentacion";
+          sort_order?: number;
+          is_packed?: boolean;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

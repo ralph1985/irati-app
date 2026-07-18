@@ -18,7 +18,7 @@ Incluido:
 - Acceso con PIN/passcode compartido y seguridad real de servidor.
 - PWA instalable desde el inicio.
 - Estilo visual familiar, suave y luminoso, con morado como color principal.
-- Navegacion inferior con Inicio, Peso, Vacunas y Ajustes.
+- Navegacion inferior con Inicio, Peso, Vacunas, Viaje y Ajustes.
 - Registro de peso.
 - Grafica simple de peso.
 - Filtro de peso por lugar.
@@ -26,6 +26,7 @@ Incluido:
 - Registro de vacunas aplicadas.
 - Estados de vacunas.
 - Avisos internos de proximas y retrasadas.
+- Checklist de viaje reutilizable, editable y compartida.
 - Supabase como persistencia principal.
 - Despliegue en Vercel.
 
@@ -36,7 +37,7 @@ Backups:
 - `pnpm backup:supabase` genera un archivo `irati-supabase-<timestamp>.sql.tar.gz` en `var/backups/supabase/`.
 - El archivo contiene `schema.sql`, `data.sql` y `manifest.txt`.
 - `schema.sql` concatena las migraciones versionadas del repositorio.
-- `data.sql` contiene los datos actuales de `baby_profiles`, `planned_vaccine_doses`, `weight_entries`, `applied_vaccine_doses` y `developer_backup_runs`.
+- `data.sql` contiene los datos actuales de `baby_profiles`, `planned_vaccine_doses`, `weight_entries`, `applied_vaccine_doses`, `travel_checklist_items` y `developer_backup_runs`.
 - Los archivos generados y logs viven en `var/` y no se suben a Git.
 - La retencion local por defecto es de 14 dias, configurable con `IRATI_SUPABASE_BACKUP_RETENTION_DAYS`.
 - `pnpm backup:supabase:cron:install` instala un cron cada 6 horas por defecto.
@@ -318,6 +319,37 @@ Criterios de aceptacion:
 - Veo avisos internos cuando hay vacunas proximas.
 - Veo avisos internos cuando hay vacunas retrasadas.
 
+### Viaje
+
+La app incluye una checklist reutilizable para preparar salidas y viajes de Irati.
+
+Reglas:
+
+- La lista es unica y reutilizable, no se crean viajes individuales en esta version.
+- Los items se guardan en Supabase remoto para compartir el estado entre Rafa y Begoña.
+- Los items pueden añadirse, editarse, borrarse y marcarse como preparados desde la app.
+- La lista puede reiniciarse antes de una nueva salida, desmarcando todos los items.
+- Los items se agrupan por categoria y se ordenan por `sort_order`.
+- Las categorias iniciales son comida, higiene, cambio, sueño, salud, paseo y documentacion.
+- La lista inicial es una semilla editable, no una lista cerrada.
+
+Un item de viaje contiene:
+
+- Texto del item.
+- Categoria.
+- Orden.
+- Estado preparado.
+- Notas opcionales.
+
+Criterios de aceptacion:
+
+- Puedo ver una checklist de viaje agrupada por categorias.
+- Puedo ver el progreso total de items preparados.
+- Puedo marcar y desmarcar un item.
+- Puedo añadir, editar y borrar items.
+- Puedo reiniciar la lista antes de una nueva salida.
+- Rafa y Begoña ven el mismo estado si usan la app desde dispositivos distintos con conexion.
+
 ## Pantallas iniciales
 
 El MVP debe cubrir estas superficies:
@@ -326,6 +358,7 @@ El MVP debe cubrir estas superficies:
 - Inicio/resumen.
 - Peso.
 - Vacunas.
+- Viaje.
 - Ajustes minimos o perfil.
 
 ### Direccion visual
@@ -351,11 +384,12 @@ Pestañas iniciales:
 - Inicio.
 - Peso.
 - Vacunas.
+- Viaje.
 - Ajustes.
 
-La estructura puede crecer despues con mas pestañas o menus secundarios, pero el MVP parte de estas cuatro.
+La estructura puede crecer despues con mas pestañas o menus secundarios, pero el MVP parte de estas cinco.
 
-La transicion entre pestañas principales usa una animacion lateral ligera sobre el contenido, manteniendo fijo el menu inferior. La direccion sigue el orden Inicio, Peso, Vacunas y Ajustes. La animacion no se aplica a login, logout, modales, filtros ni cambios de query, y debe desactivarse cuando el usuario prefiera reducir movimiento.
+La transicion entre pestañas principales usa una animacion lateral ligera sobre el contenido, manteniendo fijo el menu inferior. La direccion sigue el orden Inicio, Peso, Vacunas, Viaje y Ajustes. La animacion no se aplica a login, logout, modales, filtros ni cambios de query, y debe desactivarse cuando el usuario prefiera reducir movimiento.
 
 ### Inicio
 
@@ -418,6 +452,15 @@ Debe cubrir:
 
 No debe absorber la gestion completa del calendario de vacunas en el MVP.
 
+### Viaje
+
+La pantalla de Viaje debe priorizar:
+
+- Progreso de preparacion de la lista.
+- Items pendientes antes que items ya preparados dentro de cada categoria.
+- Acciones rapidas para añadir item y reiniciar la lista.
+- Edicion ligera de items existentes.
+
 ### Formularios
 
 Los formularios de añadir o editar peso y vacunas se abren como modal.
@@ -443,6 +486,7 @@ Tablas previstas, pendientes de concretar en `docs/database-schema.md`:
 - `weight_entries`.
 - `vaccine_plans`.
 - `vaccine_applications` o campos de aplicacion en la planificacion.
+- `travel_checklist_items`.
 - Tabla o mecanismo para sesion/rate limit si fuera necesario.
 
 ## Testing

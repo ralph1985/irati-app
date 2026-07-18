@@ -258,6 +258,23 @@ No se copia:
 - [x] Mantener login, modales y cambios de query fuera de la animacion de pestañas.
 - [x] Respetar `prefers-reduced-motion`.
 
+## Hito 16 - Lista de viaje
+
+- [x] Definir el contrato de checklist de viaje en `docs/spec.md`.
+- [x] Crear tabla `travel_checklist_items` en Supabase remoto.
+- [x] Sembrar una lista inicial editable por categorias.
+- [x] Crear dominio y casos de uso de checklist.
+- [x] Crear adaptador Supabase y cache de lecturas.
+- [x] Mostrar vista `/viaje` autenticada.
+- [x] Mostrar progreso total y grupos por categoria.
+- [x] Permitir marcar y desmarcar items.
+- [x] Permitir añadir, editar y borrar items.
+- [x] Permitir reiniciar la lista antes de una nueva salida.
+- [x] Añadir Viaje a la navegacion inferior.
+- [x] Incluir `travel_checklist_items` en backups.
+- [x] Añadir tests proporcionales.
+- [x] Ejecutar typecheck, lint, format, tests y build.
+
 ## Fuera del MVP inicial
 
 - Exportacion o impresion para pediatra.
