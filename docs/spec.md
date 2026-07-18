@@ -459,7 +459,8 @@ La pantalla de Viaje debe priorizar:
 - Progreso de preparacion de la lista.
 - Items pendientes antes que items ya preparados dentro de cada categoria.
 - Acciones rapidas para añadir item y reiniciar la lista.
-- Edicion ligera de items existentes.
+- Añadir y editar items mediante bottom sheet, no con formularios inline.
+- Listado compacto para revisar muchos items sin demasiado scroll.
 
 ### Formularios
 

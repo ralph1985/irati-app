@@ -1,6 +1,6 @@
 .main {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   max-width: 860px;
   margin: 0 auto;
 }
@@ -49,11 +49,11 @@
 
 .panel {
   display: grid;
-  gap: 16px;
+  gap: 12px;
   border: 1px solid rgba(124, 58, 237, 0.12);
-  border-radius: 24px;
+  border-radius: 20px;
   background: rgba(255, 255, 255, 0.84);
-  padding: 18px;
+  padding: 14px;
   box-shadow: 0 20px 60px rgba(76, 29, 149, 0.08);
 }
 
@@ -101,38 +101,23 @@
 }
 
 .actions {
-  display: grid;
-  gap: 10px;
-}
-
-.createBox {
-  display: grid;
-  gap: 12px;
-  border-radius: 18px;
-  background: #faf5ff;
-  padding: 12px;
-}
-
-.createBox summary,
-.editor summary {
-  cursor: pointer;
-  color: #6d28d9;
-  font-weight: 800;
+  display: flex;
+  gap: 8px;
 }
 
 .groups {
   display: grid;
-  gap: 18px;
+  gap: 14px;
 }
 
 .group {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .items {
   display: grid;
-  gap: 10px;
+  gap: 7px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -140,26 +125,23 @@
 
 .items li {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 10px 12px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
   border: 1px solid rgba(124, 58, 237, 0.12);
-  border-radius: 18px;
+  border-radius: 14px;
   background: #fff;
-  padding: 12px;
+  padding: 8px 10px;
 }
 
 .items li[data-packed="true"] {
   background: #f8fafc;
 }
 
-.itemCheck {
-  grid-row: span 3;
-}
-
 .itemCheck button {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 34px;
+  height: 34px;
   place-items: center;
   overflow: hidden;
   border: 1px solid #c4b5fd;
@@ -171,12 +153,12 @@
 
 .itemCheck button span {
   display: grid;
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   place-items: center;
   border-radius: 50%;
   color: #fff;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 900;
 }
 
@@ -187,22 +169,28 @@
 
 .itemBody {
   display: grid;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
 }
 
 .itemBody strong {
   color: #2e1748;
+  font-size: 14px;
+  line-height: 1.25;
 }
 
 .itemBody p,
 .empty {
   margin: 0;
   color: #6b587d;
+  font-size: 13px;
+  line-height: 1.25;
 }
 
-.editor {
-  grid-column: 2;
+.itemActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .form {
@@ -238,48 +226,125 @@
 
 .primaryButton,
 .secondaryButton,
-.deleteButton {
-  min-height: 42px;
+.deleteButton,
+.linkButton {
+  min-height: 38px;
   border: 0;
-  border-radius: 14px;
+  border-radius: 12px;
   font: inherit;
   font-weight: 800;
 }
 
 .primaryButton {
-  grid-column: 1 / -1;
+  flex: 1;
   background: #7c3aed;
   color: #fff;
+  padding: 0 14px;
 }
 
 .secondaryButton {
-  width: 100%;
+  flex: 1;
   border: 1px solid rgba(124, 58, 237, 0.2);
   background: #fff;
   color: #6d28d9;
+  padding: 0 14px;
 }
 
-.deleteButton {
+.deleteButton,
+.linkButton {
   background: transparent;
-  color: #be123c;
   padding: 0;
 }
 
+.deleteButton {
+  color: #be123c;
+}
+
+.linkButton {
+  color: #6d28d9;
+}
+
+.sheetBackdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(46, 23, 72, 0.24);
+  padding: 18px;
+}
+
+.sheet {
+  display: grid;
+  width: min(100%, 560px);
+  max-height: min(86dvh, 720px);
+  overflow-y: auto;
+  border: 1px solid rgba(124, 58, 237, 0.14);
+  border-radius: 24px 24px 18px 18px;
+  background: #fff;
+  padding: 10px 16px 18px;
+  box-shadow: 0 24px 80px rgba(46, 23, 72, 0.28);
+  transform: translateY(var(--sheet-drag-offset, 0));
+}
+
+.sheetHandle {
+  display: grid;
+  min-height: 28px;
+  place-items: center;
+  cursor: grab;
+  touch-action: none;
+}
+
+.sheetHandle span {
+  width: 44px;
+  height: 5px;
+  border-radius: 999px;
+  background: #d8b4fe;
+}
+
+.sheetHeader {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.sheetHeader p {
+  margin: 0;
+  color: #7c3aed;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.sheetHeader h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.sheetActions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 10px;
+}
+
 @media (max-width: 560px) {
-  .form,
+  .actions,
+  .sheetActions,
   .items li {
     grid-template-columns: 1fr;
   }
 
-  .itemCheck,
-  .editor {
-    grid-column: auto;
-    grid-row: auto;
+  .actions,
+  .itemActions,
+  .sheetActions {
+    display: grid;
   }
 
   .itemCheck button {
     width: 100%;
-    border-radius: 14px;
+    height: 36px;
+    border-radius: 12px;
     color: #6d28d9;
     font-size: 13px;
   }
@@ -290,5 +355,13 @@
 
   .itemCheck button span {
     display: none;
+  }
+
+  .form {
+    grid-template-columns: 1fr;
+  }
+
+  .sheetBackdrop {
+    padding: 12px;
   }
 }

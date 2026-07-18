@@ -1,10 +1,12 @@
 "use client";
 
+import { KeyboardEvent, PointerEvent, useRef, useState } from "react";
 import {
   formatTravelChecklistCategory,
   travelChecklistCategories,
   TravelChecklistCategory,
   TravelChecklistGroup,
+  TravelChecklistItem,
   TravelChecklistProgress,
 } from "../domain/travel-checklist-item";
 import { TravelChecklist } from "../application/list-travel-checklist";
@@ -28,6 +30,7 @@ export function TravelChecklistView({
   updateAction,
 }: TravelChecklistViewProps) {
   const visibleGroups = checklist.groups.filter((group) => group.items.length > 0);
+  const [sheetState, setSheetState] = useState<SheetState>({ mode: "closed" });
 
   return (
     <>
@@ -42,10 +45,13 @@ export function TravelChecklistView({
           value={checklist.progress.packed}
         />
         <div className={styles.actions}>
-          <details className={styles.createBox}>
-            <summary>Añadir item</summary>
-            <TravelChecklistItemForm action={createAction} submitLabel="Guardar item" />
-          </details>
+          <button
+            className={styles.primaryButton}
+            onClick={() => setSheetState({ mode: "create" })}
+            type="button"
+          >
+            Añadir item
+          </button>
           <form
             action={resetAction}
             onSubmit={(event) => {
@@ -74,8 +80,8 @@ export function TravelChecklistView({
                 deleteAction={deleteAction}
                 group={group}
                 key={group.category}
+                openEditSheet={(item) => setSheetState({ item, mode: "edit" })}
                 setPackedAction={setPackedAction}
-                updateAction={updateAction}
               />
             ))}
           </div>
@@ -83,6 +89,13 @@ export function TravelChecklistView({
           <p className={styles.empty}>Todavia no hay items de viaje.</p>
         )}
       </section>
+
+      <TravelChecklistSheet
+        createAction={createAction}
+        onClose={() => setSheetState({ mode: "closed" })}
+        sheetState={sheetState}
+        updateAction={updateAction}
+      />
     </>
   );
 }
@@ -90,13 +103,13 @@ export function TravelChecklistView({
 function TravelChecklistGroupView({
   deleteAction,
   group,
+  openEditSheet,
   setPackedAction,
-  updateAction,
 }: {
   deleteAction: (formData: FormData) => void | Promise<void>;
   group: TravelChecklistGroup;
+  openEditSheet: (item: TravelChecklistItem) => void;
   setPackedAction: (formData: FormData) => void | Promise<void>;
-  updateAction: (formData: FormData) => void | Promise<void>;
 }) {
   return (
     <article className={styles.group}>
@@ -122,35 +135,28 @@ function TravelChecklistGroupView({
               {item.notes ? <p>{item.notes}</p> : null}
             </div>
 
-            <details className={styles.editor}>
-              <summary>Editar</summary>
-              <TravelChecklistItemForm
-                action={updateAction}
-                defaults={{
-                  id: item.id,
-                  label: item.label,
-                  category: item.category,
-                  sortOrder: item.sortOrder,
-                  isPacked: item.isPacked,
-                  notes: item.notes ?? "",
-                }}
-                submitLabel="Guardar cambios"
-              />
-            </details>
-
-            <form
-              action={deleteAction}
-              onSubmit={(event) => {
-                if (!confirm("¿Borrar este item?")) {
-                  event.preventDefault();
-                }
-              }}
-            >
-              <input name="id" type="hidden" value={item.id} />
-              <button className={styles.deleteButton} type="submit">
-                Borrar
+            <div className={styles.itemActions}>
+              <button
+                className={styles.linkButton}
+                onClick={() => openEditSheet(item)}
+                type="button"
+              >
+                Editar
               </button>
-            </form>
+              <form
+                action={deleteAction}
+                onSubmit={(event) => {
+                  if (!confirm("¿Borrar este item?")) {
+                    event.preventDefault();
+                  }
+                }}
+              >
+                <input name="id" type="hidden" value={item.id} />
+                <button className={styles.deleteButton} type="submit">
+                  Borrar
+                </button>
+              </form>
+            </div>
           </li>
         ))}
       </ol>
@@ -158,9 +164,142 @@ function TravelChecklistGroupView({
   );
 }
 
+type SheetState =
+  | {
+      mode: "closed";
+    }
+  | {
+      mode: "create";
+    }
+  | {
+      item: TravelChecklistItem;
+      mode: "edit";
+    };
+
+function TravelChecklistSheet({
+  createAction,
+  onClose,
+  sheetState,
+  updateAction,
+}: {
+  createAction: (formData: FormData) => void | Promise<void>;
+  onClose: () => void;
+  sheetState: SheetState;
+  updateAction: (formData: FormData) => void | Promise<void>;
+}) {
+  const [dragOffset, setDragOffset] = useState(0);
+  const dragStartYRef = useRef<number | null>(null);
+
+  if (sheetState.mode === "closed") {
+    return null;
+  }
+
+  const isEdit = sheetState.mode === "edit";
+  const title = isEdit ? "Editar item" : "Nuevo item";
+
+  function closeSheet() {
+    setDragOffset(0);
+    dragStartYRef.current = null;
+    onClose();
+  }
+
+  function handleSheetKeyDown(event: KeyboardEvent<HTMLElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeSheet();
+    }
+  }
+
+  function handleHandleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      closeSheet();
+    }
+  }
+
+  function handleDragStart(event: PointerEvent<HTMLDivElement>) {
+    dragStartYRef.current = event.clientY;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function handleDragMove(event: PointerEvent<HTMLDivElement>) {
+    if (dragStartYRef.current === null) {
+      return;
+    }
+
+    setDragOffset(Math.max(0, event.clientY - dragStartYRef.current));
+  }
+
+  function handleDragEnd() {
+    if (dragOffset > 70) {
+      closeSheet();
+      return;
+    }
+
+    dragStartYRef.current = null;
+    setDragOffset(0);
+  }
+
+  return (
+    <div className={styles.sheetBackdrop} onClick={closeSheet}>
+      <section
+        aria-labelledby="travel-sheet-title"
+        aria-modal="false"
+        className={styles.sheet}
+        onClick={(event) => event.stopPropagation()}
+        onKeyDown={handleSheetKeyDown}
+        role="dialog"
+        style={
+          {
+            "--sheet-drag-offset": `${dragOffset}px`,
+          } as React.CSSProperties
+        }
+      >
+        <div
+          aria-label="Cerrar panel de viaje"
+          className={styles.sheetHandle}
+          onKeyDown={handleHandleKeyDown}
+          onPointerCancel={handleDragEnd}
+          onPointerDown={handleDragStart}
+          onPointerMove={handleDragMove}
+          onPointerUp={handleDragEnd}
+          role="button"
+          tabIndex={0}
+        >
+          <span />
+        </div>
+
+        <div className={styles.sheetHeader}>
+          <p>Viaje</p>
+          <h2 id="travel-sheet-title">{title}</h2>
+        </div>
+
+        <TravelChecklistItemForm
+          action={isEdit ? updateAction : createAction}
+          defaults={
+            isEdit
+              ? {
+                  id: sheetState.item.id,
+                  label: sheetState.item.label,
+                  category: sheetState.item.category,
+                  sortOrder: sheetState.item.sortOrder,
+                  isPacked: sheetState.item.isPacked,
+                  notes: sheetState.item.notes ?? "",
+                }
+              : undefined
+          }
+          onCancel={closeSheet}
+          submitLabel={isEdit ? "Guardar cambios" : "Guardar item"}
+        />
+      </section>
+    </div>
+  );
+}
+
 function TravelChecklistItemForm({
   action,
   defaults,
+  onCancel,
   submitLabel,
 }: {
   action: (formData: FormData) => void | Promise<void>;
@@ -172,6 +311,7 @@ function TravelChecklistItemForm({
     isPacked: boolean;
     notes: string;
   };
+  onCancel: () => void;
   submitLabel: string;
 }) {
   return (
@@ -215,9 +355,14 @@ function TravelChecklistItemForm({
         <textarea name="notes" rows={3} defaultValue={defaults?.notes ?? ""} />
       </label>
 
-      <button className={styles.primaryButton} type="submit">
-        {submitLabel}
-      </button>
+      <div className={styles.sheetActions}>
+        <button className={styles.secondaryButton} onClick={onCancel} type="button">
+          Cancelar
+        </button>
+        <button className={styles.primaryButton} type="submit">
+          {submitLabel}
+        </button>
+      </div>
     </form>
   );
 }
