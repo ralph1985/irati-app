@@ -227,6 +227,22 @@ No se copia:
 - [x] Actualizar `docs/spec.md`.
 - [x] Actualizar `docs/roadmap.md`.
 
+## Hito 13 - Copias de seguridad
+
+- [x] Definir el contrato de backups en `docs/spec.md`.
+- [x] Crear tabla tecnica `developer_backup_runs`.
+- [x] Crear script de export remoto de Supabase sin Docker.
+- [x] Guardar copias locales en `var/backups/supabase/`.
+- [x] Mantener copias y logs fuera de Git.
+- [x] Añadir retencion local configurable.
+- [x] Añadir instalador de cron cada 6 horas.
+- [x] Registrar metadata de exito o fallo de cada ejecucion.
+- [x] Mostrar salud de backup en Ajustes.
+- [x] Aplicar migracion en Supabase remoto.
+- [x] Instalar cron en el usuario local.
+- [x] Ejecutar una primera copia y verificar metadata.
+- [x] Ejecutar typecheck, lint, tests y build.
+
 ## Fuera del MVP inicial
 
 - Exportacion o impresion para pediatra.
@@ -239,4 +255,3 @@ No se copia:
 - Email.
 - Compartir acceso con familiares.
 - Seguimiento de tomas, pañales, sueño u otros hitos.
-- Backup automatizado.

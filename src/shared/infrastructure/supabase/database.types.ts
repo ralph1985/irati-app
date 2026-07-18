@@ -135,6 +135,48 @@ export type Database = {
           },
         ];
       };
+      developer_backup_runs: {
+        Row: {
+          id: string;
+          started_at: string;
+          finished_at: string;
+          status: "success" | "failed";
+          file_name: string | null;
+          file_size_bytes: number | null;
+          sha256: string | null;
+          duration_ms: number;
+          retained_count: number;
+          error_message: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          started_at: string;
+          finished_at: string;
+          status: "success" | "failed";
+          file_name?: string | null;
+          file_size_bytes?: number | null;
+          sha256?: string | null;
+          duration_ms: number;
+          retained_count?: number;
+          error_message?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          started_at?: string;
+          finished_at?: string;
+          status?: "success" | "failed";
+          file_name?: string | null;
+          file_size_bytes?: number | null;
+          sha256?: string | null;
+          duration_ms?: number;
+          retained_count?: number;
+          error_message?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

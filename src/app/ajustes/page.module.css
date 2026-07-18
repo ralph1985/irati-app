@@ -68,6 +68,14 @@
   font-weight: 700;
 }
 
+.sectionTitle .statusSuccess {
+  color: #047857;
+}
+
+.sectionTitle .statusWarning {
+  color: #b45309;
+}
+
 .details {
   display: grid;
   gap: 10px;
@@ -101,6 +109,7 @@
   font-size: 15px;
   font-weight: 800;
   text-align: right;
+  word-break: break-word;
 }
 
 .list {

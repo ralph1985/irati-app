@@ -29,6 +29,22 @@ Incluido:
 - Supabase como persistencia principal.
 - Despliegue en Vercel.
 
+Backups:
+
+- El MVP incluye copia local automatizable de Supabase porque los datos familiares dependen de un servicio remoto.
+- La copia se hace contra Supabase remoto, sin Docker ni Supabase local.
+- `pnpm backup:supabase` genera un archivo `irati-supabase-<timestamp>.sql.tar.gz` en `var/backups/supabase/`.
+- El archivo contiene `schema.sql`, `data.sql` y `manifest.txt`.
+- `schema.sql` concatena las migraciones versionadas del repositorio.
+- `data.sql` contiene los datos actuales de `baby_profiles`, `planned_vaccine_doses`, `weight_entries`, `applied_vaccine_doses` y `developer_backup_runs`.
+- Los archivos generados y logs viven en `var/` y no se suben a Git.
+- La retencion local por defecto es de 14 dias, configurable con `IRATI_SUPABASE_BACKUP_RETENTION_DAYS`.
+- `pnpm backup:supabase:cron:install` instala un cron cada 6 horas por defecto.
+- La frecuencia puede cambiarse con `IRATI_SUPABASE_BACKUP_CRON_SCHEDULE`.
+- Cada ejecucion registra metadata tecnica en `developer_backup_runs`.
+- Ajustes muestra la salud de backup y avisa si la ultima copia correcta tiene mas de 6 horas.
+- Las variables requeridas son `NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`.
+
 Excluido:
 
 - Modo offline de datos.
@@ -388,6 +404,7 @@ Debe cubrir:
 - Sesion/PIN segun el alcance implementado.
 - Informacion tecnica basica si es util para desarrollo o soporte.
 - La pantalla muestra el perfil basico, el estado del acceso compartido, accion de cerrar sesion e informacion tecnica del MVP.
+- La pantalla muestra estado de copias de seguridad: ultima copia correcta, ultimo fallo si existe y aviso si no hay copia correcta reciente.
 
 No debe absorber la gestion completa del calendario de vacunas en el MVP.
 

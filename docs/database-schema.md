@@ -99,3 +99,29 @@ Indices:
 - `applied_vaccine_doses_planned_dose_id_idx`
 - `applied_vaccine_doses_applied_on_idx`
 - `applied_vaccine_doses_planned_dose_id_unique`, unico parcial para evitar mas de una aplicacion vinculada a la misma dosis planificada.
+
+## `developer_backup_runs`
+
+Registro tecnico de las copias locales de Supabase.
+
+Migracion: `supabase/migrations/20260718133000_create_developer_backup_runs.sql`.
+
+| Campo             | Tipo          | Regla                                      |
+| ----------------- | ------------- | ------------------------------------------ |
+| `id`              | `uuid`        | Primary key                                |
+| `started_at`      | `timestamptz` | Inicio de la copia                         |
+| `finished_at`     | `timestamptz` | Fin de la copia                            |
+| `status`          | `text`        | `success` o `failed`                       |
+| `file_name`       | `text`        | Nombre del archivo local si existe         |
+| `file_size_bytes` | `bigint`      | Tamaño del archivo si existe               |
+| `sha256`          | `text`        | Hash SHA-256 del archivo si existe         |
+| `duration_ms`     | `integer`     | Duracion de la ejecucion                   |
+| `retained_count`  | `integer`     | Copias locales retenidas tras la ejecucion |
+| `error_message`   | `text`        | Error resumido si falla                    |
+| `created_at`      | `timestamptz` | `now()`                                    |
+
+Indice:
+
+- `developer_backup_runs_created_at_idx`
+
+La tabla no contiene datos familiares funcionales, solo salud de backup. La app la lee desde servidor con `SUPABASE_SERVICE_ROLE_KEY`.

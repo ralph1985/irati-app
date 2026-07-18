@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
+import {
+  BackupHealth,
+  BackupRunSummary,
+  getBackupHealth,
+} from "@/modules/backup/application/backup-health";
 import { getBabyProfile } from "@/modules/profile/application/get-baby-profile";
 import { formatBirthDate } from "@/modules/profile/domain/baby-profile";
 import { SupabaseProfileRepository } from "@/modules/profile/infrastructure/supabase-profile-repository";
@@ -12,9 +17,11 @@ export default async function SettingsPage() {
     return <LoginScreen />;
   }
 
-  const { profile, source } = await getBabyProfile(
-    new SupabaseProfileRepository(createServerSupabaseClient()),
-  );
+  const supabase = createServerSupabaseClient();
+  const [{ profile, source }, backupHealth] = await Promise.all([
+    getBabyProfile(new SupabaseProfileRepository(supabase)),
+    getBackupHealth(supabase),
+  ]);
 
   return (
     <div className={styles.page}>
@@ -69,6 +76,8 @@ export default async function SettingsPage() {
             <li>Sin realtime, email ni push.</li>
           </ul>
         </section>
+
+        <BackupHealthPanel health={backupHealth} />
       </main>
 
       <nav className={styles.nav} aria-label="Navegacion principal">
@@ -81,4 +90,107 @@ export default async function SettingsPage() {
       </nav>
     </div>
   );
+}
+
+function BackupHealthPanel({ health }: { health: BackupHealth }) {
+  const statusCopy = getBackupStatusCopy(health);
+
+  return (
+    <section className={styles.panel} aria-labelledby="backup-title">
+      <div className={styles.sectionTitle}>
+        <h2 id="backup-title">Copias de seguridad</h2>
+        <span className={styles[statusCopy.className]}>{statusCopy.label}</span>
+      </div>
+      <p className={styles.copy}>{statusCopy.description}</p>
+      {health.latestSuccess ? (
+        <BackupRunDetails label="Ultima correcta" run={health.latestSuccess} />
+      ) : null}
+      {health.latestFailure ? (
+        <BackupRunDetails label="Ultimo fallo" run={health.latestFailure} />
+      ) : null}
+    </section>
+  );
+}
+
+function BackupRunDetails({ label, run }: { label: string; run: BackupRunSummary }) {
+  return (
+    <dl className={styles.details}>
+      <div>
+        <dt>{label}</dt>
+        <dd>{formatDateTime(run.finishedAt)}</dd>
+      </div>
+      {run.fileName ? (
+        <div>
+          <dt>Archivo</dt>
+          <dd>{run.fileName}</dd>
+        </div>
+      ) : null}
+      {run.fileSizeBytes ? (
+        <div>
+          <dt>Tamano</dt>
+          <dd>{formatFileSize(run.fileSizeBytes)}</dd>
+        </div>
+      ) : null}
+      {run.errorMessage ? (
+        <div>
+          <dt>Error</dt>
+          <dd>{run.errorMessage}</dd>
+        </div>
+      ) : null}
+    </dl>
+  );
+}
+
+function getBackupStatusCopy(health: BackupHealth) {
+  switch (health.status) {
+    case "success":
+      return {
+        className: "statusSuccess",
+        label: "Correcta",
+        description: "La ultima copia correcta esta dentro de la ventana esperada.",
+      };
+    case "stale":
+      return {
+        className: "statusWarning",
+        label: "Revisar",
+        description: `Hace mas de ${health.staleAfterHours} horas que no hay una copia correcta.`,
+      };
+    case "failed":
+      return {
+        className: "statusWarning",
+        label: "Fallando",
+        description: "La ultima ejecucion registrada fallo y no hay copia correcta previa.",
+      };
+    case "empty":
+      return {
+        className: "statusWarning",
+        label: "Sin copias",
+        description: "Todavia no hay ninguna copia correcta registrada.",
+      };
+    case "unavailable":
+      return {
+        className: "statusWarning",
+        label: "No disponible",
+        description: "No se pudo leer el estado tecnico de copias de seguridad.",
+      };
+  }
+}
+
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("es-ES", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function formatFileSize(bytes: number) {
+  const formatter = new Intl.NumberFormat("es-ES", {
+    maximumFractionDigits: 1,
+  });
+
+  if (bytes < 1024 * 1024) {
+    return `${formatter.format(bytes / 1024)} KB`;
+  }
+
+  return `${formatter.format(bytes / (1024 * 1024))} MB`;
 }

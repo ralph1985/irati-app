@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "format": "prettier --check .",
-    "auth:hash": "node scripts/hash-passcode.mjs"
+    "auth:hash": "node scripts/hash-passcode.mjs",
+    "backup:supabase": "scripts/backup-supabase.sh",
+    "backup:supabase:cron:install": "scripts/install-supabase-backup-cron.sh"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.7",
