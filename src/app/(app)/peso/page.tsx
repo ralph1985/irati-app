@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
+import { getBabyProfile } from "@/modules/profile/application/get-baby-profile";
+import { CachedProfileRepository } from "@/modules/profile/infrastructure/cached-profile-repository";
 import {
   filterWeightEntries,
   formatWeightFilterLabel,
@@ -43,7 +45,10 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
     return <LoginScreen />;
   }
 
-  const { entries, loadError } = await getWeightEntries();
+  const [{ entries, loadError }, { profile }] = await Promise.all([
+    getWeightEntries(),
+    getBabyProfile(new CachedProfileRepository()),
+  ]);
   const currentError = error ?? loadError;
   const activeFilter = isWeightFilter(lugar) ? lugar : "all";
   const filteredEntries = filterWeightEntries(entries, activeFilter);
@@ -83,7 +88,7 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
             ))}
           </div>
 
-          <WeightChart entries={filteredEntries} />
+          <WeightChart birthDate={profile.birthDate} entries={filteredEntries} />
         </section>
 
         <section className={styles.panel} aria-labelledby="history-title">

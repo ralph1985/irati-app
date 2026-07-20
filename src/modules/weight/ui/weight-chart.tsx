@@ -1,3 +1,6 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   buildWeightChartAreaPath,
   buildWeightChartPath,
@@ -8,31 +11,156 @@ import { WeightEntry } from "../domain/weight-entry";
 import styles from "../../../app/(app)/peso/page.module.css";
 
 type WeightChartProps = {
+  birthDate: string;
   entries: WeightEntry[];
 };
 
-export function WeightChart({ entries }: WeightChartProps) {
-  const series = buildWeightChartSeries(entries);
+export function WeightChart({ birthDate, entries }: WeightChartProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const expandedChartRef = useRef<HTMLElement>(null);
+  const series = buildWeightChartSeries(entries, birthDate);
   const path = buildWeightChartPath(series.points);
   const areaPath = buildWeightChartAreaPath(series.points);
   const firstPoint = series.points[0];
   const latestPoint = series.points.at(-1);
+  const closeExpandedChart = useCallback(() => {
+    setIsExpanded(false);
+  }, []);
+
+  useEffect(() => {
+    if (!isExpanded) {
+      return;
+    }
+
+    expandedChartRef.current?.focus();
+
+    function handleKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeExpandedChart();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [closeExpandedChart, isExpanded]);
 
   if (series.points.length === 0) {
     return <p className={styles.empty}>No hay pesos para este filtro.</p>;
   }
 
   return (
-    <div className={styles.chart} aria-label="Evolucion del peso">
+    <div className={styles.chart}>
+      <div className={styles.chartHeader}>
+        <p>Referencia OMS orientativa, no diagnostico medico.</p>
+        <button
+          aria-label="Ver grafica de peso a pantalla completa"
+          className={styles.chartExpandButton}
+          onClick={() => setIsExpanded(true)}
+          type="button"
+        >
+          Ver grande
+        </button>
+      </div>
+      <WeightChartSvg
+        areaPath={areaPath}
+        firstPoint={firstPoint}
+        idPrefix="weight-chart"
+        latestPoint={latestPoint}
+        linePath={path}
+        series={series}
+      />
+      <WeightChartLegend />
+      <WeightChartMeta
+        latestPoint={latestPoint}
+        maxWeight={series.maxWeight}
+        minWeight={series.minWeight}
+      />
+
+      {isExpanded ? (
+        <div
+          className={styles.chartFullscreenBackdrop}
+          onClick={closeExpandedChart}
+          role="presentation"
+        >
+          <section
+            aria-labelledby="weight-chart-fullscreen-title"
+            aria-modal="true"
+            className={styles.chartFullscreen}
+            onClick={(event) => event.stopPropagation()}
+            ref={expandedChartRef}
+            role="dialog"
+            tabIndex={-1}
+          >
+            <div className={styles.chartFullscreenHeader}>
+              <div>
+                <p>Peso</p>
+                <h2 id="weight-chart-fullscreen-title">Evolucion y referencia OMS</h2>
+              </div>
+              <button
+                aria-label="Cerrar grafica a pantalla completa"
+                className={styles.chartCloseButton}
+                onClick={closeExpandedChart}
+                type="button"
+              >
+                Cerrar
+              </button>
+            </div>
+            <div className={styles.chartFullscreenCanvas}>
+              <WeightChartSvg
+                areaPath={areaPath}
+                firstPoint={firstPoint}
+                idPrefix="weight-chart-fullscreen"
+                latestPoint={latestPoint}
+                linePath={path}
+                series={series}
+              />
+            </div>
+            <WeightChartLegend />
+            <WeightChartMeta
+              latestPoint={latestPoint}
+              maxWeight={series.maxWeight}
+              minWeight={series.minWeight}
+            />
+          </section>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+type WeightChartSvgProps = {
+  areaPath: string;
+  firstPoint: ReturnType<typeof buildWeightChartSeries>["points"][number] | undefined;
+  idPrefix: string;
+  latestPoint: ReturnType<typeof buildWeightChartSeries>["points"][number] | undefined;
+  linePath: string;
+  series: ReturnType<typeof buildWeightChartSeries>;
+};
+
+function WeightChartSvg({
+  areaPath,
+  firstPoint,
+  idPrefix,
+  latestPoint,
+  linePath,
+  series,
+}: WeightChartSvgProps) {
+  return (
+    <div className={styles.chartCanvas} aria-label="Evolucion del peso">
       <svg
         viewBox={`0 0 ${series.chartWidth} ${series.chartHeight}`}
         role="img"
-        aria-labelledby="weight-chart-title weight-chart-description"
+        aria-labelledby={`${idPrefix}-title ${idPrefix}-description`}
       >
-        <title id="weight-chart-title">Evolucion del peso de Irati</title>
-        <desc id="weight-chart-description">
+        <title id={`${idPrefix}-title`}>Evolucion del peso de Irati</title>
+        <desc id={`${idPrefix}-description`}>
           Peso entre {series.minWeight.toLocaleString("es-ES")} y{" "}
-          {series.maxWeight.toLocaleString("es-ES")} gramos.
+          {series.maxWeight.toLocaleString("es-ES")} gramos, con referencia OMS de peso para la edad
+          en niñas.
         </desc>
         {series.ticks.map((tick) => (
           <g className={styles.chartTick} key={tick.value}>
@@ -42,8 +170,33 @@ export function WeightChart({ entries }: WeightChartProps) {
             </text>
           </g>
         ))}
+        {series.referenceCurves.map((curve) => {
+          const referencePath = buildWeightChartPath(curve.points);
+          const lastReferencePoint = curve.points.at(-1);
+
+          return (
+            <g className={styles.chartReferenceGroup} key={curve.label}>
+              <path
+                className={`${styles.chartReferenceCurve} ${
+                  curve.label === "P50" ? styles.chartReferenceCurveMedian : ""
+                }`}
+                d={referencePath}
+              />
+              {lastReferencePoint ? (
+                <text
+                  className={styles.chartReferenceLabel}
+                  textAnchor="end"
+                  x={lastReferencePoint.x}
+                  y={lastReferencePoint.y - 3}
+                >
+                  {curve.label}
+                </text>
+              ) : null}
+            </g>
+          );
+        })}
         {areaPath ? <path className={styles.chartArea} d={areaPath} /> : null}
-        {path ? <path className={styles.chartLine} d={path} /> : null}
+        {linePath ? <path className={styles.chartLine} d={linePath} /> : null}
         {series.points.map((point) => {
           const isLatestPoint = latestPoint === point;
 
@@ -59,8 +212,8 @@ export function WeightChart({ entries }: WeightChartProps) {
           );
         })}
         {firstPoint ? (
-          <text className={styles.chartDate} x={firstPoint.x} y="174">
-            {firstPoint.dateLabel}
+          <text className={styles.chartDate} x="42" y="174">
+            Nacimiento
           </text>
         ) : null}
         {latestPoint && latestPoint !== firstPoint ? (
@@ -69,17 +222,37 @@ export function WeightChart({ entries }: WeightChartProps) {
           </text>
         ) : null}
       </svg>
-      <div className={styles.chartMeta}>
-        <span>
-          Minimo <strong>{series.minWeight.toLocaleString("es-ES")} g</strong>
-        </span>
-        <span className={styles.chartMetaPrimary}>
-          Ultimo <strong>{latestPoint?.weightGrams.toLocaleString("es-ES")} g</strong>
-        </span>
-        <span>
-          Maximo <strong>{series.maxWeight.toLocaleString("es-ES")} g</strong>
-        </span>
-      </div>
+    </div>
+  );
+}
+
+function WeightChartLegend() {
+  return (
+    <div className={styles.chartLegend} aria-label="Leyenda de la grafica">
+      <span className={styles.chartLegendWeight}>Peso registrado</span>
+      <span>Referencia OMS: P3 P15 P50 P85 P97</span>
+    </div>
+  );
+}
+
+type WeightChartMetaProps = {
+  latestPoint: ReturnType<typeof buildWeightChartSeries>["points"][number] | undefined;
+  maxWeight: number;
+  minWeight: number;
+};
+
+function WeightChartMeta({ latestPoint, maxWeight, minWeight }: WeightChartMetaProps) {
+  return (
+    <div className={styles.chartMeta}>
+      <span>
+        Minimo <strong>{minWeight.toLocaleString("es-ES")} g</strong>
+      </span>
+      <span className={styles.chartMetaPrimary}>
+        Ultimo <strong>{latestPoint?.weightGrams.toLocaleString("es-ES")} g</strong>
+      </span>
+      <span>
+        Maximo <strong>{maxWeight.toLocaleString("es-ES")} g</strong>
+      </span>
     </div>
   );
 }

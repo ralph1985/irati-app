@@ -1,6 +1,12 @@
 import { WeightEntry } from "../domain/weight-entry";
+import {
+  buildWhoWeightForAgeReferences,
+  calculateAgeInDaysFromBirth,
+  WeightPercentile,
+} from "./who-weight-for-age";
 
 export type WeightChartPoint = {
+  ageDays: number;
   date: string;
   dateLabel: string;
   place: WeightEntry["place"];
@@ -8,6 +14,18 @@ export type WeightChartPoint = {
   y: number;
   weightGrams: number;
   weightLabel: string;
+};
+
+export type WeightChartReferencePoint = {
+  ageDays: number;
+  x: number;
+  y: number;
+  weightGrams: number;
+};
+
+export type WeightChartReferenceCurve = {
+  label: WeightPercentile;
+  points: WeightChartReferencePoint[];
 };
 
 export type WeightChartTick = {
@@ -24,6 +42,7 @@ export type WeightChartSeries = {
   minDisplayWeight: number;
   minWeight: number;
   maxWeight: number;
+  referenceCurves: WeightChartReferenceCurve[];
   ticks: WeightChartTick[];
 };
 
@@ -36,7 +55,10 @@ const PADDING = {
   top: 18,
 };
 
-export function buildWeightChartSeries(entries: WeightEntry[]): WeightChartSeries {
+export function buildWeightChartSeries(
+  entries: WeightEntry[],
+  birthDate: string,
+): WeightChartSeries {
   const sortedEntries = [...entries].sort((a, b) => a.measuredOn.localeCompare(b.measuredOn));
 
   if (sortedEntries.length === 0) {
@@ -48,19 +70,24 @@ export function buildWeightChartSeries(entries: WeightEntry[]): WeightChartSerie
       minDisplayWeight: 0,
       minWeight: 0,
       maxWeight: 0,
+      referenceCurves: [],
       ticks: [],
     };
   }
 
+  const entryAges = sortedEntries.map((entry) =>
+    calculateAgeInDaysFromBirth(birthDate, entry.measuredOn),
+  );
+  const maxAgeDays = Math.max(1, ...entryAges);
+  const referencePoints = buildWhoWeightForAgeReferences(maxAgeDays);
   const weights = sortedEntries.map((entry) => entry.weightGrams);
   const minWeight = Math.min(...weights);
   const maxWeight = Math.max(...weights);
-  const displayRange = buildDisplayWeightRange(minWeight, maxWeight);
-  const firstDateTime = parseChartDate(sortedEntries[0].measuredOn);
-  const lastDateTime = parseChartDate(
-    sortedEntries.at(-1)?.measuredOn ?? sortedEntries[0].measuredOn,
+  const referenceWeights = referencePoints.map((point) => point.weightGrams);
+  const displayRange = buildDisplayWeightRange(
+    Math.min(minWeight, ...referenceWeights),
+    Math.max(maxWeight, ...referenceWeights),
   );
-  const timeRange = Math.max(1, lastDateTime - firstDateTime);
 
   return {
     chartHeight: HEIGHT,
@@ -69,26 +96,22 @@ export function buildWeightChartSeries(entries: WeightEntry[]): WeightChartSerie
     minDisplayWeight: displayRange.min,
     minWeight,
     maxWeight,
+    referenceCurves: buildReferenceCurves(referencePoints, maxAgeDays, displayRange),
     ticks: buildWeightTicks(displayRange.min, displayRange.max),
-    points: sortedEntries.map((entry) => ({
+    points: sortedEntries.map((entry, index) => ({
+      ageDays: entryAges[index],
       date: entry.measuredOn,
       dateLabel: formatChartDate(entry.measuredOn),
       place: entry.place,
       weightGrams: entry.weightGrams,
       weightLabel: formatWeight(entry.weightGrams),
-      x:
-        sortedEntries.length === 1
-          ? (PADDING.left + WIDTH - PADDING.right) / 2
-          : PADDING.left +
-            ((WIDTH - PADDING.left - PADDING.right) *
-              (parseChartDate(entry.measuredOn) - firstDateTime)) /
-              timeRange,
+      x: getAgeX(entryAges[index], maxAgeDays),
       y: getWeightY(entry.weightGrams, displayRange.min, displayRange.max),
     })),
   };
 }
 
-export function buildWeightChartPath(points: WeightChartPoint[]): string {
+export function buildWeightChartPath(points: Array<{ x: number; y: number }>): string {
   if (points.length < 2) {
     return "";
   }
@@ -115,7 +138,7 @@ export function buildWeightChartPath(points: WeightChartPoint[]): string {
     .join(" ");
 }
 
-export function buildWeightChartAreaPath(points: WeightChartPoint[]): string {
+export function buildWeightChartAreaPath(points: Array<{ x: number; y: number }>): string {
   const linePath = buildWeightChartPath(points);
 
   if (points.length < 2 || !linePath) {
@@ -164,15 +187,39 @@ function buildWeightTicks(minWeight: number, maxWeight: number): WeightChartTick
   }));
 }
 
+function buildReferenceCurves(
+  referencePoints: ReturnType<typeof buildWhoWeightForAgeReferences>,
+  maxAgeDays: number,
+  displayRange: { min: number; max: number },
+): WeightChartReferenceCurve[] {
+  const groupedPoints = new Map<WeightPercentile, WeightChartReferencePoint[]>();
+
+  for (const point of referencePoints) {
+    const points = groupedPoints.get(point.percentile) ?? [];
+    points.push({
+      ageDays: point.ageDays,
+      weightGrams: point.weightGrams,
+      x: getAgeX(point.ageDays, maxAgeDays),
+      y: getWeightY(point.weightGrams, displayRange.min, displayRange.max),
+    });
+    groupedPoints.set(point.percentile, points);
+  }
+
+  return [...groupedPoints.entries()].map(([label, points]) => ({
+    label,
+    points,
+  }));
+}
+
+function getAgeX(ageDays: number, maxAgeDays: number): number {
+  return PADDING.left + ((WIDTH - PADDING.left - PADDING.right) * ageDays) / maxAgeDays;
+}
+
 function getWeightY(weightGrams: number, minWeight: number, maxWeight: number): number {
   const chartHeight = HEIGHT - PADDING.top - PADDING.bottom;
   const weightRange = Math.max(1, maxWeight - minWeight);
 
   return HEIGHT - PADDING.bottom - (chartHeight * (weightGrams - minWeight)) / weightRange;
-}
-
-function parseChartDate(value: string): number {
-  return new Date(`${value}T00:00:00.000Z`).getTime();
 }
 
 function formatChartDate(value: string): string {

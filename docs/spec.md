@@ -226,8 +226,11 @@ Reglas:
 - El peso se registra en gramos.
 - La grafica usa SVG propio en el MVP, sin libreria externa.
 - La grafica muestra una linea de evolucion con marcas de peso, fechas y ultimo peso destacado.
+- La grafica muestra referencias OMS orientativas de peso para la edad en niñas: P3, P15, P50, P85 y P97.
+- Las referencias OMS son visuales y no generan diagnosticos ni alertas clinicas automaticas.
+- La grafica permite abrir una vista ampliada a pantalla completa dentro de la app.
 - La grafica permite filtrar por Todos, Hospital, Farmacia o Pediatra.
-- No se calculan percentiles en el MVP.
+- No se calcula el percentil individual de cada peso ni se interpreta clinicamente en el MVP.
 - No se mezclan estimaciones con pesos registrados en el MVP.
 
 Criterios de aceptacion:
@@ -237,6 +240,8 @@ Criterios de aceptacion:
 - Puedo editar un peso registrado.
 - Puedo borrar un peso registrado con confirmacion.
 - Puedo ver una grafica simple con todos los pesos.
+- Puedo comparar la evolucion con referencias OMS orientativas.
+- Puedo ampliar la grafica para verla sin el historial.
 - Puedo filtrar la grafica por Farmacia.
 - Puedo filtrar la grafica por Pediatra.
 - Puedo filtrar la grafica por Hospital.
