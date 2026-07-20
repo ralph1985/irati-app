@@ -8,7 +8,7 @@ import { SupabaseProfileRepository } from "./supabase-profile-repository";
 const getCachedBabyProfile = unstable_cache(
   async (): Promise<BabyProfile | null> =>
     new SupabaseProfileRepository(createServerSupabaseClient()).getBabyProfile(),
-  ["irati", "profile"],
+  ["irati", "profile", "with-cipa"],
   {
     revalidate: false,
     tags: [CACHE_TAGS.profile],
