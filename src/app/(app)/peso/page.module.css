@@ -317,54 +317,63 @@
 
 .history {
   display: grid;
-  gap: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  border-radius: 14px;
+  background: #fff;
   list-style: none;
 }
 
 .history li {
-  display: grid;
-  gap: 12px;
-  border-radius: 14px;
-  background: #fff;
-  padding: 14px;
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px 9px 12px;
+}
+
+.history li + li {
+  border-top: 1px solid rgba(96, 72, 115, 0.14);
 }
 
 .historySummary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
+  min-width: 0;
 }
 
 .historySummary div {
   display: grid;
-  gap: 4px;
+  gap: 2px;
 }
 
 .history strong {
-  font-size: 18px;
+  color: #241335;
+  font-size: 16px;
+  line-height: 1.1;
 }
 
 .history span,
 .history time {
   color: #6b587c;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
+  line-height: 1.2;
 }
 
 .historyActions {
   display: flex;
+  flex: 0 0 auto;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
 }
 
 .iconButton {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   place-items: center;
   border: 1px solid rgba(124, 58, 237, 0.16);
-  border-radius: 14px;
+  border-radius: 12px;
   background: #f3e8ff;
   color: #5b21b6;
   cursor: pointer;

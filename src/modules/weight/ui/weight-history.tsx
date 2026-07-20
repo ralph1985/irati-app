@@ -75,9 +75,11 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
             <div className={styles.historySummary}>
               <div>
                 <strong>{entry.weightGrams.toLocaleString("es-ES")} g</strong>
-                <span>{formatPlace(entry.place)}</span>
+                <span>
+                  {formatPlace(entry.place)} ·{" "}
+                  <time dateTime={entry.measuredOn}>{formatDate(entry.measuredOn)}</time>
+                </span>
               </div>
-              <time dateTime={entry.measuredOn}>{formatDate(entry.measuredOn)}</time>
             </div>
 
             <div className={styles.historyActions}>
