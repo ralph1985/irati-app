@@ -414,6 +414,8 @@ El inicio debe priorizar:
 - Mini resumen de vacunas pendientes/proximas y total de pesos registrados.
 - Resumen operativo de peso: dias desde el ultimo control, cambio frente al registro anterior y media orientativa en g/dia cuando haya dos registros.
 - Proxima accion de vacunas, priorizando retrasadas, proximas y pendientes.
+- Agenda de proximos 30 dias con vacunas retrasadas, vacunas proximas y revision de peso cuando corresponda.
+- Bloque "Revisar pronto" sin notificaciones externas, derivado de datos actuales.
 
 El orden debe favorecer lo accionable: primero lo que requiere atencion, despues el contexto.
 
@@ -480,6 +482,7 @@ La pantalla de Viaje debe priorizar:
 - Añadir y editar items mediante bottom sheet, no con formularios inline.
 - Listado compacto para revisar muchos items sin demasiado scroll.
 - El orden se gestiona automaticamente: los nuevos items se añaden al final de la categoria y no se muestra un campo manual de orden.
+- Los formularios de crear y editar item usan el bottom sheet compartido de la app.
 
 ### Formularios
 

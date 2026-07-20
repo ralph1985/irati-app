@@ -3,6 +3,7 @@ import { formatBirthDate } from "@/modules/profile/domain/baby-profile";
 import { CachedProfileRepository } from "@/modules/profile/infrastructure/cached-profile-repository";
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
+import { buildHomeAgenda, HomeAgenda } from "@/modules/home/application/home-agenda";
 import { listVaccinePlan } from "@/modules/vaccines/application/list-vaccine-plan";
 import { VaccineAlert } from "@/modules/vaccines/application/vaccine-alerts";
 import { selectNextActionableVaccineDose } from "@/modules/vaccines/application/vaccine-plan-views";
@@ -38,6 +39,11 @@ export default async function Home({ searchParams }: HomeProps) {
   const { profile, source } = await getBabyProfile(new CachedProfileRepository());
   const weightResult = await getLatestWeight(new CachedWeightReadRepository());
   const vaccinePlan = await getVaccinePlan(new CachedVaccinePlanReadRepository());
+  const homeAgenda = buildHomeAgenda({
+    today: new Date(),
+    vaccineDoses: vaccinePlan.doses,
+    weightSummary: weightResult.summary,
+  });
 
   return (
     <main className={styles.main}>
@@ -86,6 +92,10 @@ export default async function Home({ searchParams }: HomeProps) {
         markAppliedAction={markVaccineDoseAppliedAction}
         nextDose={vaccinePlan.nextDose}
       />
+
+      <ReviewSoon agenda={homeAgenda} />
+
+      <AgendaNext30Days agenda={homeAgenda} />
 
       <section className={styles.summary} aria-label="Resumen inicial">
         <article>
@@ -139,6 +149,7 @@ async function getLatestWeight(repository: CachedWeightReadRepository) {
 
 async function getVaccinePlan(repository: CachedVaccinePlanReadRepository): Promise<{
   alerts: VaccineAlert[];
+  doses: PlannedVaccineDoseWithStatus[];
   summary: {
     total: number;
     retrasada: number;
@@ -160,6 +171,7 @@ async function getVaccinePlan(repository: CachedVaccinePlanReadRepository): Prom
   } catch {
     return {
       alerts: [],
+      doses: [],
       summary: {
         total: 0,
         retrasada: 0,
@@ -171,6 +183,62 @@ async function getVaccinePlan(repository: CachedVaccinePlanReadRepository): Prom
       loadError: true,
     };
   }
+}
+
+function ReviewSoon({ agenda }: { agenda: HomeAgenda }) {
+  if (!agenda.reviewPrompt) {
+    return (
+      <section className={styles.reviewSoon} data-kind="calm" aria-labelledby="review-title">
+        <div>
+          <span>Revisar pronto</span>
+          <h2 id="review-title">Todo tranquilo</h2>
+          <p>Sin vacunas urgentes ni peso pendiente de revisar.</p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section
+      className={styles.reviewSoon}
+      data-kind={agenda.reviewPrompt.kind}
+      aria-labelledby="review-title"
+    >
+      <div>
+        <span>Revisar pronto</span>
+        <h2 id="review-title">{agenda.reviewPrompt.title}</h2>
+        <p>{agenda.reviewPrompt.detail}</p>
+      </div>
+      <Link href={agenda.reviewPrompt.href}>Ver</Link>
+    </section>
+  );
+}
+
+function AgendaNext30Days({ agenda }: { agenda: HomeAgenda }) {
+  return (
+    <section className={styles.agenda} aria-labelledby="agenda-title">
+      <div className={styles.sectionTitle}>
+        <h2 id="agenda-title">Proximos 30 dias</h2>
+        <Link href="/vacunas">Ver calendario</Link>
+      </div>
+
+      {agenda.items.length > 0 ? (
+        <ol>
+          {agenda.items.slice(0, 5).map((item) => (
+            <li data-kind={item.kind} key={item.id}>
+              <div>
+                <strong>{item.title}</strong>
+                <span>{item.detail}</span>
+              </div>
+              <Link href={item.href}>{formatDate(item.date)}</Link>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p>Sin tareas previstas en los proximos 30 dias.</p>
+      )}
+    </section>
+  );
 }
 
 function formatVaccineSummary(summary: {
@@ -226,8 +294,9 @@ function formatNextVaccineDose(dose: PlannedVaccineDoseWithStatus | null): strin
 
 function getHomeErrorMessage(error: string): string {
   const messages: Record<string, string> = {
-    "application-save": "No se pudo guardar la vacuna aplicada.",
-    "application-validation": "Revisa fecha, lugar, vacuna y dosis.",
+    "application-save": "No se pudo registrar la vacuna desde Inicio. Prueba de nuevo.",
+    "application-validation": "Revisa fecha, lugar, vacuna y dosis antes de guardar.",
+    session: "La sesion ha caducado. Entra de nuevo para continuar.",
     "weight-save": "No se pudo guardar el peso.",
     "weight-validation": "Revisa la fecha, el peso y el lugar.",
   };

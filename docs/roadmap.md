@@ -286,6 +286,15 @@ No se copia:
 - [x] Añadir tests proporcionales de peso, vacunas y vistas.
 - [x] Ejecutar typecheck, lint, format, tests y build.
 
+## Hito 18 - Agenda proxima y coherencia de interaccion
+
+- [x] Migrar el bottom sheet de Viaje al componente compartido.
+- [x] Añadir agenda de proximos 30 dias en Inicio.
+- [x] Añadir bloque "Revisar pronto" sin push ni notificaciones externas.
+- [x] Mejorar mensajes de error contextuales de acciones rapidas.
+- [x] Añadir tests proporcionales de agenda.
+- [x] Ejecutar typecheck, lint, format, tests y build.
+
 ## Fuera del MVP inicial
 
 - Exportacion o impresion para pediatra.

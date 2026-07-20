@@ -355,6 +355,11 @@
   transform: translateY(var(--sheet-drag-offset, 0));
 }
 
+.sheetBody {
+  display: grid;
+  gap: 16px;
+}
+
 .sheetHandle {
   display: grid;
   min-height: 28px;

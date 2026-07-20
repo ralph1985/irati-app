@@ -165,6 +165,153 @@
   line-height: 1;
 }
 
+.reviewSoon {
+  display: flex;
+  min-height: 92px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid rgba(124, 58, 237, 0.14);
+  border-radius: 18px;
+  background: #f3e8ff;
+  box-shadow: 0 16px 44px rgba(76, 29, 149, 0.08);
+  padding: 16px;
+}
+
+.reviewSoon[data-kind="overdue-vaccine"] {
+  background: #fdf2f8;
+}
+
+.reviewSoon[data-kind="upcoming-vaccine"] {
+  background: #fffbeb;
+}
+
+.reviewSoon[data-kind="weight"] {
+  background: #eff6ff;
+}
+
+.reviewSoon[data-kind="calm"] {
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.reviewSoon div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.reviewSoon span {
+  color: #7c3aed;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.reviewSoon h2 {
+  color: #2e1748;
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+.reviewSoon p {
+  color: #604873;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.reviewSoon a {
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-height: 40px;
+  align-items: center;
+  border-radius: 14px;
+  background: #7c3aed;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 0 14px;
+}
+
+.agenda {
+  display: grid;
+  gap: 12px;
+}
+
+.agenda ol {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid rgba(124, 58, 237, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 16px 44px rgba(76, 29, 149, 0.08);
+  list-style: none;
+}
+
+.agenda li {
+  display: flex;
+  min-height: 68px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+.agenda li + li {
+  border-top: 1px solid rgba(96, 72, 115, 0.12);
+}
+
+.agenda li[data-kind="overdue"] {
+  background: #fdf2f8;
+}
+
+.agenda li[data-kind="today"] {
+  background: #f3e8ff;
+}
+
+.agenda li[data-kind="upcoming"] {
+  background: #fffbeb;
+}
+
+.agenda li[data-kind="weight"] {
+  background: #eff6ff;
+}
+
+.agenda li div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.agenda strong {
+  color: #241335;
+  font-size: 14px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.agenda span,
+.agenda a,
+.agenda p {
+  color: #6b587c;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.agenda a {
+  flex: 0 0 auto;
+  text-align: right;
+}
+
+.agenda p {
+  border: 1px solid rgba(124, 58, 237, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 16px 44px rgba(76, 29, 149, 0.08);
+  padding: 14px;
+}
+
 .summary {
   display: grid;
   grid-template-columns: 1fr;
