@@ -9,28 +9,13 @@ import { getBabyProfile } from "@/modules/profile/application/get-baby-profile";
 import { formatBirthDate } from "@/modules/profile/domain/baby-profile";
 import { SupabaseProfileRepository } from "@/modules/profile/infrastructure/supabase-profile-repository";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
-import { updateBabyProfileAction } from "./actions";
 import styles from "./page.module.css";
 
-const errorMessages: Record<string, string> = {
-  save: "No se pudo guardar el perfil. Prueba otra vez.",
-  validation: "Revisa el CIPA antes de guardar.",
-};
-
-type SettingsPageProps = {
-  searchParams: Promise<{
-    error?: string;
-    updated?: string;
-  }>;
-};
-
-export default async function SettingsPage({ searchParams }: SettingsPageProps) {
+export default async function SettingsPage() {
   if (!(await hasValidSession())) {
     return <LoginScreen />;
   }
 
-  const { error, updated } = await searchParams;
-  const currentError = error ? errorMessages[error] : null;
   const supabase = createServerSupabaseClient();
   const [{ profile, source }, backupHealth] = await Promise.all([
     getBabyProfile(new SupabaseProfileRepository(supabase)),
@@ -43,13 +28,6 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         <p>Ajustes</p>
         <h1>Datos y acceso</h1>
       </header>
-
-      {updated || currentError ? (
-        <div className={styles.feedback} role="status">
-          {updated ? <p className={styles.success}>Perfil actualizado.</p> : null}
-          {currentError ? <p className={styles.error}>{currentError}</p> : null}
-        </div>
-      ) : null}
 
       <section className={styles.panel} aria-labelledby="profile-title">
         <div className={styles.sectionTitle}>
@@ -70,21 +48,6 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             <dd>{profile.cipa ?? "Sin anotar"}</dd>
           </div>
         </dl>
-        <form action={updateBabyProfileAction} className={styles.form}>
-          <label>
-            <span>CIPA</span>
-            <input
-              autoComplete="off"
-              defaultValue={profile.cipa ?? ""}
-              inputMode="text"
-              maxLength={32}
-              name="cipa"
-              placeholder="Anotar CIPA"
-              type="text"
-            />
-          </label>
-          <button type="submit">Guardar perfil</button>
-        </form>
       </section>
 
       <section className={styles.panel} aria-labelledby="access-title">

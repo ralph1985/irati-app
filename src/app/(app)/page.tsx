@@ -78,6 +78,10 @@ export default async function Home({ searchParams }: HomeProps) {
           <span>Vacunas</span>
           <strong>{formatVaccineSummary(vaccinePlan.summary)}</strong>
         </article>
+        <article>
+          <span>CIPA</span>
+          <strong>{profile.cipa ?? "Sin anotar"}</strong>
+        </article>
       </section>
 
       <form action="/logout" method="post" suppressHydrationWarning>

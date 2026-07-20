@@ -10,28 +10,6 @@ export const iratiProfile: BabyProfile = {
   cipa: null,
 };
 
-export type BabyProfileUpdate = {
-  cipa: string | null;
-};
-
-export class BabyProfileValidationError extends Error {
-  constructor(readonly issues: string[]) {
-    super(issues.join(" "));
-    this.name = "BabyProfileValidationError";
-  }
-}
-
-export function createBabyProfileUpdate(input: BabyProfileUpdate): BabyProfileUpdate {
-  const cipa = normalizeCipa(input.cipa);
-  const issues = validateCipa(cipa);
-
-  if (issues.length > 0) {
-    throw new BabyProfileValidationError(issues);
-  }
-
-  return { cipa };
-}
-
 export function formatBirthDate(profile: BabyProfile): string {
   const birthDate = parseUtcDate(profile.birthDate);
 
@@ -54,28 +32,4 @@ function parseUtcDate(date: string): Date {
   const [year, month, day] = date.split("-").map(Number);
 
   return new Date(Date.UTC(year, month - 1, day));
-}
-
-function normalizeCipa(value: string | null): string | null {
-  const normalized = value?.trim() ?? "";
-
-  return normalized || null;
-}
-
-function validateCipa(cipa: string | null): string[] {
-  const issues: string[] = [];
-
-  if (!cipa) {
-    return issues;
-  }
-
-  if (cipa.length > 32) {
-    issues.push("El CIPA no puede superar 32 caracteres.");
-  }
-
-  if (/[\u0000-\u001f\u007f]/.test(cipa)) {
-    issues.push("El CIPA contiene caracteres no validos.");
-  }
-
-  return issues;
 }

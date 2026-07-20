@@ -15,7 +15,7 @@ const getCachedBabyProfile = unstable_cache(
   },
 );
 
-export class CachedProfileRepository implements Pick<ProfileRepository, "getBabyProfile"> {
+export class CachedProfileRepository implements ProfileRepository {
   async getBabyProfile(): Promise<BabyProfile | null> {
     return getCachedBabyProfile();
   }
