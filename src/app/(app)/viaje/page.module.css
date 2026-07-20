@@ -123,10 +123,10 @@
 .groupHeader {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
   cursor: pointer;
-  padding: 10px 12px;
+  padding: 9px 10px;
   color: #2e1748;
   font-weight: 800;
   list-style: none;
@@ -162,22 +162,22 @@
 .items {
   display: grid;
   margin: 0;
-  border-top: 1px solid rgba(96, 72, 115, 0.14);
+  border-top: 1px solid rgba(96, 72, 115, 0.12);
   padding: 0;
   list-style: none;
 }
 
 .items li {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 8px;
+  grid-template-columns: 34px minmax(0, 1fr) 38px;
+  gap: 6px;
   align-items: center;
   background: #fff;
-  padding: 7px 8px 7px 10px;
+  padding: 6px 6px 6px 8px;
 }
 
 .items li + li {
-  border-top: 1px solid rgba(96, 72, 115, 0.14);
+  border-top: 1px solid rgba(96, 72, 115, 0.11);
 }
 
 .items li[data-packed="true"] {
@@ -234,9 +234,14 @@
 }
 
 .itemActions {
-  display: flex;
+  display: grid;
   align-items: center;
-  gap: 4px;
+  justify-items: center;
+  gap: 3px;
+}
+
+.itemActions form {
+  display: contents;
 }
 
 .form {
@@ -394,11 +399,10 @@
   .actions,
   .sheetActions,
   .items li {
-    grid-template-columns: 1fr;
+    grid-template-columns: 34px minmax(0, 1fr) 38px;
   }
 
   .actions,
-  .itemActions,
   .sheetActions {
     display: flex;
   }

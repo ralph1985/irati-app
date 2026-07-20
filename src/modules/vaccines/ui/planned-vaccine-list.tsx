@@ -173,8 +173,14 @@ function PlannedVaccineEditor({
 
   return (
     <>
-      <button className={styles.secondaryActionButton} onClick={openSheet} type="button">
-        Editar planificacion
+      <button
+        aria-label="Editar planificacion"
+        className={styles.secondaryActionButton}
+        onClick={openSheet}
+        title="Editar planificacion"
+        type="button"
+      >
+        <span aria-hidden="true">✎</span>
       </button>
 
       {isOpen ? (
@@ -317,8 +323,14 @@ function MarkAppliedForm({
 
   return (
     <>
-      <button className={styles.actionButton} onClick={openSheet} type="button">
-        Marcar como aplicada
+      <button
+        aria-label="Marcar como aplicada"
+        className={styles.actionButton}
+        onClick={openSheet}
+        title="Marcar como aplicada"
+        type="button"
+      >
+        <span aria-hidden="true">✓</span>
       </button>
 
       {isOpen ? (

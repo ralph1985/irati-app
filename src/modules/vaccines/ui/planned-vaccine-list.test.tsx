@@ -56,7 +56,10 @@ describe("PlannedVaccineList", () => {
     expect(html).toContain("Dosis 12 meses");
     expect(html).toContain("Proxima");
     expect(html).toContain("2027-07-02");
-    expect(html).toContain("Marcar como aplicada");
+    expect(html).toContain('aria-label="Marcar como aplicada"');
+    expect(html).toContain('title="Marcar como aplicada"');
+    expect(html).toContain('aria-label="Editar planificacion"');
+    expect(html).toContain('title="Editar planificacion"');
   });
 
   it("renders applied dose editing and reopen controls", () => {
