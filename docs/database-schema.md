@@ -26,6 +26,7 @@ Perfil basico de Irati.
 | `id`         | `uuid`        | Primary key con `gen_random_uuid()` |
 | `name`       | `text`        | Obligatorio                         |
 | `birth_date` | `date`        | Obligatorio                         |
+| `cipa`       | `text`        | Opcional                            |
 | `created_at` | `timestamptz` | `now()`                             |
 | `updated_at` | `timestamptz` | `now()`                             |
 
@@ -33,6 +34,7 @@ Seed inicial:
 
 - `name`: `Irati`
 - `birth_date`: `2026-07-02`
+- `cipa`: no se versiona ningun valor real en el repositorio.
 
 ## `weight_entries`
 

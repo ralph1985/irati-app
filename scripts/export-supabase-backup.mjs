@@ -18,7 +18,7 @@ const tableDefinitions = [
   {
     name: "baby_profiles",
     order: "created_at.asc",
-    columns: ["id", "name", "birth_date", "created_at", "updated_at"],
+    columns: ["id", "name", "birth_date", "cipa", "created_at", "updated_at"],
     conflictColumns: ["id"],
   },
   {

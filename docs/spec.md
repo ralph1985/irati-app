@@ -199,10 +199,13 @@ Datos iniciales:
 
 - Nombre: Irati.
 - Fecha de nacimiento: 2026-07-02.
+- CIPA: identificador sanitario opcional, visible completo solo tras autenticacion.
 
 La fecha de nacimiento se usa para calcular la planificacion inicial de vacunas desde el calendario de la Comunidad de Madrid.
 
-El perfil se lee desde Supabase mediante el repositorio de perfil. Si Supabase no devuelve perfil, la app puede mostrar un fallback local temporal con los datos iniciales para evitar una pantalla rota en desarrollo.
+El perfil se lee y actualiza desde Supabase mediante el repositorio de perfil. Si Supabase no devuelve perfil, la app puede mostrar un fallback local temporal con los datos iniciales para evitar una pantalla rota en desarrollo.
+
+El CIPA se puede editar desde Ajustes. La app normaliza espacios, permite dejarlo vacio y no guarda valores reales de CIPA en migraciones, documentacion ni tests del repositorio.
 
 ### Peso
 
@@ -447,6 +450,7 @@ Ajustes sera minima al principio.
 Debe cubrir:
 
 - Perfil basico de Irati.
+- CIPA de Irati, editable desde el perfil y visible completo tras login.
 - Sesion/PIN segun el alcance implementado.
 - Informacion tecnica basica si es util para desarrollo o soporte.
 - La pantalla muestra el perfil basico, el estado del acceso compartido, accion de cerrar sesion e informacion tecnica del MVP.

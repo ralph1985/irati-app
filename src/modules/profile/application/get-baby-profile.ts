@@ -6,7 +6,9 @@ export type GetBabyProfileResult = {
   source: "database" | "fallback";
 };
 
-export async function getBabyProfile(repository: ProfileRepository): Promise<GetBabyProfileResult> {
+export async function getBabyProfile(
+  repository: Pick<ProfileRepository, "getBabyProfile">,
+): Promise<GetBabyProfileResult> {
   const profile = await repository.getBabyProfile();
 
   if (!profile) {

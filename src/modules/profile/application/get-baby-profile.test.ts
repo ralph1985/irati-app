@@ -8,6 +8,7 @@ describe("getBabyProfile", () => {
         return {
           name: "Irati",
           birthDate: "2026-07-02",
+          cipa: null,
         };
       },
     });
@@ -16,6 +17,7 @@ describe("getBabyProfile", () => {
       profile: {
         name: "Irati",
         birthDate: "2026-07-02",
+        cipa: null,
       },
       source: "database",
     });
