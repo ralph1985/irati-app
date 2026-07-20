@@ -110,7 +110,7 @@
 
 .chart {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .chart svg {
@@ -119,23 +119,47 @@
   overflow: visible;
 }
 
-.chart line {
+.chartTick line {
   stroke: rgba(96, 72, 115, 0.22);
   stroke-width: 1;
 }
 
-.chart path {
+.chartTick text {
+  fill: #7c6a8d;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.chartArea {
+  fill: rgba(124, 58, 237, 0.1);
+  stroke: none;
+}
+
+.chartLine {
   fill: none;
   stroke: #7c3aed;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 4;
+  stroke-width: 3.6;
 }
 
-.chart circle {
+.chartPoint,
+.chartLatestPoint {
   fill: #fff;
   stroke: #7c3aed;
-  stroke-width: 3;
+  stroke-width: 2.8;
+}
+
+.chartLatestPoint {
+  fill: #7c3aed;
+  stroke: #fff;
+  stroke-width: 2.4;
+}
+
+.chartDate {
+  fill: #7c6a8d;
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .chartMeta {
@@ -145,19 +169,31 @@
   align-items: center;
 }
 
-.chartMeta span,
-.chartMeta strong {
+.chartMeta span {
+  display: grid;
+  gap: 3px;
   border-radius: 12px;
   background: #fff;
   color: #604873;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
   padding: 10px;
   text-align: center;
 }
 
 .chartMeta strong {
+  color: #33213f;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.chartMetaPrimary {
   background: #f3e8ff;
+  color: #5b21b6;
+}
+
+.chartMetaPrimary strong {
   color: #5b21b6;
 }
 

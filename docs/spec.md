@@ -224,7 +224,8 @@ Lugares validos iniciales:
 Reglas:
 
 - El peso se registra en gramos.
-- La grafica muestra una linea simple.
+- La grafica usa SVG propio en el MVP, sin libreria externa.
+- La grafica muestra una linea de evolucion con marcas de peso, fechas y ultimo peso destacado.
 - La grafica permite filtrar por Todos, Hospital, Farmacia o Pediatra.
 - No se calculan percentiles en el MVP.
 - No se mezclan estimaciones con pesos registrados en el MVP.
@@ -514,7 +515,6 @@ No se exige cobertura exhaustiva al inicio. La cobertura debe crecer cuando se a
 
 - Duracion de sesion.
 - Detalles visuales finos de componentes.
-- Libreria de graficas.
 - Libreria o estrategia de PWA para Next.js.
 - Forma exacta del esquema Supabase.
 - Si vacunas planificadas y aplicaciones viven en una o dos tablas.

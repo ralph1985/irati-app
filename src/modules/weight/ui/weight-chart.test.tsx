@@ -31,5 +31,27 @@ describe("WeightChart", () => {
 
     expect(html).toContain("<svg");
     expect(html).toContain("Evolucion del peso de Irati");
+    expect(html).toContain("2,52 kg");
+    expect(html).toContain("Ultimo");
+    expect(html).toContain("Hospital");
+  });
+
+  it("renders readable metadata with a single entry", () => {
+    const html = renderToStaticMarkup(
+      <WeightChart
+        entries={[
+          {
+            id: "1",
+            measuredOn: "2026-07-02",
+            weightGrams: 2700,
+            place: "hospital",
+          },
+        ]}
+      />,
+    );
+
+    expect(html).toContain("2700 g");
+    expect(html).toContain("2,7 kg");
+    expect(html).toContain("Ultimo");
   });
 });
