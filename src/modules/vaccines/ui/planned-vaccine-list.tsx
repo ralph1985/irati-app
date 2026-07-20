@@ -1,33 +1,66 @@
 "use client";
 
-import { KeyboardEvent, PointerEvent, useRef, useState } from "react";
+import { ReactNode, useState } from "react";
+import { BottomSheet } from "../../../shared/ui/bottom-sheet";
 import {
   getVaccineDoseStatusLabel,
   PlannedVaccineDoseGroups,
   PlannedVaccineDoseWithStatus,
   vaccineDoseStatuses,
 } from "../domain/vaccine-calendar";
+import { VaccineTimelineGroup } from "../application/vaccine-plan-views";
 import styles from "../../../app/(app)/vacunas/page.module.css";
 
 type PlannedVaccineListProps = {
   groups: PlannedVaccineDoseGroups;
   markAppliedAction: (formData: FormData) => void | Promise<void>;
   reopenAction: (formData: FormData) => void | Promise<void>;
+  timelineGroups?: VaccineTimelineGroup[];
   updateAction: (formData: FormData) => void | Promise<void>;
   updateApplicationAction: (formData: FormData) => void | Promise<void>;
+  view?: "status" | "timeline";
 };
 
 export function PlannedVaccineList({
   groups,
   markAppliedAction,
   reopenAction,
+  timelineGroups = [],
   updateAction,
   updateApplicationAction,
+  view = "status",
 }: PlannedVaccineListProps) {
   const doses = vaccineDoseStatuses.flatMap((status) => groups[status]);
 
   if (doses.length === 0) {
     return <p className={styles.empty}>Todavia no hay dosis planificadas.</p>;
+  }
+
+  if (view === "timeline") {
+    return (
+      <div className={styles.timelineGroups}>
+        {timelineGroups.map((group) => (
+          <section className={styles.timelineGroup} key={group.ageLabel}>
+            <div className={styles.timelineTitle}>
+              <h3>{group.ageLabel}</h3>
+              <span>{formatDate(group.plannedDate)}</span>
+            </div>
+            <ol className={styles.doseList}>
+              {group.doses.map((dose) => (
+                <PlannedVaccineItem
+                  dose={dose}
+                  key={dose.id}
+                  markAppliedAction={markAppliedAction}
+                  reopenAction={reopenAction}
+                  updateAction={updateAction}
+                  updateApplicationAction={updateApplicationAction}
+                />
+              ))}
+            </ol>
+          </section>
+        ))}
+      </div>
+    );
   }
 
   return (
@@ -96,17 +129,19 @@ function PlannedVaccineItem({
       ) : null}
       {dose.notes ? <p className={styles.notes}>{dose.notes}</p> : null}
 
-      {dose.application ? (
-        <AppliedVaccineEditor
-          dose={dose}
-          reopenAction={reopenAction}
-          updateApplicationAction={updateApplicationAction}
-        />
-      ) : (
-        <MarkAppliedForm dose={dose} markAppliedAction={markAppliedAction} />
-      )}
+      <div className={styles.doseActions}>
+        {dose.application ? (
+          <AppliedVaccineEditor
+            dose={dose}
+            reopenAction={reopenAction}
+            updateApplicationAction={updateApplicationAction}
+          />
+        ) : (
+          <MarkAppliedForm dose={dose} markAppliedAction={markAppliedAction} />
+        )}
 
-      <PlannedVaccineEditor dose={dose} updateAction={updateAction} />
+        <PlannedVaccineEditor dose={dose} updateAction={updateAction} />
+      </div>
     </li>
   );
 }
@@ -119,291 +154,167 @@ function PlannedVaccineEditor({
   updateAction: (formData: FormData) => void | Promise<void>;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
-  const dragStartYRef = useRef<number | null>(null);
   const titleId = `edit-planned-${dose.id}`;
-
-  function openSheet() {
-    setDragOffset(0);
-    setIsOpen(true);
-  }
-
-  function closeSheet() {
-    setDragOffset(0);
-    dragStartYRef.current = null;
-    setIsOpen(false);
-  }
-
-  function handleSheetKeyDown(event: KeyboardEvent<HTMLElement>) {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      closeSheet();
-    }
-  }
-
-  function handleHandleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      closeSheet();
-    }
-  }
-
-  function handleDragStart(event: PointerEvent<HTMLDivElement>) {
-    dragStartYRef.current = event.clientY;
-    event.currentTarget.setPointerCapture(event.pointerId);
-  }
-
-  function handleDragMove(event: PointerEvent<HTMLDivElement>) {
-    if (dragStartYRef.current === null) {
-      return;
-    }
-
-    setDragOffset(Math.max(0, event.clientY - dragStartYRef.current));
-  }
-
-  function handleDragEnd() {
-    if (dragOffset > 70) {
-      closeSheet();
-      return;
-    }
-
-    dragStartYRef.current = null;
-    setDragOffset(0);
-  }
 
   return (
     <>
       <button
         aria-label="Editar planificacion"
         className={styles.secondaryActionButton}
-        onClick={openSheet}
+        onClick={() => setIsOpen(true)}
         title="Editar planificacion"
         type="button"
       >
-        <span aria-hidden="true">✎</span>
+        <EditIcon />
       </button>
 
       {isOpen ? (
-        <div className={styles.sheetBackdrop} onClick={closeSheet}>
-          <form
+        <BottomSheet
+          ariaLabel="Cerrar panel de planificacion"
+          labelledBy={titleId}
+          onClose={() => setIsOpen(false)}
+          styles={styles}
+        >
+          <PlannedVaccineForm
             action={updateAction}
-            aria-labelledby={titleId}
-            aria-modal="false"
-            className={styles.sheet}
-            onClick={(event) => event.stopPropagation()}
-            onKeyDown={handleSheetKeyDown}
-            role="dialog"
-            style={
-              {
-                "--sheet-drag-offset": `${dragOffset}px`,
-              } as React.CSSProperties
-            }
-          >
-            <div
-              aria-label="Cerrar panel de planificacion"
-              className={styles.sheetHandle}
-              onKeyDown={handleHandleKeyDown}
-              onPointerCancel={handleDragEnd}
-              onPointerDown={handleDragStart}
-              onPointerMove={handleDragMove}
-              onPointerUp={handleDragEnd}
-              role="button"
-              tabIndex={0}
-            >
-              <span />
-            </div>
-
-            <div className={styles.sheetHeader}>
-              <p>Planificacion</p>
-              <h2 id={titleId}>Editar dosis planificada</h2>
-              <span>
-                {dose.vaccineName} · {dose.doseLabel}
-              </span>
-            </div>
-
-            <input name="id" type="hidden" value={dose.id} />
-
-            <div className={styles.sheetFields}>
-              <label>
-                Vacuna
-                <input name="vaccineName" required defaultValue={dose.vaccineName} />
-              </label>
-              <label>
-                Dosis
-                <input name="doseLabel" required defaultValue={dose.doseLabel} />
-              </label>
-              <label>
-                Fecha planificada
-                <input name="plannedDate" required type="date" defaultValue={dose.plannedDate} />
-              </label>
-              <label>
-                Edad
-                <input name="ageLabel" defaultValue={dose.ageLabel ?? ""} />
-              </label>
-              <label className={styles.full}>
-                Notas
-                <textarea name="notes" rows={3} defaultValue={dose.notes ?? ""} />
-              </label>
-            </div>
-
-            <div className={styles.sheetActions}>
-              <button className={styles.secondaryButton} onClick={closeSheet} type="button">
-                Cancelar
-              </button>
-              <button className={styles.primaryButton} type="submit">
-                Guardar cambios
-              </button>
-            </div>
-          </form>
-        </div>
+            dose={dose}
+            onCancel={() => setIsOpen(false)}
+            titleId={titleId}
+          />
+        </BottomSheet>
       ) : null}
     </>
   );
 }
 
-function MarkAppliedForm({
+function PlannedVaccineForm({
+  action,
+  dose,
+  onCancel,
+  titleId,
+}: {
+  action: (formData: FormData) => void | Promise<void>;
+  dose: PlannedVaccineDoseWithStatus;
+  onCancel: () => void;
+  titleId: string;
+}) {
+  return (
+    <form action={action} className={styles.sheetBody}>
+      <div className={styles.sheetHeader}>
+        <p>Planificacion</p>
+        <h2 id={titleId}>Editar dosis planificada</h2>
+        <span>
+          {dose.vaccineName} · {dose.doseLabel}
+        </span>
+      </div>
+
+      <input name="id" type="hidden" value={dose.id} />
+
+      <div className={styles.sheetFields}>
+        <label>
+          Vacuna
+          <input name="vaccineName" required defaultValue={dose.vaccineName} />
+        </label>
+        <label>
+          Dosis
+          <input name="doseLabel" required defaultValue={dose.doseLabel} />
+        </label>
+        <label>
+          Fecha planificada
+          <input name="plannedDate" required type="date" defaultValue={dose.plannedDate} />
+        </label>
+        <label>
+          Edad
+          <input name="ageLabel" defaultValue={dose.ageLabel ?? ""} />
+        </label>
+        <label className={styles.full}>
+          Notas
+          <textarea name="notes" rows={3} defaultValue={dose.notes ?? ""} />
+        </label>
+      </div>
+
+      <div className={styles.sheetActions}>
+        <button className={styles.secondaryButton} onClick={onCancel} type="button">
+          Cancelar
+        </button>
+        <button className={styles.primaryButton} type="submit">
+          Guardar cambios
+        </button>
+      </div>
+    </form>
+  );
+}
+
+export function VaccineApplicationSheet({
+  buttonClassName,
+  children,
   dose,
   markAppliedAction,
+  returnTo,
 }: {
+  buttonClassName?: string;
+  children?: ReactNode;
   dose: PlannedVaccineDoseWithStatus;
   markAppliedAction: (formData: FormData) => void | Promise<void>;
+  returnTo?: string;
+}) {
+  return (
+    <MarkAppliedForm
+      buttonClassName={buttonClassName}
+      dose={dose}
+      markAppliedAction={markAppliedAction}
+      returnTo={returnTo}
+    >
+      {children}
+    </MarkAppliedForm>
+  );
+}
+
+function MarkAppliedForm({
+  buttonClassName,
+  children,
+  dose,
+  markAppliedAction,
+  returnTo,
+}: {
+  buttonClassName?: string;
+  children?: ReactNode;
+  dose: PlannedVaccineDoseWithStatus;
+  markAppliedAction: (formData: FormData) => void | Promise<void>;
+  returnTo?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
-  const dragStartYRef = useRef<number | null>(null);
   const titleId = `mark-applied-${dose.id}`;
-
-  function openSheet() {
-    setDragOffset(0);
-    setIsOpen(true);
-  }
-
-  function closeSheet() {
-    setDragOffset(0);
-    dragStartYRef.current = null;
-    setIsOpen(false);
-  }
-
-  function handleSheetKeyDown(event: KeyboardEvent<HTMLElement>) {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      closeSheet();
-    }
-  }
-
-  function handleHandleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      closeSheet();
-    }
-  }
-
-  function handleDragStart(event: PointerEvent<HTMLDivElement>) {
-    dragStartYRef.current = event.clientY;
-    event.currentTarget.setPointerCapture(event.pointerId);
-  }
-
-  function handleDragMove(event: PointerEvent<HTMLDivElement>) {
-    if (dragStartYRef.current === null) {
-      return;
-    }
-
-    setDragOffset(Math.max(0, event.clientY - dragStartYRef.current));
-  }
-
-  function handleDragEnd() {
-    if (dragOffset > 70) {
-      closeSheet();
-      return;
-    }
-
-    dragStartYRef.current = null;
-    setDragOffset(0);
-  }
 
   return (
     <>
       <button
         aria-label="Marcar como aplicada"
-        className={styles.actionButton}
-        onClick={openSheet}
+        className={buttonClassName ?? styles.actionButton}
+        onClick={() => setIsOpen(true)}
         title="Marcar como aplicada"
         type="button"
       >
-        <span aria-hidden="true">✓</span>
+        {children ?? <CheckIcon />}
       </button>
 
       {isOpen ? (
-        <div className={styles.sheetBackdrop} onClick={closeSheet}>
-          <form
+        <BottomSheet
+          ariaLabel="Cerrar panel de vacuna"
+          labelledBy={titleId}
+          onClose={() => setIsOpen(false)}
+          styles={styles}
+        >
+          <VaccineApplicationForm
             action={markAppliedAction}
-            aria-labelledby={titleId}
-            aria-modal="false"
-            className={styles.sheet}
-            onClick={(event) => event.stopPropagation()}
-            onKeyDown={handleSheetKeyDown}
-            role="dialog"
-            style={
-              {
-                "--sheet-drag-offset": `${dragOffset}px`,
-              } as React.CSSProperties
-            }
-          >
-            <div
-              aria-label="Cerrar panel de vacuna"
-              className={styles.sheetHandle}
-              onKeyDown={handleHandleKeyDown}
-              onPointerCancel={handleDragEnd}
-              onPointerDown={handleDragStart}
-              onPointerMove={handleDragMove}
-              onPointerUp={handleDragEnd}
-              role="button"
-              tabIndex={0}
-            >
-              <span />
-            </div>
-
-            <div className={styles.sheetHeader}>
-              <p>Aplicacion</p>
-              <h2 id={titleId}>Registrar vacuna aplicada</h2>
-              <span>
-                {dose.vaccineName} · {dose.doseLabel}
-              </span>
-            </div>
-
-            <input name="plannedDoseId" type="hidden" value={dose.id} />
-            <input name="vaccineName" type="hidden" value={dose.vaccineName} />
-            <input name="doseLabel" type="hidden" value={dose.doseLabel} />
-
-            <div className={styles.sheetFields}>
-              <label>
-                Fecha de aplicacion
-                <input name="appliedOn" required type="date" defaultValue={dose.plannedDate} />
-              </label>
-              <label>
-                Lugar
-                <input name="place" required placeholder="Centro de salud" />
-              </label>
-              <label>
-                Lote
-                <input name="lot" />
-              </label>
-              <label className={styles.full}>
-                Notas
-                <textarea name="notes" rows={3} />
-              </label>
-            </div>
-
-            <div className={styles.sheetActions}>
-              <button className={styles.secondaryButton} onClick={closeSheet} type="button">
-                Cancelar
-              </button>
-              <button className={styles.primaryButton} type="submit">
-                Guardar aplicacion
-              </button>
-            </div>
-          </form>
-        </div>
+            dose={dose}
+            onCancel={() => setIsOpen(false)}
+            returnTo={returnTo}
+            submitLabel="Guardar aplicacion"
+            title="Registrar vacuna aplicada"
+            titleId={titleId}
+          />
+        </BottomSheet>
       ) : null}
     </>
   );
@@ -418,60 +329,169 @@ function AppliedVaccineEditor({
   reopenAction: (formData: FormData) => void | Promise<void>;
   updateApplicationAction: (formData: FormData) => void | Promise<void>;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
   const application = dose.application;
+  const titleId = `edit-application-${dose.id}`;
 
   if (!application) {
     return null;
   }
 
   return (
-    <details className={styles.editor}>
-      <summary>Editar aplicacion</summary>
-      <form action={updateApplicationAction}>
-        <input name="applicationId" type="hidden" value={application.id} />
-        <input name="plannedDoseId" type="hidden" value={dose.id} />
+    <>
+      <button
+        aria-label="Editar aplicacion"
+        className={styles.actionButton}
+        onClick={() => setIsOpen(true)}
+        title="Editar aplicacion"
+        type="button"
+      >
+        <EditIcon />
+      </button>
+
+      {isOpen ? (
+        <BottomSheet
+          ariaLabel="Cerrar panel de aplicacion"
+          labelledBy={titleId}
+          onClose={() => setIsOpen(false)}
+          styles={styles}
+        >
+          <VaccineApplicationForm
+            action={updateApplicationAction}
+            applicationId={application.id}
+            dose={dose}
+            onCancel={() => setIsOpen(false)}
+            submitLabel="Guardar aplicacion"
+            title="Editar aplicacion"
+            titleId={titleId}
+          />
+
+          <form
+            action={reopenAction}
+            className={styles.reopenForm}
+            onSubmit={(event) => {
+              if (!confirm("¿Volver esta vacuna a pendiente?")) {
+                event.preventDefault();
+              }
+            }}
+          >
+            <input name="applicationId" type="hidden" value={application.id} />
+            <button className={styles.reopenButton} type="submit">
+              Volver a pendiente
+            </button>
+          </form>
+        </BottomSheet>
+      ) : null}
+    </>
+  );
+}
+
+function VaccineApplicationForm({
+  action,
+  applicationId,
+  dose,
+  onCancel,
+  returnTo,
+  submitLabel,
+  title,
+  titleId,
+}: {
+  action: (formData: FormData) => void | Promise<void>;
+  applicationId?: string;
+  dose: PlannedVaccineDoseWithStatus;
+  onCancel: () => void;
+  returnTo?: string;
+  submitLabel: string;
+  title: string;
+  titleId: string;
+}) {
+  const application = dose.application;
+
+  return (
+    <form action={action} className={styles.sheetBody}>
+      <div className={styles.sheetHeader}>
+        <p>Aplicacion</p>
+        <h2 id={titleId}>{title}</h2>
+        <span>
+          {dose.vaccineName} · {dose.doseLabel}
+        </span>
+      </div>
+
+      {applicationId ? <input name="applicationId" type="hidden" value={applicationId} /> : null}
+      {returnTo ? <input name="returnTo" type="hidden" value={returnTo} /> : null}
+      <input name="plannedDoseId" type="hidden" value={dose.id} />
+
+      <div className={styles.sheetFields}>
         <label>
           Fecha de aplicacion
-          <input name="appliedOn" required type="date" defaultValue={application.appliedOn} />
+          <input
+            name="appliedOn"
+            required
+            type="date"
+            defaultValue={application?.appliedOn ?? dose.plannedDate}
+          />
         </label>
         <label>
           Vacuna
-          <input name="vaccineName" required defaultValue={application.vaccineName} />
+          <input
+            name="vaccineName"
+            required
+            defaultValue={application?.vaccineName ?? dose.vaccineName}
+          />
         </label>
         <label>
           Dosis
-          <input name="doseLabel" required defaultValue={application.doseLabel} />
+          <input
+            name="doseLabel"
+            required
+            defaultValue={application?.doseLabel ?? dose.doseLabel}
+          />
         </label>
         <label>
           Lugar
-          <input name="place" required defaultValue={application.place} />
+          <input
+            name="place"
+            required
+            defaultValue={application?.place ?? ""}
+            placeholder="Centro de salud"
+          />
         </label>
         <label>
           Lote
-          <input name="lot" defaultValue={application.lot ?? ""} />
+          <input name="lot" defaultValue={application?.lot ?? ""} />
         </label>
         <label className={styles.full}>
           Notas
-          <textarea name="notes" rows={3} defaultValue={application.notes ?? ""} />
+          <textarea name="notes" rows={3} defaultValue={application?.notes ?? ""} />
         </label>
-        <button type="submit">Guardar aplicacion</button>
-      </form>
+      </div>
 
-      <form
-        action={reopenAction}
-        className={styles.reopenForm}
-        onSubmit={(event) => {
-          if (!confirm("¿Volver esta vacuna a pendiente?")) {
-            event.preventDefault();
-          }
-        }}
-      >
-        <input name="applicationId" type="hidden" value={application.id} />
-        <button className={styles.reopenButton} type="submit">
-          Volver a pendiente
+      <div className={styles.sheetActions}>
+        <button className={styles.secondaryButton} onClick={onCancel} type="button">
+          Cancelar
         </button>
-      </form>
-    </details>
+        <button className={styles.primaryButton} type="submit">
+          {submitLabel}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+      <path d="m5 12 4 4L19 6" />
+    </svg>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+      <path d="M4 20h4.8L19.1 9.7a2.1 2.1 0 0 0 0-3L17.3 4.9a2.1 2.1 0 0 0-3 0L4 15.2V20Z" />
+      <path d="m13.6 5.6 4.8 4.8" />
+    </svg>
   );
 }
 

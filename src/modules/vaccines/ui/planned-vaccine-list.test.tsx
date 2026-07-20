@@ -62,7 +62,7 @@ describe("PlannedVaccineList", () => {
     expect(html).toContain('title="Editar planificacion"');
   });
 
-  it("renders applied dose editing and reopen controls", () => {
+  it("renders applied dose editing as a sheet action", () => {
     const html = renderToStaticMarkup(
       <PlannedVaccineList
         groups={{
@@ -98,7 +98,45 @@ describe("PlannedVaccineList", () => {
     );
 
     expect(html).toContain("Editar aplicacion");
-    expect(html).toContain("Centro de salud");
-    expect(html).toContain("Volver a pendiente");
+    expect(html).toContain('title="Editar aplicacion"');
+    expect(html).not.toContain("Centro de salud");
+    expect(html).not.toContain("Volver a pendiente");
+  });
+
+  it("renders timeline groups", () => {
+    const dose = {
+      id: "dose-1",
+      vaccineName: "Meningococo ACWY",
+      doseLabel: "Dosis 12 meses",
+      plannedDate: "2027-07-02",
+      ageLabel: "12 meses",
+      notes: null,
+      application: null,
+      appliedOn: null,
+      status: "proxima" as const,
+    };
+    const html = renderToStaticMarkup(
+      <PlannedVaccineList
+        groups={{
+          ...emptyGroups,
+          proxima: [dose],
+        }}
+        markAppliedAction={noopAction}
+        reopenAction={noopAction}
+        timelineGroups={[
+          {
+            ageLabel: "12 meses",
+            doses: [dose],
+            plannedDate: "2027-07-02",
+          },
+        ]}
+        updateAction={noopAction}
+        updateApplicationAction={noopAction}
+        view="timeline"
+      />,
+    );
+
+    expect(html).toContain("12 meses");
+    expect(html).toContain("Meningococo ACWY");
   });
 });

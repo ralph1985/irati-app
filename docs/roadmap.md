@@ -275,6 +275,17 @@ No se copia:
 - [x] Añadir tests proporcionales.
 - [x] Ejecutar typecheck, lint, format, tests y build.
 
+## Hito 17 - Mejoras de uso diario
+
+- [x] Hacer Inicio accionable con alta rapida de peso.
+- [x] Hacer Inicio accionable con registro rapido de la proxima vacuna aplicable.
+- [x] Mostrar resumen de peso con dias desde ultimo control y cambio frente al registro anterior.
+- [x] Añadir vista de vacunas por linea temporal agrupada por edad.
+- [x] Convertir edicion de vacuna aplicada a bottom sheet.
+- [x] Unificar logica de bottom sheet en un componente compartido.
+- [x] Añadir tests proporcionales de peso, vacunas y vistas.
+- [x] Ejecutar typecheck, lint, format, tests y build.
+
 ## Fuera del MVP inicial
 
 - Exportacion o impresion para pediatra.

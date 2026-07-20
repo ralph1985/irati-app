@@ -1,6 +1,7 @@
 "use client";
 
-import { KeyboardEvent, PointerEvent, useRef, useState } from "react";
+import { useState } from "react";
+import { BottomSheet } from "../../../shared/ui/bottom-sheet";
 import { WeightEntry } from "../domain/weight-entry";
 import styles from "../../../app/(app)/peso/page.module.css";
 
@@ -12,59 +13,17 @@ type WeightHistoryProps = {
 
 export function WeightHistory({ deleteAction, entries, updateAction }: WeightHistoryProps) {
   const [editingEntry, setEditingEntry] = useState<WeightEntry | null>(null);
-  const [dragOffset, setDragOffset] = useState(0);
-  const dragStartYRef = useRef<number | null>(null);
 
   if (entries.length === 0) {
     return <p className={styles.empty}>Todavia no hay pesos registrados.</p>;
   }
 
   function openEditor(entry: WeightEntry) {
-    setDragOffset(0);
     setEditingEntry(entry);
   }
 
   function closeEditor() {
-    setDragOffset(0);
-    dragStartYRef.current = null;
     setEditingEntry(null);
-  }
-
-  function handleSheetKeyDown(event: KeyboardEvent<HTMLElement>) {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      closeEditor();
-    }
-  }
-
-  function handleHandleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      closeEditor();
-    }
-  }
-
-  function handleDragStart(event: PointerEvent<HTMLDivElement>) {
-    dragStartYRef.current = event.clientY;
-    event.currentTarget.setPointerCapture(event.pointerId);
-  }
-
-  function handleDragMove(event: PointerEvent<HTMLDivElement>) {
-    if (dragStartYRef.current === null) {
-      return;
-    }
-
-    setDragOffset(Math.max(0, event.clientY - dragStartYRef.current));
-  }
-
-  function handleDragEnd() {
-    if (dragOffset > 70) {
-      closeEditor();
-      return;
-    }
-
-    dragStartYRef.current = null;
-    setDragOffset(0);
   }
 
   return (
@@ -115,35 +74,13 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
       </ol>
 
       {editingEntry ? (
-        <div className={styles.sheetBackdrop} onClick={closeEditor}>
-          <form
-            action={updateAction}
-            aria-labelledby="edit-weight-title"
-            aria-modal="false"
-            className={styles.sheet}
-            onClick={(event) => event.stopPropagation()}
-            onKeyDown={handleSheetKeyDown}
-            role="dialog"
-            style={
-              {
-                "--sheet-drag-offset": `${dragOffset}px`,
-              } as React.CSSProperties
-            }
-          >
-            <div
-              aria-label="Cerrar panel de edicion de peso"
-              className={styles.sheetHandle}
-              onKeyDown={handleHandleKeyDown}
-              onPointerCancel={handleDragEnd}
-              onPointerDown={handleDragStart}
-              onPointerMove={handleDragMove}
-              onPointerUp={handleDragEnd}
-              role="button"
-              tabIndex={0}
-            >
-              <span />
-            </div>
-
+        <BottomSheet
+          ariaLabel="Cerrar panel de edicion de peso"
+          labelledBy="edit-weight-title"
+          onClose={closeEditor}
+          styles={styles}
+        >
+          <form action={updateAction} className={styles.sheetBody}>
             <div className={styles.sheetHeader}>
               <p>Peso</p>
               <h2 id="edit-weight-title">Editar peso</h2>
@@ -196,7 +133,7 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
               </button>
             </div>
           </form>
-        </div>
+        </BottomSheet>
       ) : null}
     </>
   );

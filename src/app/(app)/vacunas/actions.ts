@@ -49,6 +49,9 @@ export async function markVaccineDoseAppliedAction(formData: FormData) {
     redirect("/?error=session");
   }
 
+  const validationErrorPath = getMarkAppliedErrorPath(formData, "application-validation");
+  const saveErrorPath = getMarkAppliedErrorPath(formData, "application-save");
+
   try {
     await markVaccineDoseApplied(new SupabaseVaccinePlanRepository(createServerSupabaseClient()), {
       plannedDoseId: String(formData.get("plannedDoseId") ?? ""),
@@ -61,14 +64,14 @@ export async function markVaccineDoseAppliedAction(formData: FormData) {
     });
   } catch (error) {
     if (error instanceof AppliedVaccineDoseValidationError) {
-      redirect("/vacunas?error=application-validation");
+      redirect(validationErrorPath);
     }
 
-    redirect("/vacunas?error=application-save");
+    redirect(saveErrorPath);
   }
 
   invalidateVaccineReads();
-  redirect("/vacunas?applied=1");
+  redirect(getMarkAppliedSuccessPath(formData));
 }
 
 export async function updateAppliedVaccineDoseAction(formData: FormData) {
@@ -125,4 +128,15 @@ function invalidateVaccineReads() {
   updateTag(CACHE_TAGS.vaccinePlannedDoses);
   revalidatePath("/vacunas");
   revalidatePath("/");
+}
+
+function getMarkAppliedSuccessPath(formData: FormData): string {
+  return formData.get("returnTo") === "/" ? "/?vaccineApplied=1" : "/vacunas?applied=1";
+}
+
+function getMarkAppliedErrorPath(
+  formData: FormData,
+  error: "application-save" | "application-validation",
+): string {
+  return formData.get("returnTo") === "/" ? `/?error=${error}` : `/vacunas?error=${error}`;
 }

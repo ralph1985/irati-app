@@ -20,9 +20,12 @@ export async function createWeightEntryAction(formData: FormData) {
   const rawWeightGrams = Number(formData.get("weightGrams"));
   const rawPlace = String(formData.get("place") ?? "");
   const notes = String(formData.get("notes") ?? "");
+  const successPath = getCreateWeightSuccessPath(formData);
+  const validationErrorPath = getCreateWeightErrorPath(formData, "validation");
+  const saveErrorPath = getCreateWeightErrorPath(formData, "save");
 
   if (!isWeightPlace(rawPlace)) {
-    redirect("/peso?error=validation");
+    redirect(validationErrorPath);
   }
 
   try {
@@ -34,14 +37,14 @@ export async function createWeightEntryAction(formData: FormData) {
     });
   } catch (error) {
     if (error instanceof WeightEntryValidationError) {
-      redirect("/peso?error=validation");
+      redirect(validationErrorPath);
     }
 
-    redirect("/peso?error=save");
+    redirect(saveErrorPath);
   }
 
   invalidateWeightReads();
-  redirect("/peso?created=1");
+  redirect(successPath);
 }
 
 export async function updateWeightEntryAction(formData: FormData) {
@@ -100,4 +103,12 @@ function invalidateWeightReads() {
   updateTag(CACHE_TAGS.weightEntries);
   revalidatePath("/peso");
   revalidatePath("/");
+}
+
+function getCreateWeightSuccessPath(formData: FormData): string {
+  return formData.get("returnTo") === "/" ? "/?weightCreated=1" : "/peso?created=1";
+}
+
+function getCreateWeightErrorPath(formData: FormData, error: "save" | "validation"): string {
+  return formData.get("returnTo") === "/" ? `/?error=weight-${error}` : `/peso?error=${error}`;
 }

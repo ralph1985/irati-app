@@ -412,6 +412,8 @@ El inicio debe priorizar:
 - Ultimo peso registrado, con fecha y lugar.
 - Acciones rapidas para registrar peso y marcar vacuna aplicada.
 - Mini resumen de vacunas pendientes/proximas y total de pesos registrados.
+- Resumen operativo de peso: dias desde el ultimo control, cambio frente al registro anterior y media orientativa en g/dia cuando haya dos registros.
+- Proxima accion de vacunas, priorizando retrasadas, proximas y pendientes.
 
 El orden debe favorecer lo accionable: primero lo que requiere atencion, despues el contexto.
 
@@ -422,6 +424,7 @@ La pantalla de Peso debe priorizar:
 - Grafica de peso arriba.
 - Historial debajo.
 - Boton de accion destacado para añadir peso.
+- Resumen compacto del ultimo peso y cambio frente al registro anterior.
 
 El ultimo peso se muestra en la pantalla de Inicio, no como elemento dominante de la pantalla de Peso.
 
@@ -448,6 +451,8 @@ La vista por estado se agrupa en este orden:
 La linea temporal se organiza por edad de Irati, no solo por fecha concreta.
 
 La edicion del calendario de vacunas vive inicialmente dentro de Vacunas, no en Ajustes.
+
+La edicion de aplicaciones de vacunas se abre como bottom sheet, igual que marcar una dosis como aplicada y editar la planificacion.
 
 ### Ajustes
 

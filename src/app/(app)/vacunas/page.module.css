@@ -91,6 +91,31 @@
   background: #fffbeb;
 }
 
+.viewSwitch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.viewSwitch a {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(124, 58, 237, 0.16);
+  border-radius: 14px;
+  background: #fff;
+  color: #604873;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.viewSwitch a[aria-current="page"] {
+  background: #7c3aed;
+  color: #fff;
+}
+
 .success,
 .error,
 .empty {
@@ -118,6 +143,33 @@
 .statusGroups {
   display: grid;
   gap: 16px;
+}
+
+.timelineGroups {
+  display: grid;
+  gap: 14px;
+}
+
+.timelineGroup {
+  display: grid;
+  gap: 10px;
+}
+
+.timelineTitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.timelineTitle h3 {
+  font-size: 16px;
+}
+
+.timelineTitle span {
+  color: #6b587c;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .statusGroup {
@@ -247,59 +299,10 @@
   padding: 7px 8px;
 }
 
-.editor {
-  border-top: 1px solid rgba(124, 58, 237, 0.12);
-  padding-top: 8px;
-}
-
-.editor summary {
-  color: #7c3aed;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.editor form {
-  display: grid;
-  gap: 12px;
-  padding-top: 12px;
-}
-
-.editor label {
-  display: grid;
-  gap: 7px;
-  color: #5b426f;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.editor input,
-.editor textarea {
-  width: 100%;
-  min-height: 44px;
-  border: 1px solid rgba(124, 58, 237, 0.24);
-  border-radius: 14px;
-  background: #fff;
-  color: #241335;
-  font: inherit;
-  padding: 0 12px;
-}
-
-.editor textarea {
-  min-height: 84px;
-  padding: 12px;
-  resize: vertical;
-}
-
-.editor button {
-  min-height: 42px;
-  border: 0;
-  border-radius: 14px;
-  background: #7c3aed;
-  color: #fff;
-  cursor: pointer;
-  font: inherit;
-  font-weight: 800;
+.doseActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .actionButton,
@@ -318,6 +321,17 @@
   padding: 0;
 }
 
+.actionButton svg,
+.secondaryActionButton svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.2;
+}
+
 .actionButton {
   background: #7c3aed;
   color: #fff;
@@ -331,13 +345,18 @@
 
 .reopenForm {
   display: grid;
-  padding-top: 12px;
 }
 
-.editor .reopenButton {
+.reopenButton {
+  min-height: 48px;
+  border: 0;
+  border-radius: 14px;
   width: 100%;
   background: #fef2f2;
   color: #991b1b;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
 }
 
 .full {
@@ -369,6 +388,11 @@
   padding: 8px 16px 18px;
   transform: translateY(var(--sheet-drag-offset, 0px));
   animation: sheetIn 0.24s ease-out;
+}
+
+.sheetBody {
+  display: grid;
+  gap: 16px;
 }
 
 .sheetHandle {

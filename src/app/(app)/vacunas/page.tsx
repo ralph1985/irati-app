@@ -1,9 +1,11 @@
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
 import { listVaccinePlan } from "@/modules/vaccines/application/list-vaccine-plan";
+import { groupPlannedVaccineDosesByAge } from "@/modules/vaccines/application/vaccine-plan-views";
 import { madridVaccineCalendarSource } from "@/modules/vaccines/domain/vaccine-calendar";
 import { CachedVaccinePlanReadRepository } from "@/modules/vaccines/infrastructure/cached-vaccine-plan-read-repository";
 import { PlannedVaccineList } from "@/modules/vaccines/ui/planned-vaccine-list";
+import Link from "next/link";
 import {
   markVaccineDoseAppliedAction,
   reopenPlannedVaccineDoseAction,
@@ -19,6 +21,7 @@ type VaccinesPageProps = {
     error?: string;
     reopened?: string;
     updated?: string;
+    vista?: string;
   }>;
 };
 
@@ -32,7 +35,7 @@ const errorMessages: Record<string, string> = {
 };
 
 export default async function VaccinesPage({ searchParams }: VaccinesPageProps) {
-  const { applied, applicationUpdated, error, reopened, updated } = await searchParams;
+  const { applied, applicationUpdated, error, reopened, updated, vista } = await searchParams;
 
   if (!(await hasValidSession())) {
     return <LoginScreen />;
@@ -40,6 +43,7 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
 
   const { plan, loadError } = await getVaccinePlan();
   const currentError = error ?? loadError;
+  const view = vista === "timeline" ? "timeline" : "status";
 
   return (
     <main className={styles.main}>
@@ -84,6 +88,18 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
           </article>
         </div>
 
+        <nav className={styles.viewSwitch} aria-label="Vista de vacunas">
+          <Link aria-current={view === "status" ? "page" : undefined} href="/vacunas">
+            Por estado
+          </Link>
+          <Link
+            aria-current={view === "timeline" ? "page" : undefined}
+            href="/vacunas?vista=timeline"
+          >
+            Linea temporal
+          </Link>
+        </nav>
+
         {updated ? <p className={styles.success}>Planificacion actualizada.</p> : null}
         {applied ? <p className={styles.success}>Vacuna marcada como aplicada.</p> : null}
         {applicationUpdated ? (
@@ -96,8 +112,10 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
           groups={plan.groups}
           markAppliedAction={markVaccineDoseAppliedAction}
           reopenAction={reopenPlannedVaccineDoseAction}
+          timelineGroups={groupPlannedVaccineDosesByAge(plan.doses)}
           updateAction={updatePlannedVaccineDoseAction}
           updateApplicationAction={updateAppliedVaccineDoseAction}
+          view={view}
         />
       </section>
     </main>

@@ -1,110 +1,58 @@
 "use client";
 
-import { KeyboardEvent, PointerEvent, useRef, useState } from "react";
+import { ReactNode, useState } from "react";
+import { BottomSheet } from "../../../shared/ui/bottom-sheet";
 
 type WeightCreateSheetProps = {
   action: (formData: FormData) => void | Promise<void>;
+  buttonClassName?: string;
+  children?: ReactNode;
+  returnTo?: string;
   styles: Record<string, string>;
 };
 
-export function WeightCreateSheet({ action, styles }: WeightCreateSheetProps) {
+export function WeightCreateSheet({
+  action,
+  buttonClassName,
+  children = "+",
+  returnTo,
+  styles,
+}: WeightCreateSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
-  const dragStartYRef = useRef<number | null>(null);
 
   function openSheet() {
-    setDragOffset(0);
     setIsOpen(true);
   }
 
   function closeSheet() {
-    setDragOffset(0);
-    dragStartYRef.current = null;
     setIsOpen(false);
-  }
-
-  function handleSheetKeyDown(event: KeyboardEvent<HTMLElement>) {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      closeSheet();
-    }
-  }
-
-  function handleHandleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      closeSheet();
-    }
-  }
-
-  function handleDragStart(event: PointerEvent<HTMLDivElement>) {
-    dragStartYRef.current = event.clientY;
-    event.currentTarget.setPointerCapture(event.pointerId);
-  }
-
-  function handleDragMove(event: PointerEvent<HTMLDivElement>) {
-    if (dragStartYRef.current === null) {
-      return;
-    }
-
-    setDragOffset(Math.max(0, event.clientY - dragStartYRef.current));
-  }
-
-  function handleDragEnd() {
-    if (dragOffset > 70) {
-      closeSheet();
-      return;
-    }
-
-    dragStartYRef.current = null;
-    setDragOffset(0);
   }
 
   return (
     <>
       <button
         aria-label="Añadir peso"
-        className={styles.floatingAddButton}
+        className={buttonClassName ?? styles.floatingAddButton}
         onClick={openSheet}
         type="button"
       >
-        +
+        {children}
       </button>
 
       {isOpen ? (
-        <div className={styles.sheetBackdrop} onClick={closeSheet}>
-          <form
-            action={action}
-            aria-labelledby="new-weight-title"
-            aria-modal="false"
-            className={styles.sheet}
-            onClick={(event) => event.stopPropagation()}
-            onKeyDown={handleSheetKeyDown}
-            role="dialog"
-            style={
-              {
-                "--sheet-drag-offset": `${dragOffset}px`,
-              } as React.CSSProperties
-            }
-          >
-            <div
-              aria-label="Cerrar panel de peso"
-              className={styles.sheetHandle}
-              onKeyDown={handleHandleKeyDown}
-              onPointerCancel={handleDragEnd}
-              onPointerDown={handleDragStart}
-              onPointerMove={handleDragMove}
-              onPointerUp={handleDragEnd}
-              role="button"
-              tabIndex={0}
-            >
-              <span />
-            </div>
-
+        <BottomSheet
+          ariaLabel="Cerrar panel de peso"
+          labelledBy="new-weight-title"
+          onClose={closeSheet}
+          styles={styles}
+        >
+          <form action={action} className={styles.sheetBody}>
             <div className={styles.sheetHeader}>
               <p>Peso</p>
               <h2 id="new-weight-title">Nuevo peso</h2>
             </div>
+
+            {returnTo ? <input name="returnTo" type="hidden" value={returnTo} /> : null}
 
             <div className={styles.sheetFields}>
               <label>
@@ -148,7 +96,7 @@ export function WeightCreateSheet({ action, styles }: WeightCreateSheetProps) {
               </button>
             </div>
           </form>
-        </div>
+        </BottomSheet>
       ) : null}
     </>
   );

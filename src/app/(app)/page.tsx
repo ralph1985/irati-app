@@ -5,20 +5,31 @@ import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
 import { listVaccinePlan } from "@/modules/vaccines/application/list-vaccine-plan";
 import { VaccineAlert } from "@/modules/vaccines/application/vaccine-alerts";
+import { selectNextActionableVaccineDose } from "@/modules/vaccines/application/vaccine-plan-views";
+import { PlannedVaccineDoseWithStatus } from "@/modules/vaccines/domain/vaccine-calendar";
 import { CachedVaccinePlanReadRepository } from "@/modules/vaccines/infrastructure/cached-vaccine-plan-read-repository";
 import { listWeightEntries } from "@/modules/weight/application/list-weight-entries";
+import {
+  buildWeightTrendSummary,
+  WeightTrendSummary,
+} from "@/modules/weight/application/weight-trend-summary";
 import { CachedWeightReadRepository } from "@/modules/weight/infrastructure/cached-weight-repository";
 import Link from "next/link";
+import { createWeightEntryAction } from "./peso/actions";
+import { markVaccineDoseAppliedAction } from "./vacunas/actions";
+import { HomeQuickActions } from "./_components/home-quick-actions";
 import styles from "./page.module.css";
 
 type HomeProps = {
   searchParams: Promise<{
     error?: string;
+    vaccineApplied?: string;
+    weightCreated?: string;
   }>;
 };
 
 export default async function Home({ searchParams }: HomeProps) {
-  const { error } = await searchParams;
+  const { error, vaccineApplied, weightCreated } = await searchParams;
 
   if (!(await hasValidSession())) {
     return <LoginScreen error={error} />;
@@ -39,6 +50,11 @@ export default async function Home({ searchParams }: HomeProps) {
         ) : null}
         {weightResult.loadError || vaccinePlan.loadError ? (
           <p className={styles.dataNotice}>Algunos datos no se pudieron cargar.</p>
+        ) : null}
+        {error ? <p className={styles.dataNotice}>{getHomeErrorMessage(error)}</p> : null}
+        {weightCreated ? <p className={styles.successNotice}>Peso guardado.</p> : null}
+        {vaccineApplied ? (
+          <p className={styles.successNotice}>Vacuna marcada como aplicada.</p>
         ) : null}
       </section>
 
@@ -65,18 +81,36 @@ export default async function Home({ searchParams }: HomeProps) {
         )}
       </section>
 
+      <HomeQuickActions
+        createWeightAction={createWeightEntryAction}
+        markAppliedAction={markVaccineDoseAppliedAction}
+        nextDose={vaccinePlan.nextDose}
+      />
+
       <section className={styles.summary} aria-label="Resumen inicial">
         <article>
           <span>Peso</span>
           <strong>
-            {weightResult.latestWeight
-              ? `${weightResult.latestWeight.weightGrams.toLocaleString("es-ES")} g`
+            {weightResult.summary.latest
+              ? `${weightResult.summary.latest.weightGrams.toLocaleString("es-ES")} g`
               : "Sin registros"}
           </strong>
         </article>
         <article>
+          <span>Ultimo control</span>
+          <strong>{formatLatestWeightMeta(weightResult.summary)}</strong>
+        </article>
+        <article>
+          <span>Cambio</span>
+          <strong>{formatWeightTrend(weightResult.summary)}</strong>
+        </article>
+        <article>
           <span>Vacunas</span>
           <strong>{formatVaccineSummary(vaccinePlan.summary)}</strong>
+        </article>
+        <article>
+          <span>Proxima accion</span>
+          <strong>{formatNextVaccineDose(vaccinePlan.nextDose)}</strong>
         </article>
         <article>
           <span>CIPA</span>
@@ -95,11 +129,11 @@ export default async function Home({ searchParams }: HomeProps) {
 
 async function getLatestWeight(repository: CachedWeightReadRepository) {
   try {
-    const [latestWeight] = await listWeightEntries(repository);
+    const entries = await listWeightEntries(repository);
 
-    return { latestWeight, loadError: false };
+    return { summary: buildWeightTrendSummary(entries, new Date()), loadError: false };
   } catch {
-    return { latestWeight: undefined, loadError: true };
+    return { summary: buildWeightTrendSummary([], new Date()), loadError: true };
   }
 }
 
@@ -112,11 +146,15 @@ async function getVaccinePlan(repository: CachedVaccinePlanReadRepository): Prom
     pendiente: number;
     aplicada: number;
   };
+  nextDose: PlannedVaccineDoseWithStatus | null;
   loadError: boolean;
 }> {
   try {
+    const plan = await listVaccinePlan(repository, new Date());
+
     return {
-      ...(await listVaccinePlan(repository, new Date())),
+      ...plan,
+      nextDose: selectNextActionableVaccineDose(plan.doses),
       loadError: false,
     };
   } catch {
@@ -129,6 +167,7 @@ async function getVaccinePlan(repository: CachedVaccinePlanReadRepository): Prom
         pendiente: 0,
         aplicada: 0,
       },
+      nextDose: null,
       loadError: true,
     };
   }
@@ -148,6 +187,52 @@ function formatVaccineSummary(summary: {
   }
 
   return `${summary.pendiente} pendiente${summary.pendiente === 1 ? "" : "s"}`;
+}
+
+function formatLatestWeightMeta(summary: WeightTrendSummary): string {
+  if (!summary.latest) {
+    return "Sin registros";
+  }
+
+  const dayLabel =
+    summary.daysSinceLatest === 0
+      ? "hoy"
+      : `hace ${summary.daysSinceLatest} dia${summary.daysSinceLatest === 1 ? "" : "s"}`;
+
+  return `${formatDate(summary.latest.measuredOn)}, ${dayLabel}`;
+}
+
+function formatWeightTrend(summary: WeightTrendSummary): string {
+  if (!summary.latest || !summary.previous || summary.differenceGrams === null) {
+    return "Sin comparativa";
+  }
+
+  const sign = summary.differenceGrams > 0 ? "+" : "";
+  const average =
+    summary.averageGramsPerDay === null
+      ? ""
+      : ` · ${sign}${summary.averageGramsPerDay.toLocaleString("es-ES")} g/dia`;
+
+  return `${sign}${summary.differenceGrams.toLocaleString("es-ES")} g${average}`;
+}
+
+function formatNextVaccineDose(dose: PlannedVaccineDoseWithStatus | null): string {
+  if (!dose) {
+    return "Sin pendientes";
+  }
+
+  return `${dose.vaccineName}, ${formatDate(dose.plannedDate)}`;
+}
+
+function getHomeErrorMessage(error: string): string {
+  const messages: Record<string, string> = {
+    "application-save": "No se pudo guardar la vacuna aplicada.",
+    "application-validation": "Revisa fecha, lugar, vacuna y dosis.",
+    "weight-save": "No se pudo guardar el peso.",
+    "weight-validation": "Revisa la fecha, el peso y el lugar.",
+  };
+
+  return messages[error] ?? "No se pudo completar la accion.";
 }
 
 function formatDate(date: string): string {

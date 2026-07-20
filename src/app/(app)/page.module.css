@@ -39,6 +39,13 @@
   line-height: 1.4;
 }
 
+.successNotice {
+  color: #065f46;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
 .alerts {
   display: grid;
   gap: 12px;
@@ -118,6 +125,46 @@
   padding: 14px;
 }
 
+.quickActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.quickActionButton {
+  display: inline-flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 16px;
+  background: #7c3aed;
+  color: #fff;
+  box-shadow: 0 16px 34px rgba(76, 29, 149, 0.18);
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  padding: 0 12px;
+  text-align: center;
+}
+
+.quickActionButton:nth-child(2) {
+  background: #5b21b6;
+}
+
+.quickActionButton span {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 16px;
+  line-height: 1;
+}
+
 .summary {
   display: grid;
   grid-template-columns: 1fr;
@@ -160,8 +207,156 @@
   padding: 0 18px;
 }
 
+.full {
+  grid-column: 1 / -1;
+}
+
+.sheetBackdrop {
+  position: fixed;
+  z-index: 12;
+  inset: 0;
+  display: grid;
+  align-items: end;
+  padding: 0 max(10px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px))
+    max(10px, env(safe-area-inset-left, 0px));
+  background: rgba(46, 23, 72, 0.32);
+}
+
+.sheet {
+  display: grid;
+  width: min(100%, 560px);
+  max-height: calc(100dvh - 18px);
+  margin: 0 auto;
+  overflow: auto;
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  border-radius: 18px 18px 0 0;
+  background: #fff;
+  box-shadow: 0 -20px 52px rgba(46, 23, 72, 0.22);
+  gap: 16px;
+  padding: 8px 16px 18px;
+  transform: translateY(var(--sheet-drag-offset, 0px));
+  animation: sheetIn 0.24s ease-out;
+}
+
+.sheetBody {
+  display: grid;
+  gap: 16px;
+}
+
+.sheetHandle {
+  display: grid;
+  min-height: 34px;
+  place-items: center;
+  cursor: grab;
+  touch-action: none;
+}
+
+.sheetHandle span {
+  width: 48px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(96, 72, 115, 0.34);
+}
+
+.sheetHeader {
+  display: grid;
+  gap: 4px;
+}
+
+.sheetHeader p {
+  color: #7c3aed;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.sheetHeader h2 {
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.sheetHeader span {
+  color: #6b587c;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sheetFields {
+  display: grid;
+  gap: 14px;
+}
+
+.sheetFields label {
+  display: grid;
+  gap: 7px;
+  color: #5b426f;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sheetFields input,
+.sheetFields select,
+.sheetFields textarea {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid rgba(124, 58, 237, 0.24);
+  border-radius: 14px;
+  background: #fff;
+  color: #241335;
+  font: inherit;
+  padding: 0 12px;
+}
+
+.sheetFields textarea {
+  min-height: 86px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.sheetActions {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 10px;
+}
+
+.primaryButton,
+.secondaryButton {
+  min-height: 48px;
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.primaryButton {
+  background: #7c3aed;
+  color: #fff;
+}
+
+.secondaryButton {
+  background: #f3e8ff;
+  color: #5b21b6;
+}
+
 @media (min-width: 720px) {
   .summary {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sheetFields {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@keyframes sheetIn {
+  from {
+    opacity: 0.86;
+    transform: translateY(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(var(--sheet-drag-offset, 0px));
   }
 }

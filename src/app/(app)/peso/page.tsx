@@ -10,6 +10,10 @@ import {
 } from "@/modules/weight/application/weight-filter";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
 import { listWeightEntries } from "@/modules/weight/application/list-weight-entries";
+import {
+  buildWeightTrendSummary,
+  WeightTrendSummary,
+} from "@/modules/weight/application/weight-trend-summary";
 import { CachedWeightReadRepository } from "@/modules/weight/infrastructure/cached-weight-repository";
 import { WeightChart } from "@/modules/weight/ui/weight-chart";
 import { WeightCreateSheet } from "@/modules/weight/ui/weight-create-sheet";
@@ -52,6 +56,7 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
   const currentError = error ?? loadError;
   const activeFilter = isWeightFilter(lugar) ? lugar : "all";
   const filteredEntries = filterWeightEntries(entries, activeFilter);
+  const trendSummary = buildWeightTrendSummary(filteredEntries, new Date());
 
   return (
     <>
@@ -97,6 +102,8 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
             <span>{filteredEntries.length} registros</span>
           </div>
 
+          <WeightTrendPanel summary={trendSummary} />
+
           <WeightHistory
             deleteAction={deleteWeightEntryAction}
             entries={filteredEntries}
@@ -108,6 +115,41 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
       <WeightCreateSheet action={createWeightEntryAction} styles={styles} />
     </>
   );
+}
+
+function WeightTrendPanel({ summary }: { summary: WeightTrendSummary }) {
+  if (!summary.latest) {
+    return null;
+  }
+
+  return (
+    <div className={styles.trendSummary} aria-label="Resumen de peso">
+      <article>
+        <span>Ultimo</span>
+        <strong>{summary.latest.weightGrams.toLocaleString("es-ES")} g</strong>
+      </article>
+      <article>
+        <span>Hace</span>
+        <strong>
+          {summary.daysSinceLatest} dia{summary.daysSinceLatest === 1 ? "" : "s"}
+        </strong>
+      </article>
+      <article>
+        <span>Cambio</span>
+        <strong>{formatWeightTrend(summary)}</strong>
+      </article>
+    </div>
+  );
+}
+
+function formatWeightTrend(summary: WeightTrendSummary): string {
+  if (!summary.previous || summary.differenceGrams === null) {
+    return "Sin comparativa";
+  }
+
+  const sign = summary.differenceGrams > 0 ? "+" : "";
+
+  return `${sign}${summary.differenceGrams.toLocaleString("es-ES")} g`;
 }
 
 async function getWeightEntries() {

@@ -268,6 +268,33 @@
   color: #5b21b6;
 }
 
+.trendSummary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.trendSummary article {
+  display: grid;
+  gap: 4px;
+  border-radius: 12px;
+  background: #fff;
+  padding: 10px;
+}
+
+.trendSummary span {
+  color: #6b587c;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.trendSummary strong {
+  color: #33213f;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
 .chartFullscreenBackdrop {
   position: fixed;
   z-index: 14;
@@ -451,6 +478,11 @@
   padding: 8px 16px 18px;
   transform: translateY(var(--sheet-drag-offset, 0px));
   animation: sheetIn 0.24s ease-out;
+}
+
+.sheetBody {
+  display: grid;
+  gap: 16px;
 }
 
 .sheetHandle {
