@@ -144,7 +144,7 @@
 
 .chartCanvas svg {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 8 / 9;
   overflow: visible;
 }
 

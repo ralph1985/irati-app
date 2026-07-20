@@ -47,12 +47,12 @@ export type WeightChartSeries = {
 };
 
 const WIDTH = 320;
-const HEIGHT = 180;
+const HEIGHT = 360;
 const PADDING = {
-  bottom: 28,
+  bottom: 34,
   left: 42,
   right: 16,
-  top: 18,
+  top: 24,
 };
 
 export function buildWeightChartSeries(

@@ -212,12 +212,17 @@ function WeightChartSvg({
           );
         })}
         {firstPoint ? (
-          <text className={styles.chartDate} x="42" y="174">
+          <text className={styles.chartDate} x="42" y={series.chartHeight - 6}>
             Nacimiento
           </text>
         ) : null}
         {latestPoint && latestPoint !== firstPoint ? (
-          <text className={styles.chartDate} textAnchor="end" x={latestPoint.x} y="174">
+          <text
+            className={styles.chartDate}
+            textAnchor="end"
+            x={latestPoint.x}
+            y={series.chartHeight - 6}
+          >
             {latestPoint.dateLabel}
           </text>
         ) : null}
