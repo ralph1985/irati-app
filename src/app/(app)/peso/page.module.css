@@ -198,70 +198,43 @@
   font-weight: 700;
 }
 
-.editor {
-  border-top: 1px solid rgba(124, 58, 237, 0.12);
-  padding-top: 10px;
+.historyActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
-.editor summary {
-  color: #7c3aed;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.editor form {
+.iconButton {
   display: grid;
-  gap: 12px;
-  padding-top: 12px;
-}
-
-.editor label {
-  display: grid;
-  gap: 7px;
-  color: #5b426f;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.editor input,
-.editor select,
-.editor textarea {
-  width: 100%;
-  min-height: 44px;
-  border: 1px solid rgba(124, 58, 237, 0.24);
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid rgba(124, 58, 237, 0.16);
   border-radius: 14px;
-  background: #fff;
-  color: #241335;
-  font: inherit;
-  padding: 0 12px;
-}
-
-.editor textarea {
-  min-height: 84px;
-  padding: 12px;
-  resize: vertical;
-}
-
-.editor button,
-.deleteButton {
-  min-height: 42px;
-  border: 0;
-  border-radius: 14px;
+  background: #f3e8ff;
+  color: #5b21b6;
   cursor: pointer;
-  font: inherit;
-  font-weight: 800;
 }
 
-.editor button {
-  background: #7c3aed;
-  color: #fff;
+.iconButton svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
 }
 
-.deleteButton {
-  width: 100%;
+.deleteIconButton {
+  border-color: rgba(153, 27, 27, 0.16);
   background: #fef2f2;
   color: #991b1b;
+}
+
+.iconButton:focus-visible {
+  outline: 3px solid rgba(124, 58, 237, 0.24);
+  outline-offset: 3px;
 }
 
 .floatingAddButton {

@@ -32,5 +32,9 @@ describe("WeightHistory", () => {
 
     expect(html).toContain("3200 g");
     expect(html).toContain("Hospital");
+    expect(html).toContain('aria-label="Editar peso de');
+    expect(html).toContain('aria-label="Borrar peso de');
+    expect(html).not.toContain(">Editar<");
+    expect(html).not.toContain(">Borrar<");
   });
 });
