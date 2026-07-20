@@ -306,6 +306,7 @@
 .secondaryActionButton {
   display: grid;
   width: 38px;
+  justify-self: end;
   min-height: 36px;
   place-items: center;
   border: 0;
