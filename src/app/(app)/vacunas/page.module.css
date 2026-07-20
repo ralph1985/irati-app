@@ -151,34 +151,41 @@
 
 .doseList {
   display: grid;
-  gap: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  border-radius: 14px;
+  background: #fff;
   list-style: none;
 }
 
 .doseList li {
   display: grid;
-  gap: 12px;
-  border-radius: 14px;
-  background: #fff;
-  padding: 14px;
+  gap: 8px;
+  padding: 10px 10px 10px 12px;
+}
+
+.doseList li + li {
+  border-top: 1px solid rgba(96, 72, 115, 0.14);
 }
 
 .doseSummary {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 14px;
+  gap: 10px;
   min-width: 0;
 }
 
 .doseSummary div {
   display: grid;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
 }
 
 .doseSummary strong {
-  font-size: 17px;
+  color: #241335;
+  font-size: 15px;
+  line-height: 1.15;
   overflow-wrap: anywhere;
 }
 
@@ -186,8 +193,9 @@
 .doseSummary time,
 .notes {
   color: #6b587c;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
+  line-height: 1.25;
 }
 
 .doseSummary time {
@@ -199,17 +207,17 @@
   display: grid;
   flex: 0 0 auto;
   justify-items: end;
-  gap: 6px;
+  gap: 4px;
 }
 
 .statusBadge {
   display: inline-flex;
-  min-height: 28px;
+  min-height: 24px;
   align-items: center;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
-  padding: 0 10px;
+  padding: 0 8px;
 }
 
 .statusBadge[data-status="retrasada"] {
@@ -233,16 +241,15 @@
 }
 
 .notes {
-  border-radius: 12px;
+  border-radius: 10px;
   background: #f8fafc;
   font-weight: 600;
-  line-height: 1.4;
-  padding: 10px;
+  padding: 7px 8px;
 }
 
 .editor {
   border-top: 1px solid rgba(124, 58, 237, 0.12);
-  padding-top: 10px;
+  padding-top: 8px;
 }
 
 .editor summary {
@@ -296,24 +303,26 @@
 }
 
 .actionButton {
-  min-height: 42px;
+  min-height: 36px;
   border: 0;
-  border-radius: 14px;
+  border-radius: 12px;
   background: #7c3aed;
   color: #fff;
   cursor: pointer;
   font: inherit;
+  font-size: 13px;
   font-weight: 800;
 }
 
 .secondaryActionButton {
-  min-height: 42px;
+  min-height: 36px;
   border: 1px solid rgba(124, 58, 237, 0.18);
-  border-radius: 14px;
+  border-radius: 12px;
   background: #f3e8ff;
   color: #5b21b6;
   cursor: pointer;
   font: inherit;
+  font-size: 13px;
   font-weight: 800;
 }
 
