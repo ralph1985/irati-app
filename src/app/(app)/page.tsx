@@ -15,6 +15,7 @@ import {
   WeightTrendSummary,
 } from "@/modules/weight/application/weight-trend-summary";
 import { CachedWeightReadRepository } from "@/modules/weight/infrastructure/cached-weight-repository";
+import { ToastFeedback, ToastFeedbackMessage } from "@/shared/ui/toast-feedback";
 import Link from "next/link";
 import { createWeightEntryAction } from "./peso/actions";
 import { markVaccineDoseAppliedAction } from "./vacunas/actions";
@@ -44,6 +45,23 @@ export default async function Home({ searchParams }: HomeProps) {
     vaccineDoses: vaccinePlan.doses,
     weightSummary: weightResult.summary,
   });
+  const feedbackMessages: ToastFeedbackMessage[] = [
+    ...(error
+      ? [{ id: `error-${error}`, text: getHomeErrorMessage(error), variant: "error" as const }]
+      : []),
+    ...(weightCreated
+      ? [{ id: "weight-created", text: "Peso guardado.", variant: "success" as const }]
+      : []),
+    ...(vaccineApplied
+      ? [
+          {
+            id: "vaccine-applied",
+            text: "Vacuna marcada como aplicada.",
+            variant: "success" as const,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <main className={styles.main}>
@@ -57,11 +75,7 @@ export default async function Home({ searchParams }: HomeProps) {
         {weightResult.loadError || vaccinePlan.loadError ? (
           <p className={styles.dataNotice}>Algunos datos no se pudieron cargar.</p>
         ) : null}
-        {error ? <p className={styles.dataNotice}>{getHomeErrorMessage(error)}</p> : null}
-        {weightCreated ? <p className={styles.successNotice}>Peso guardado.</p> : null}
-        {vaccineApplied ? (
-          <p className={styles.successNotice}>Vacuna marcada como aplicada.</p>
-        ) : null}
+        <ToastFeedback messages={feedbackMessages} />
       </section>
 
       <section className={styles.alerts} aria-labelledby="vaccine-alerts-title">

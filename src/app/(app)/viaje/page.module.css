@@ -24,29 +24,6 @@
   line-height: 1;
 }
 
-.feedback {
-  display: grid;
-  gap: 8px;
-}
-
-.success,
-.error {
-  margin: 0;
-  border-radius: 18px;
-  padding: 12px 14px;
-  font-weight: 700;
-}
-
-.success {
-  background: #ecfdf5;
-  color: #047857;
-}
-
-.error {
-  background: #fff1f2;
-  color: #be123c;
-}
-
 .panel {
   display: grid;
   gap: 12px;

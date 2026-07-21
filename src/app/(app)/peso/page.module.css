@@ -42,28 +42,11 @@
   grid-column: 1 / -1;
 }
 
-.success,
-.error,
 .empty {
   border-radius: 14px;
   font-size: 14px;
   line-height: 1.4;
   padding: 12px 14px;
-}
-
-.success {
-  background: #ecfdf5;
-  color: #065f46;
-}
-
-.error {
-  background: #fef2f2;
-  color: #991b1b;
-}
-
-.feedback {
-  display: grid;
-  gap: 10px;
 }
 
 .empty {

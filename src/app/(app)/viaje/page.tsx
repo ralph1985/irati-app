@@ -3,6 +3,7 @@ import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import { listTravelChecklist } from "@/modules/travel/application/list-travel-checklist";
 import { CachedTravelChecklistReadRepository } from "@/modules/travel/infrastructure/cached-travel-checklist-repository";
 import { TravelChecklistView } from "@/modules/travel/ui/travel-checklist-view";
+import { ToastFeedback, ToastFeedbackMessage } from "@/shared/ui/toast-feedback";
 import {
   createTravelChecklistItemAction,
   deleteTravelChecklistItemAction,
@@ -39,6 +40,21 @@ export default async function TravelPage({ searchParams }: TravelPageProps) {
 
   const { checklist, loadError } = await getTravelChecklist();
   const currentError = error ?? loadError;
+  const feedbackMessages: ToastFeedbackMessage[] = [
+    ...(created ? [{ id: "created", text: "Item añadido.", variant: "success" as const }] : []),
+    ...(updated ? [{ id: "updated", text: "Item actualizado.", variant: "success" as const }] : []),
+    ...(deleted ? [{ id: "deleted", text: "Item borrado.", variant: "success" as const }] : []),
+    ...(reset ? [{ id: "reset", text: "Lista reiniciada.", variant: "success" as const }] : []),
+    ...(currentError
+      ? [
+          {
+            id: `error-${currentError}`,
+            text: errorMessages[currentError],
+            variant: "error" as const,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <main className={styles.main}>
@@ -47,15 +63,7 @@ export default async function TravelPage({ searchParams }: TravelPageProps) {
         <h1>Lista de viaje</h1>
       </header>
 
-      {created || updated || deleted || reset || currentError ? (
-        <section className={styles.feedback} aria-live="polite">
-          {created ? <p className={styles.success}>Item añadido.</p> : null}
-          {updated ? <p className={styles.success}>Item actualizado.</p> : null}
-          {deleted ? <p className={styles.success}>Item borrado.</p> : null}
-          {reset ? <p className={styles.success}>Lista reiniciada.</p> : null}
-          {currentError ? <p className={styles.error}>{errorMessages[currentError]}</p> : null}
-        </section>
-      ) : null}
+      <ToastFeedback messages={feedbackMessages} />
 
       <TravelChecklistView
         checklist={checklist}

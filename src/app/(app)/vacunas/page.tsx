@@ -5,6 +5,7 @@ import { groupPlannedVaccineDosesByAge } from "@/modules/vaccines/application/va
 import { madridVaccineCalendarSource } from "@/modules/vaccines/domain/vaccine-calendar";
 import { CachedVaccinePlanReadRepository } from "@/modules/vaccines/infrastructure/cached-vaccine-plan-read-repository";
 import { PlannedVaccineList } from "@/modules/vaccines/ui/planned-vaccine-list";
+import { ToastFeedback, ToastFeedbackMessage } from "@/shared/ui/toast-feedback";
 import Link from "next/link";
 import {
   markVaccineDoseAppliedAction,
@@ -44,6 +45,35 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
   const { plan, loadError } = await getVaccinePlan();
   const currentError = error ?? loadError;
   const view = vista === "timeline" ? "timeline" : "status";
+  const feedbackMessages: ToastFeedbackMessage[] = [
+    ...(updated
+      ? [{ id: "updated", text: "Planificacion actualizada.", variant: "success" as const }]
+      : []),
+    ...(applied
+      ? [{ id: "applied", text: "Vacuna marcada como aplicada.", variant: "success" as const }]
+      : []),
+    ...(applicationUpdated
+      ? [
+          {
+            id: "application-updated",
+            text: "Datos de aplicacion actualizados.",
+            variant: "success" as const,
+          },
+        ]
+      : []),
+    ...(reopened
+      ? [{ id: "reopened", text: "Vacuna devuelta a pendiente.", variant: "success" as const }]
+      : []),
+    ...(currentError
+      ? [
+          {
+            id: `error-${currentError}`,
+            text: errorMessages[currentError],
+            variant: "error" as const,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <main className={styles.main}>
@@ -100,13 +130,7 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
           </Link>
         </nav>
 
-        {updated ? <p className={styles.success}>Planificacion actualizada.</p> : null}
-        {applied ? <p className={styles.success}>Vacuna marcada como aplicada.</p> : null}
-        {applicationUpdated ? (
-          <p className={styles.success}>Datos de aplicacion actualizados.</p>
-        ) : null}
-        {reopened ? <p className={styles.success}>Vacuna devuelta a pendiente.</p> : null}
-        {currentError ? <p className={styles.error}>{errorMessages[currentError]}</p> : null}
+        <ToastFeedback messages={feedbackMessages} />
 
         <PlannedVaccineList
           groups={plan.groups}

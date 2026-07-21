@@ -18,6 +18,7 @@ import { CachedWeightReadRepository } from "@/modules/weight/infrastructure/cach
 import { WeightChart } from "@/modules/weight/ui/weight-chart";
 import { WeightCreateSheet } from "@/modules/weight/ui/weight-create-sheet";
 import { WeightHistory } from "@/modules/weight/ui/weight-history";
+import { ToastFeedback, ToastFeedbackMessage } from "@/shared/ui/toast-feedback";
 import {
   createWeightEntryAction,
   deleteWeightEntryAction,
@@ -57,6 +58,20 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
   const activeFilter = isWeightFilter(lugar) ? lugar : "all";
   const filteredEntries = filterWeightEntries(entries, activeFilter);
   const trendSummary = buildWeightTrendSummary(filteredEntries, new Date());
+  const feedbackMessages: ToastFeedbackMessage[] = [
+    ...(created ? [{ id: "created", text: "Peso guardado.", variant: "success" as const }] : []),
+    ...(updated ? [{ id: "updated", text: "Peso actualizado.", variant: "success" as const }] : []),
+    ...(deleted ? [{ id: "deleted", text: "Peso borrado.", variant: "success" as const }] : []),
+    ...(currentError
+      ? [
+          {
+            id: `error-${currentError}`,
+            text: errorMessages[currentError],
+            variant: "error" as const,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <>
@@ -66,14 +81,7 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
           <h1>Registro de peso</h1>
         </header>
 
-        {created || updated || deleted || currentError ? (
-          <section className={styles.feedback} aria-live="polite">
-            {created ? <p className={styles.success}>Peso guardado.</p> : null}
-            {updated ? <p className={styles.success}>Peso actualizado.</p> : null}
-            {deleted ? <p className={styles.success}>Peso borrado.</p> : null}
-            {currentError ? <p className={styles.error}>{errorMessages[currentError]}</p> : null}
-          </section>
-        ) : null}
+        <ToastFeedback messages={feedbackMessages} offset="floatingAction" />
 
         <section className={styles.panel} aria-labelledby="chart-title">
           <div className={styles.sectionTitle}>
