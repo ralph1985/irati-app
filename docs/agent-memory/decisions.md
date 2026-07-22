@@ -20,5 +20,6 @@ Este archivo guarda decisiones estables y acotadas que deben sobrevivir a futura
 - Irati conserva arquitectura hexagonal por módulos bajo `src/modules`.
 - La app es PWA instalable, pero los datos requieren conexión en el MVP.
 - Supabase remoto es la fuente principal; no usar Docker, Supabase local, offline ni realtime por defecto.
+- Las tablas privadas de Supabase tienen RLS activado y no exponen politicas directas para `anon` ni `authenticated`; la app accede desde servidor con `SUPABASE_SERVICE_ROLE_KEY`.
 - Para cambios de producto relevantes, `docs/spec.md` y `docs/roadmap.md` deben quedar alineados con el comportamiento esperado.
 - La vista Viaje debe usar bottom sheet para añadir y editar items, categorias en acordeon, botones de icono accesibles y listado compacto; no mostrar un campo manual de orden.

@@ -67,6 +67,9 @@ Usan una unica cuenta compartida protegida por PIN/passcode. En el MVP ambos tie
 ## Seguridad
 
 La app no debe exponer datos privados antes de autenticar.
+Las tablas privadas de Supabase deben tener RLS activado.
+No debe haber politicas de lectura o escritura directa para `anon` ni `authenticated` en el MVP.
+Los accesos a datos de aplicacion deben pasar por servidor usando `SUPABASE_SERVICE_ROLE_KEY`.
 
 Requisitos iniciales:
 

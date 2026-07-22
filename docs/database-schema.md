@@ -14,7 +14,8 @@ Proyecto remoto:
 - Supabase Auth queda desactivado en el MVP; el acceso compartido por passcode vive en la capa Next.js.
 - No se activa realtime.
 - No se activa storage.
-- El esquema inicial no incluye RLS porque el MVP no expone Supabase directamente al cliente; los accesos deben pasar por servidor.
+- Las tablas privadas tienen RLS activado desde `supabase/migrations/20260722120000_enable_rls_for_private_tables.sql`.
+- No hay politicas para `anon` ni `authenticated`; los accesos de aplicacion deben pasar por servidor con `SUPABASE_SERVICE_ROLE_KEY`.
 - Las tablas guardan `created_at` y `updated_at`, aunque `updated_at` se actualizara desde aplicacion o triggers futuros.
 
 ## `baby_profiles`
