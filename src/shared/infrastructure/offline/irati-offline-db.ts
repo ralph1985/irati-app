@@ -128,6 +128,17 @@ export async function readSyncMetadata(): Promise<SyncMetadata> {
   );
 }
 
+export async function recordOfflineSyncError(error: string): Promise<void> {
+  const currentMetadata = await readSyncMetadata();
+
+  await iratiOfflineDb.syncMetadata.put({
+    ...currentMetadata,
+    id: metadataId,
+    lastError: error,
+    schemaVersion: currentSchemaVersion,
+  });
+}
+
 export async function clearOfflineData(): Promise<void> {
   await iratiOfflineDb.transaction(
     "rw",

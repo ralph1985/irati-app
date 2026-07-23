@@ -88,8 +88,8 @@ Tareas:
 - [x] Mostrar resumen local en el fallback offline sin cachear HTML privado.
 - [x] Mostrar indicador global basico con copia preparada, preparando copia o sin conexion.
 - [ ] Leer snapshot local cuando la red o la lectura remota fallen.
-- [ ] Cachear app shell, assets y fallback offline con service worker, sin cachear HTML privado ni respuestas de datos familiares.
-- [ ] Mostrar estado global completo: `Al dia`, `Sin conexion`, `Datos locales` o `Error al sincronizar`.
+- [x] Cachear app shell, assets y fallback offline con service worker, sin cachear HTML privado ni respuestas de datos familiares.
+- [x] Mostrar estado global completo: `Al dia`, `Sin conexion`, `Datos locales` o `Error al sincronizar`.
 - [x] Mostrar ultima sincronizacion en Ajustes.
 - [ ] Mantener las escrituras online con Server Actions como ahora.
 

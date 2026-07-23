@@ -9,7 +9,7 @@ type OfflineStatusIndicatorProps = {
   };
 };
 
-type OfflineStatus = "synced" | "offline" | "empty";
+type OfflineStatus = "synced" | "local" | "offline" | "error" | "empty";
 
 export function OfflineStatusIndicator({ styles }: OfflineStatusIndicatorProps) {
   const [status, setStatus] = useState<OfflineStatus>("empty");
@@ -24,8 +24,18 @@ export function OfflineStatusIndicator({ styles }: OfflineStatusIndicatorProps) 
         return;
       }
 
+      if (!navigator.onLine && metadata.lastSuccessfulSyncAt) {
+        setStatus("local");
+        return;
+      }
+
       if (!navigator.onLine) {
         setStatus("offline");
+        return;
+      }
+
+      if (metadata.lastError) {
+        setStatus("error");
         return;
       }
 
@@ -55,9 +65,13 @@ export function OfflineStatusIndicator({ styles }: OfflineStatusIndicatorProps) 
 function getStatusCopy(status: OfflineStatus): string {
   switch (status) {
     case "synced":
-      return "Copia local preparada";
+      return "Al día";
+    case "local":
+      return "Datos locales";
     case "offline":
       return "Sin conexión";
+    case "error":
+      return "Error al sincronizar";
     case "empty":
       return "Preparando copia local";
   }

@@ -4,6 +4,7 @@ import {
   clearOfflineData,
   readOfflineSnapshot,
   readSyncMetadata,
+  recordOfflineSyncError,
   replaceOfflineSnapshot,
 } from "./irati-offline-db";
 
@@ -116,6 +117,29 @@ describe("Irati offline database", () => {
     });
     await expect(readSyncMetadata()).resolves.toMatchObject({
       lastSuccessfulSyncAt: null,
+    });
+  });
+
+  it("records sync errors without deleting the latest successful snapshot", async () => {
+    await replaceOfflineSnapshot(
+      {
+        appliedVaccineDoses: [],
+        plannedVaccineDoses: [],
+        profile: { birthDate: "2026-07-02", cipa: null, name: "Irati" },
+        travelChecklistItems: [],
+        weightEntries: [],
+      },
+      "2026-07-23T10:00:00.000Z",
+    );
+
+    await recordOfflineSyncError("No pudimos actualizar la copia local.");
+
+    await expect(readSyncMetadata()).resolves.toMatchObject({
+      lastError: "No pudimos actualizar la copia local.",
+      lastSuccessfulSyncAt: "2026-07-23T10:00:00.000Z",
+    });
+    await expect(readOfflineSnapshot()).resolves.toMatchObject({
+      profile: { name: "Irati" },
     });
   });
 });
