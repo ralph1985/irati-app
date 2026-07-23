@@ -121,6 +121,7 @@ Tareas:
 - [x] Reconciliar respuesta remota con el snapshot local.
 - [x] Mantener operaciones fallidas visibles y reintentables.
 - [x] Permitir alta de peso offline desde el formulario de Peso.
+- [x] Permitir edicion y borrado de peso offline desde el historico.
 
 Gate:
 

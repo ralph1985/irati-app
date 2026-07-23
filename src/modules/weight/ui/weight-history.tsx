@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { BottomSheet } from "../../../shared/ui/bottom-sheet";
-import { WeightEntry } from "../domain/weight-entry";
+import { createWeightEntry, isWeightPlace, WeightEntry } from "../domain/weight-entry";
 import {
+  applyOfflineWeightEntry,
+  deleteOfflineWeightEntry,
+  enqueuePendingWeightMutation,
   listPendingWeightMutations,
   PendingWeightMutation,
 } from "../../../shared/infrastructure/offline/irati-offline-db";
@@ -18,14 +21,8 @@ type WeightHistoryProps = {
 export function WeightHistory({ deleteAction, entries, updateAction }: WeightHistoryProps) {
   const [editingEntry, setEditingEntry] = useState<WeightEntry | null>(null);
   const [pendingMutations, setPendingMutations] = useState<PendingWeightMutation[]>([]);
-  const pendingEntries = pendingMutations
-    .map((mutation) => ({
-      entry: getPendingWeightEntry(mutation),
-      mutation,
-    }))
-    .filter((item): item is { entry: WeightEntry; mutation: PendingWeightMutation } =>
-      Boolean(item.entry),
-    );
+  const pendingState = buildPendingWeightState(pendingMutations);
+  const visibleEntries = entries.filter((entry) => !pendingState.hiddenEntryIds.has(entry.id));
 
   useEffect(() => {
     let isActive = true;
@@ -49,7 +46,7 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
     };
   }, []);
 
-  if (entries.length === 0 && pendingEntries.length === 0) {
+  if (visibleEntries.length === 0 && pendingState.entries.length === 0) {
     return <p className={styles.empty}>Aún no hay pesos en este filtro.</p>;
   }
 
@@ -64,7 +61,7 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
   return (
     <>
       <ol className={styles.history}>
-        {pendingEntries.map(({ entry, mutation }) => (
+        {pendingState.entries.map(({ entry, mutation }) => (
           <li data-pending="true" key={mutation.id}>
             <div className={styles.historySummary}>
               <div>
@@ -79,7 +76,7 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
           </li>
         ))}
 
-        {entries.map((entry) => (
+        {visibleEntries.map((entry) => (
           <li key={entry.id}>
             <div className={styles.historySummary}>
               <div>
@@ -106,6 +103,11 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
                 onSubmit={(event) => {
                   if (!confirm("¿Borrar este peso?")) {
                     event.preventDefault();
+                    return;
+                  }
+
+                  if (!navigator.onLine) {
+                    void deleteEntryOffline(event, entry.id);
                   }
                 }}
               >
@@ -130,7 +132,15 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
           onClose={closeEditor}
           styles={styles}
         >
-          <form action={updateAction} className={styles.sheetBody}>
+          <form
+            action={updateAction}
+            className={styles.sheetBody}
+            onSubmit={(event) => {
+              if (!navigator.onLine) {
+                void updateEntryOffline(event, closeEditor);
+              }
+            }}
+          >
             <div className={styles.sheetHeader}>
               <p>Peso</p>
               <h2 id="edit-weight-title">Ajustar peso</h2>
@@ -189,12 +199,83 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
   );
 }
 
-function getPendingWeightEntry(mutation: PendingWeightMutation): WeightEntry | null {
-  if (mutation.operation === "delete") {
-    return null;
+async function updateEntryOffline(event: FormEvent<HTMLFormElement>, onDone: () => void) {
+  event.preventDefault();
+
+  const formData = new FormData(event.currentTarget);
+  const id = String(formData.get("id") ?? "");
+  const place = String(formData.get("place") ?? "");
+
+  if (!id || !isWeightPlace(place)) {
+    return;
   }
 
-  return "measuredOn" in mutation.payload ? mutation.payload : null;
+  const entry = {
+    id,
+    ...createWeightEntry({
+      measuredOn: String(formData.get("measuredOn") ?? ""),
+      notes: String(formData.get("notes") ?? ""),
+      place,
+      weightGrams: Number(formData.get("weightGrams")),
+    }),
+  };
+
+  await applyOfflineWeightEntry(entry);
+  await enqueuePendingWeightMutation({
+    id: `weight-update-${entry.id}-${Date.now()}`,
+    operation: "update",
+    payload: entry,
+  });
+  window.dispatchEvent(new Event("irati-offline-weight-updated"));
+  window.dispatchEvent(new Event("irati-offline-sync-updated"));
+  onDone();
+}
+
+async function deleteEntryOffline(event: FormEvent<HTMLFormElement>, id: string) {
+  event.preventDefault();
+
+  await deleteOfflineWeightEntry(id);
+  await enqueuePendingWeightMutation({
+    id: `weight-delete-${id}-${Date.now()}`,
+    operation: "delete",
+    payload: { id },
+  });
+  window.dispatchEvent(new Event("irati-offline-weight-updated"));
+  window.dispatchEvent(new Event("irati-offline-sync-updated"));
+}
+
+function buildPendingWeightState(mutations: PendingWeightMutation[]): {
+  entries: Array<{ entry: WeightEntry; mutation: PendingWeightMutation }>;
+  hiddenEntryIds: Set<string>;
+} {
+  const pendingByEntryId = new Map<
+    string,
+    { entry: WeightEntry; mutation: PendingWeightMutation }
+  >();
+  const hiddenEntryIds = new Set<string>();
+
+  for (const mutation of mutations) {
+    if (mutation.operation === "delete") {
+      hiddenEntryIds.add(mutation.payload.id);
+      pendingByEntryId.delete(mutation.payload.id);
+      continue;
+    }
+
+    if ("measuredOn" in mutation.payload) {
+      hiddenEntryIds.add(mutation.payload.id);
+      pendingByEntryId.set(mutation.payload.id, {
+        entry: mutation.payload,
+        mutation,
+      });
+    }
+  }
+
+  return {
+    entries: [...pendingByEntryId.values()].sort((left, right) =>
+      right.entry.measuredOn.localeCompare(left.entry.measuredOn),
+    ),
+    hiddenEntryIds,
+  };
 }
 
 function EditIcon() {
