@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { OfflineSnapshotHydrator } from "@/shared/infrastructure/offline/offline-snapshot-hydrator";
 import { OfflineStatusIndicator } from "@/shared/infrastructure/offline/offline-status-indicator";
+import { OfflineTravelMutationSync } from "@/shared/infrastructure/offline/offline-travel-mutation-sync";
 import { OfflineWeightMutationSync } from "@/shared/infrastructure/offline/offline-weight-mutation-sync";
 import styles from "./app-shell.module.css";
 
@@ -72,6 +73,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className={styles.page}>
       <OfflineSnapshotHydrator />
+      <OfflineTravelMutationSync />
       <OfflineWeightMutationSync />
       <OfflineStatusIndicator styles={styles} />
       <div className={styles.view}>

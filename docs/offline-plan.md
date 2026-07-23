@@ -142,8 +142,9 @@ Estado: en curso. La base de cola local existe, pero los formularios aun no escr
 Tareas:
 
 - [x] Reutilizar la cola local para crear, editar, marcar, borrar y resetear items.
+- [x] Crear endpoint autenticado para aplicar mutaciones de Viaje en Supabase.
+- [x] Reconciliar cambios remotos sin desordenar la lista local.
 - Definir tratamiento de `sortOrder` offline.
-- Reconciliar cambios remotos sin desordenar la lista local.
 - Mostrar acciones pendientes y errores por item.
 
 Gate:
