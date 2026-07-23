@@ -22,11 +22,22 @@ export type SyncMetadata = {
   lastError: string | null;
 };
 
+export type PendingWeightMutationOperation = "create" | "update" | "delete";
+
+export type PendingWeightMutation = {
+  id: string;
+  entity: "weight";
+  operation: PendingWeightMutationOperation;
+  payload: WeightEntry | { id: string };
+  createdAt: string;
+  lastError: string | null;
+};
+
 type StoredBabyProfile = BabyProfile & {
   id: "irati";
 };
 
-const currentSchemaVersion = 1;
+const currentSchemaVersion = 2;
 const profileId = "irati";
 const metadataId = "main";
 
@@ -37,6 +48,7 @@ class IratiOfflineDatabase extends Dexie {
   appliedVaccineDoses!: Table<AppliedVaccineDose, string>;
   travelChecklistItems!: Table<TravelChecklistItem, string>;
   syncMetadata!: Table<SyncMetadata, string>;
+  pendingMutations!: Table<PendingWeightMutation, string>;
 
   constructor() {
     super("irati-offline");
@@ -44,6 +56,7 @@ class IratiOfflineDatabase extends Dexie {
     this.version(currentSchemaVersion).stores({
       appliedVaccineDoses: "id, plannedDoseId, appliedOn",
       babyProfiles: "id",
+      pendingMutations: "id, entity, operation, createdAt",
       plannedVaccineDoses: "id, plannedDate",
       syncMetadata: "id",
       travelChecklistItems: "id, category, sortOrder, isPacked",
@@ -67,6 +80,7 @@ export async function replaceOfflineSnapshot(
       iratiOfflineDb.appliedVaccineDoses,
       iratiOfflineDb.travelChecklistItems,
       iratiOfflineDb.syncMetadata,
+      iratiOfflineDb.pendingMutations,
     ],
     async () => {
       await iratiOfflineDb.babyProfiles.clear();
@@ -139,6 +153,40 @@ export async function recordOfflineSyncError(error: string): Promise<void> {
   });
 }
 
+export async function enqueuePendingWeightMutation(
+  mutation: Omit<PendingWeightMutation, "createdAt" | "entity" | "lastError"> &
+    Partial<Pick<PendingWeightMutation, "createdAt" | "lastError">>,
+): Promise<void> {
+  await iratiOfflineDb.pendingMutations.put({
+    ...mutation,
+    createdAt: mutation.createdAt ?? new Date().toISOString(),
+    entity: "weight",
+    lastError: mutation.lastError ?? null,
+  });
+}
+
+export async function applyOfflineWeightEntry(entry: WeightEntry): Promise<void> {
+  await iratiOfflineDb.weightEntries.put(entry);
+}
+
+export async function deleteOfflineWeightEntry(id: string): Promise<void> {
+  await iratiOfflineDb.weightEntries.delete(id);
+}
+
+export async function listPendingWeightMutations(): Promise<PendingWeightMutation[]> {
+  return iratiOfflineDb.pendingMutations.where("entity").equals("weight").sortBy("createdAt");
+}
+
+export async function markPendingMutationError(id: string, error: string): Promise<void> {
+  await iratiOfflineDb.pendingMutations.update(id, {
+    lastError: error,
+  });
+}
+
+export async function removePendingMutation(id: string): Promise<void> {
+  await iratiOfflineDb.pendingMutations.delete(id);
+}
+
 export async function clearOfflineData(): Promise<void> {
   await iratiOfflineDb.transaction(
     "rw",
@@ -149,6 +197,7 @@ export async function clearOfflineData(): Promise<void> {
       iratiOfflineDb.appliedVaccineDoses,
       iratiOfflineDb.travelChecklistItems,
       iratiOfflineDb.syncMetadata,
+      iratiOfflineDb.pendingMutations,
     ],
     async () => {
       await iratiOfflineDb.babyProfiles.clear();
@@ -157,6 +206,7 @@ export async function clearOfflineData(): Promise<void> {
       await iratiOfflineDb.appliedVaccineDoses.clear();
       await iratiOfflineDb.travelChecklistItems.clear();
       await iratiOfflineDb.syncMetadata.clear();
+      await iratiOfflineDb.pendingMutations.clear();
     },
   );
 }

@@ -107,11 +107,14 @@ Gate:
 
 Objetivo: crear, editar y borrar pesos sin conexion, y sincronizarlos al recuperar red.
 
+Estado: en curso. La base de cola local existe, pero los formularios aun no escriben offline.
+
 Tareas:
 
-- Crear cola local `pending_mutations` para Peso con operaciones `create`, `update` y `delete`.
-- Usar ids cliente estables e idempotencia para evitar duplicados.
-- Aplicar cambios optimistas en IndexedDB.
+- [x] Crear cola local `pending_mutations` para Peso con operaciones `create`, `update` y `delete`.
+- [x] Usar ids cliente estables e idempotencia para evitar duplicados.
+- [x] Aplicar cambios optimistas en IndexedDB.
+- [x] Mantener mutaciones fallidas visibles hasta que se sincronicen o retiren.
 - Mostrar pesos pendientes con estado visual propio.
 - Enviar operaciones al servidor en orden al recuperar conexion.
 - Reconciliar respuesta remota con el snapshot local.

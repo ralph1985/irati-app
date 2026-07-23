@@ -1,10 +1,16 @@
 import "fake-indexeddb/auto";
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  applyOfflineWeightEntry,
   clearOfflineData,
+  deleteOfflineWeightEntry,
+  enqueuePendingWeightMutation,
+  listPendingWeightMutations,
+  markPendingMutationError,
   readOfflineSnapshot,
   readSyncMetadata,
   recordOfflineSyncError,
+  removePendingMutation,
   replaceOfflineSnapshot,
 } from "./irati-offline-db";
 
@@ -24,7 +30,7 @@ describe("Irati offline database", () => {
     await expect(readSyncMetadata()).resolves.toMatchObject({
       lastError: null,
       lastSuccessfulSyncAt: null,
-      schemaVersion: 1,
+      schemaVersion: 2,
     });
   });
 
@@ -90,7 +96,7 @@ describe("Irati offline database", () => {
     });
     await expect(readSyncMetadata()).resolves.toMatchObject({
       lastSuccessfulSyncAt: "2026-07-23T10:00:00.000Z",
-      schemaVersion: 1,
+      schemaVersion: 2,
     });
   });
 
@@ -141,5 +147,72 @@ describe("Irati offline database", () => {
     await expect(readOfflineSnapshot()).resolves.toMatchObject({
       profile: { name: "Irati" },
     });
+  });
+
+  it("queues pending weight mutations in creation order", async () => {
+    await enqueuePendingWeightMutation({
+      createdAt: "2026-07-23T10:01:00.000Z",
+      id: "mutation-2",
+      operation: "delete",
+      payload: { id: "weight-1" },
+    });
+    await enqueuePendingWeightMutation({
+      createdAt: "2026-07-23T10:00:00.000Z",
+      id: "mutation-1",
+      operation: "create",
+      payload: {
+        id: "weight-1",
+        measuredOn: "2026-07-10",
+        notes: null,
+        place: "pediatra",
+        weightGrams: 3300,
+      },
+    });
+
+    await expect(listPendingWeightMutations()).resolves.toMatchObject([
+      { id: "mutation-1", operation: "create" },
+      { id: "mutation-2", operation: "delete" },
+    ]);
+  });
+
+  it("applies optimistic weight changes to the local snapshot", async () => {
+    await applyOfflineWeightEntry({
+      id: "weight-1",
+      measuredOn: "2026-07-10",
+      notes: null,
+      place: "pediatra",
+      weightGrams: 3300,
+    });
+
+    await expect(readOfflineSnapshot()).resolves.toMatchObject({
+      weightEntries: [{ id: "weight-1", weightGrams: 3300 }],
+    });
+
+    await deleteOfflineWeightEntry("weight-1");
+
+    await expect(readOfflineSnapshot()).resolves.toMatchObject({
+      weightEntries: [],
+    });
+  });
+
+  it("keeps failed pending weight mutations visible until they are removed", async () => {
+    await enqueuePendingWeightMutation({
+      id: "mutation-1",
+      operation: "delete",
+      payload: { id: "weight-1" },
+    });
+
+    await markPendingMutationError("mutation-1", "Supabase rejected the mutation.");
+
+    await expect(listPendingWeightMutations()).resolves.toMatchObject([
+      {
+        id: "mutation-1",
+        lastError: "Supabase rejected the mutation.",
+      },
+    ]);
+
+    await removePendingMutation("mutation-1");
+
+    await expect(listPendingWeightMutations()).resolves.toEqual([]);
   });
 });
