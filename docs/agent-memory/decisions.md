@@ -18,8 +18,10 @@ Este archivo guarda decisiones estables y acotadas que deben sobrevivir a futura
 ## Producto Y Arquitectura
 
 - Irati conserva arquitectura hexagonal por módulos bajo `src/modules`.
-- La app es PWA instalable, pero los datos requieren conexión en el MVP.
+- La app es PWA instalable, pero los datos requieren conexión en el MVP inicial.
 - Supabase remoto es la fuente principal; no usar Docker, Supabase local, offline ni realtime por defecto.
+- El modo offline se incorporara solo de forma progresiva segun `docs/offline-plan.md`: primero lectura desde snapshot local, despues escritura offline de Peso, luego Viaje y por ultimo Vacunas con matriz de conflictos.
+- La Fase 0 offline queda cerrada documentalmente: usar Dexie para IndexedDB, Serwist para service worker de Next, limpiar IndexedDB en logout y no permitir primer acceso offline sin una carga online autenticada previa.
 - Las tablas privadas de Supabase tienen RLS activado y no exponen politicas directas para `anon` ni `authenticated`; la app accede desde servidor con `SUPABASE_SERVICE_ROLE_KEY`.
 - Para cambios de producto relevantes, `docs/spec.md` y `docs/roadmap.md` deben quedar alineados con el comportamiento esperado.
 - La vista Viaje debe usar bottom sheet para añadir y editar items, categorias en acordeon, botones de icono accesibles y listado compacto; no mostrar un campo manual de orden.

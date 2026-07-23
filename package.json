@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
@@ -15,7 +15,9 @@
     "backup:supabase:cron:install": "scripts/install-supabase-backup-cron.sh"
   },
   "dependencies": {
+    "@serwist/next": "^9.5.12",
     "@supabase/supabase-js": "^2.110.7",
+    "dexie": "^4.4.4",
     "motion": "^12.42.2",
     "next": "16.2.10",
     "react": "19.2.4",
@@ -27,7 +29,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "fake-indexeddb": "^6.2.5",
     "prettier": "^3.9.5",
+    "serwist": "^9.5.12",
     "supabase": "^2.109.1",
     "typescript": "^5",
     "vitest": "^4.1.10"

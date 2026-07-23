@@ -7,7 +7,7 @@ Irati es una aplicacion privada para Rafa y Begoña orientada al seguimiento de 
 - Mobile first.
 - PWA instalable desde el inicio.
 - Requiere conexion en el MVP.
-- Sin modo offline de datos.
+- Sin modo offline de datos en el MVP inicial; el plan evolutivo vive en [`docs/offline-plan.md`](offline-plan.md).
 - Sin realtime.
 - Cuenta compartida mediante PIN/passcode con seguridad real de servidor.
 - Supabase como fuente principal de datos.
@@ -50,7 +50,7 @@ Ideas utiles:
 - Feedback visible cuando se guarda o sincroniza.
 - Documentacion de decisiones tecnicas y esquema de datos.
 
-No se copia:
+No se copia en el MVP inicial:
 
 - Dexie/IndexedDB como fallback offline.
 - Realtime de Supabase.
@@ -295,11 +295,22 @@ No se copia:
 - [x] Añadir tests proporcionales de agenda.
 - [x] Ejecutar typecheck, lint, format, tests y build.
 
+## Hito 19 - Offline progresivo
+
+El modo offline se implementara por fases segun [`docs/offline-plan.md`](offline-plan.md), manteniendo el comportamiento online actual despues de cada fase.
+
+- [x] Fase 0: cerrar decisiones de IndexedDB, service worker, politica de logout y riesgo de datos locales.
+- [ ] Fase 1: permitir lectura offline desde snapshot local despues de una carga online autenticada.
+- [ ] Fase 2: permitir escritura offline solo en Peso con cola local e idempotencia.
+- [ ] Fase 3: ampliar escritura offline a Viaje si Peso queda estable.
+- [ ] Fase 4: diseñar e implementar escritura offline en Vacunas con matriz de conflictos.
+- [ ] Validar cada fase con checks completos cuando haya codigo y prueba manual en PWA instalada.
+
 ## Fuera del MVP inicial
 
 - Exportacion o impresion para pediatra.
 - Percentiles oficiales o curvas clinicas.
-- Modo offline de datos.
+- Modo offline de datos. Su incorporacion posterior se planifica en [`docs/offline-plan.md`](offline-plan.md).
 - Realtime.
 - Multiusuario con cuentas separadas.
 - Permisos por rol.

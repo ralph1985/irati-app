@@ -48,7 +48,7 @@ Backups:
 
 Excluido:
 
-- Modo offline de datos.
+- Modo offline de datos en el MVP inicial. El plan evolutivo vive en [`docs/offline-plan.md`](offline-plan.md).
 - Realtime.
 - Email.
 - Push notifications.
@@ -116,11 +116,14 @@ PWA:
 
 - La aplicacion debe ser instalable desde el inicio.
 - La base incluye manifest, metadata web app, `id`, `scope`, iconos PNG de 192 y 512 px e icono SVG maskable.
-- El shell puede cachearse para instalacion y carga basica en un hito posterior si se incorpora service worker.
-- Los datos requieren conexion en el MVP.
-- No se implementa IndexedDB ni cola de sincronizacion.
+- El shell puede cachearse para instalacion y carga basica cuando se active el plan offline progresivo.
+- Los datos requieren conexion en el MVP inicial.
+- No se implementa IndexedDB ni cola de sincronizacion en el MVP inicial.
 - No se implementa realtime.
-- No se incorpora service worker offline en el MVP porque la aplicacion requiere conexion.
+- No se incorpora service worker offline en el MVP inicial porque la aplicacion requiere conexion.
+- La incorporacion de lectura offline, IndexedDB y cola de sincronizacion debe seguir [`docs/offline-plan.md`](offline-plan.md).
+- Para el plan offline progresivo, la decision de Fase 0 es usar Dexie para IndexedDB y Serwist para el service worker de Next. La configuracion debe cachear shell, assets y fallback offline, no HTML privado ni respuestas de datos familiares.
+- Mientras se use `@serwist/next`, el build de produccion se ejecuta con webpack por compatibilidad con Next 16.
 
 Caches:
 
@@ -128,7 +131,7 @@ Caches:
 - La cache de servidor cubre perfil, historico de peso y listas base del plan de vacunas.
 - Las acciones de escritura invalidan la cache afectada antes de redirigir para conservar lecturas frescas tras guardar, editar o borrar.
 - Los estados derivados de vacunas, como proxima o retrasada, se recalculan por request a partir de las listas cacheadas y la fecha actual.
-- No se cachean datos privados en IndexedDB ni se ofrece lectura de datos sin conexion en el MVP.
+- No se cachean datos privados en IndexedDB ni se ofrece lectura de datos sin conexion en el MVP inicial. El cambio a copia local por dispositivo requiere seguir [`docs/offline-plan.md`](offline-plan.md).
 
 ## Arquitectura
 
@@ -318,7 +321,7 @@ Pulido MVP:
 - La app mantiene foco visible para navegacion por teclado.
 - Inicio informa si no puede cargar parte de los datos remotos.
 - Los estados vacios de peso, vacunas y avisos deben ser visibles y no bloquear la navegacion.
-- El cierre MVP conserva el alcance sin offline, realtime, email ni push.
+- El cierre MVP conserva el alcance sin offline, realtime, email ni push. El offline posterior se hara de forma progresiva segun [`docs/offline-plan.md`](offline-plan.md).
 
 Criterios de aceptacion:
 
@@ -506,6 +509,16 @@ No se implementa en el MVP:
 - Conflictos de sincronizacion.
 - Subscripciones realtime.
 
+El plan para incorporar persistencia local, lectura offline y escritura offline por fases vive en [`docs/offline-plan.md`](offline-plan.md). Supabase seguira siendo la fuente remota principal y las escrituras remotas deben pasar por servidor autenticado.
+
+Decisiones de Fase 0 del plan offline:
+
+- Dexie sera el adaptador IndexedDB.
+- Serwist sera la estrategia base de service worker para Next.
+- El primer acceso offline por dispositivo no existe: requiere una carga online autenticada e hidratacion local correcta.
+- Logout debe limpiar IndexedDB por defecto.
+- La escritura offline empieza por Peso y queda fuera de la lectura offline inicial.
+
 Tablas previstas, pendientes de concretar en `docs/database-schema.md`:
 
 - `app_profile` o equivalente para Irati y configuracion base.
@@ -531,7 +544,6 @@ No se exige cobertura exhaustiva al inicio. La cobertura debe crecer cuando se a
 
 - Duracion de sesion.
 - Detalles visuales finos de componentes.
-- Libreria o estrategia de PWA para Next.js.
 - Forma exacta del esquema Supabase.
 - Si vacunas planificadas y aplicaciones viven en una o dos tablas.
 - Como gestionar cambios manuales sobre calendario inicial.
