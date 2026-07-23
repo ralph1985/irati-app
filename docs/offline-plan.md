@@ -195,7 +195,7 @@ Tareas:
 - [x] Crear cola local `pending_mutations` para Vacunas con operaciones `updatePlanned`, `markApplied`, `updateApplication` y `reopen`.
 - Mostrar conflictos que requieran revision manual.
 - [x] Crear endpoint autenticado para aplicar mutaciones de Vacunas en Supabase.
-- Conectar sincronizacion de mutaciones pendientes al recuperar red.
+- [x] Conectar sincronizacion de mutaciones pendientes al recuperar red.
 - Conectar los formularios de Vacunas a escritura offline.
 
 Gate:
