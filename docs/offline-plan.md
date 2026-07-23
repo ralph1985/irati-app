@@ -86,9 +86,10 @@ Tareas:
 - [x] Conectar limpieza local al flujo real de logout.
 - [x] Hidratar IndexedDB tras una carga online autenticada usando los repositorios existentes.
 - [x] Mostrar resumen local en el fallback offline sin cachear HTML privado.
+- [x] Mostrar indicador global basico con copia preparada, preparando copia o sin conexion.
 - [ ] Leer snapshot local cuando la red o la lectura remota fallen.
 - [ ] Cachear app shell, assets y fallback offline con service worker, sin cachear HTML privado ni respuestas de datos familiares.
-- [ ] Mostrar estado global: `Al dia`, `Sin conexion`, `Datos locales` o `Error al sincronizar`.
+- [ ] Mostrar estado global completo: `Al dia`, `Sin conexion`, `Datos locales` o `Error al sincronizar`.
 - [x] Mostrar ultima sincronizacion en Ajustes.
 - [ ] Mantener las escrituras online con Server Actions como ahora.
 

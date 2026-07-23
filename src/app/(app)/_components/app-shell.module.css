@@ -22,6 +22,27 @@
   position: relative;
 }
 
+.offlineStatus {
+  width: fit-content;
+  max-width: min(100%, 560px);
+  margin: 0 auto 14px;
+  border: 1px solid rgba(124, 58, 237, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #604873;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 10px;
+}
+
+.offlineStatus[data-status="synced"] {
+  color: #047857;
+}
+
+.offlineStatus[data-status="offline"] {
+  color: #b45309;
+}
+
 .viewLayer {
   width: 100%;
 }

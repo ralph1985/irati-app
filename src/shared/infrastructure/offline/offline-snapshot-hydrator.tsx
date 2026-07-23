@@ -26,6 +26,7 @@ export function OfflineSnapshotHydrator() {
 
         const body = (await response.json()) as OfflineSnapshotResponse;
         await replaceOfflineSnapshot(body.snapshot, body.syncedAt);
+        window.dispatchEvent(new Event("irati-offline-sync-updated"));
       } catch {
         // Offline snapshot hydration is best-effort; runtime reads still use the server for now.
       }
