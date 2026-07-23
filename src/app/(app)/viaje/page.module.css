@@ -161,6 +161,22 @@
   background: #f8fafc;
 }
 
+.items li[data-pending="true"] {
+  background: #fff7ed;
+}
+
+.items li[data-pending="true"] .itemBody strong::after {
+  content: "Pendiente";
+  display: inline-block;
+  margin-left: 8px;
+  border-radius: 999px;
+  background: #fed7aa;
+  color: #9a3412;
+  font-size: 11px;
+  line-height: 1;
+  padding: 4px 6px;
+}
+
 .itemCheck button {
   display: grid;
   width: 32px;

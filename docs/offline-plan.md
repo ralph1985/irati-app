@@ -144,8 +144,8 @@ Tareas:
 - [x] Reutilizar la cola local para crear, editar, marcar, borrar y resetear items.
 - [x] Crear endpoint autenticado para aplicar mutaciones de Viaje en Supabase.
 - [x] Reconciliar cambios remotos sin desordenar la lista local.
-- Definir tratamiento de `sortOrder` offline.
-- Mostrar acciones pendientes y errores por item.
+- [x] Definir tratamiento de `sortOrder` offline.
+- [x] Mostrar acciones pendientes y errores por item.
 
 Gate:
 
