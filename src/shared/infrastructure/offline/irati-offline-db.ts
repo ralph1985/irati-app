@@ -33,11 +33,24 @@ export type PendingWeightMutation = {
   lastError: string | null;
 };
 
+export type PendingTravelMutationOperation = "create" | "update" | "setPacked" | "delete" | "reset";
+
+export type PendingTravelMutation = {
+  id: string;
+  entity: "travel";
+  operation: PendingTravelMutationOperation;
+  payload: TravelChecklistItem | { id: string; isPacked?: boolean } | { resetAt: string };
+  createdAt: string;
+  lastError: string | null;
+};
+
+export type PendingMutation = PendingWeightMutation | PendingTravelMutation;
+
 type StoredBabyProfile = BabyProfile & {
   id: "irati";
 };
 
-const currentSchemaVersion = 2;
+const currentSchemaVersion = 3;
 const profileId = "irati";
 const metadataId = "main";
 
@@ -48,7 +61,7 @@ class IratiOfflineDatabase extends Dexie {
   appliedVaccineDoses!: Table<AppliedVaccineDose, string>;
   travelChecklistItems!: Table<TravelChecklistItem, string>;
   syncMetadata!: Table<SyncMetadata, string>;
-  pendingMutations!: Table<PendingWeightMutation, string>;
+  pendingMutations!: Table<PendingMutation, string>;
 
   constructor() {
     super("irati-offline");
@@ -165,6 +178,18 @@ export async function enqueuePendingWeightMutation(
   });
 }
 
+export async function enqueuePendingTravelMutation(
+  mutation: Omit<PendingTravelMutation, "createdAt" | "entity" | "lastError"> &
+    Partial<Pick<PendingTravelMutation, "createdAt" | "lastError">>,
+): Promise<void> {
+  await iratiOfflineDb.pendingMutations.put({
+    ...mutation,
+    createdAt: mutation.createdAt ?? new Date().toISOString(),
+    entity: "travel",
+    lastError: mutation.lastError ?? null,
+  });
+}
+
 export async function applyOfflineWeightEntry(entry: WeightEntry): Promise<void> {
   await iratiOfflineDb.weightEntries.put(entry);
 }
@@ -174,7 +199,53 @@ export async function deleteOfflineWeightEntry(id: string): Promise<void> {
 }
 
 export async function listPendingWeightMutations(): Promise<PendingWeightMutation[]> {
-  return iratiOfflineDb.pendingMutations.where("entity").equals("weight").sortBy("createdAt");
+  const mutations = await iratiOfflineDb.pendingMutations
+    .where("entity")
+    .equals("weight")
+    .sortBy("createdAt");
+
+  return mutations.filter(
+    (mutation): mutation is PendingWeightMutation => mutation.entity === "weight",
+  );
+}
+
+export async function applyOfflineTravelChecklistItem(item: TravelChecklistItem): Promise<void> {
+  await iratiOfflineDb.travelChecklistItems.put(item);
+}
+
+export async function setOfflineTravelChecklistItemPacked(
+  id: string,
+  isPacked: boolean,
+): Promise<void> {
+  await iratiOfflineDb.travelChecklistItems.update(id, {
+    isPacked,
+  });
+}
+
+export async function deleteOfflineTravelChecklistItem(id: string): Promise<void> {
+  await iratiOfflineDb.travelChecklistItems.delete(id);
+}
+
+export async function resetOfflineTravelChecklist(): Promise<void> {
+  const items = await iratiOfflineDb.travelChecklistItems.toArray();
+
+  await iratiOfflineDb.travelChecklistItems.bulkPut(
+    items.map((item) => ({
+      ...item,
+      isPacked: false,
+    })),
+  );
+}
+
+export async function listPendingTravelMutations(): Promise<PendingTravelMutation[]> {
+  const mutations = await iratiOfflineDb.pendingMutations
+    .where("entity")
+    .equals("travel")
+    .sortBy("createdAt");
+
+  return mutations.filter(
+    (mutation): mutation is PendingTravelMutation => mutation.entity === "travel",
+  );
 }
 
 export async function markPendingMutationError(id: string, error: string): Promise<void> {

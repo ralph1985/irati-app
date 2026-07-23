@@ -137,9 +137,11 @@ Gate:
 
 Objetivo: ampliar escritura offline a la checklist de viaje si Peso queda estable.
 
+Estado: en curso. La base de cola local existe, pero los formularios aun no escriben offline.
+
 Tareas:
 
-- Reutilizar la cola local para crear, editar, marcar, borrar y resetear items.
+- [x] Reutilizar la cola local para crear, editar, marcar, borrar y resetear items.
 - Definir tratamiento de `sortOrder` offline.
 - Reconciliar cambios remotos sin desordenar la lista local.
 - Mostrar acciones pendientes y errores por item.

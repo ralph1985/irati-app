@@ -2,9 +2,13 @@ import "fake-indexeddb/auto";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   applyOfflineWeightEntry,
+  applyOfflineTravelChecklistItem,
   clearOfflineData,
+  deleteOfflineTravelChecklistItem,
   deleteOfflineWeightEntry,
+  enqueuePendingTravelMutation,
   enqueuePendingWeightMutation,
+  listPendingTravelMutations,
   listPendingWeightMutations,
   markPendingMutationError,
   readOfflineSnapshot,
@@ -30,7 +34,7 @@ describe("Irati offline database", () => {
     await expect(readSyncMetadata()).resolves.toMatchObject({
       lastError: null,
       lastSuccessfulSyncAt: null,
-      schemaVersion: 2,
+      schemaVersion: 3,
     });
   });
 
@@ -96,7 +100,7 @@ describe("Irati offline database", () => {
     });
     await expect(readSyncMetadata()).resolves.toMatchObject({
       lastSuccessfulSyncAt: "2026-07-23T10:00:00.000Z",
-      schemaVersion: 2,
+      schemaVersion: 3,
     });
   });
 
@@ -214,5 +218,53 @@ describe("Irati offline database", () => {
     await removePendingMutation("mutation-1");
 
     await expect(listPendingWeightMutations()).resolves.toEqual([]);
+  });
+
+  it("queues pending travel mutations in creation order", async () => {
+    await enqueuePendingTravelMutation({
+      createdAt: "2026-07-23T10:01:00.000Z",
+      id: "travel-mutation-2",
+      operation: "delete",
+      payload: { id: "travel-1" },
+    });
+    await enqueuePendingTravelMutation({
+      createdAt: "2026-07-23T10:00:00.000Z",
+      id: "travel-mutation-1",
+      operation: "create",
+      payload: {
+        category: "salud",
+        id: "travel-1",
+        isPacked: false,
+        label: "Cartilla",
+        notes: null,
+        sortOrder: 10,
+      },
+    });
+
+    await expect(listPendingTravelMutations()).resolves.toMatchObject([
+      { id: "travel-mutation-1", operation: "create" },
+      { id: "travel-mutation-2", operation: "delete" },
+    ]);
+  });
+
+  it("applies optimistic travel changes to the local snapshot", async () => {
+    await applyOfflineTravelChecklistItem({
+      category: "salud",
+      id: "travel-1",
+      isPacked: false,
+      label: "Cartilla",
+      notes: null,
+      sortOrder: 10,
+    });
+
+    await expect(readOfflineSnapshot()).resolves.toMatchObject({
+      travelChecklistItems: [{ id: "travel-1", label: "Cartilla" }],
+    });
+
+    await deleteOfflineTravelChecklistItem("travel-1");
+
+    await expect(readOfflineSnapshot()).resolves.toMatchObject({
+      travelChecklistItems: [],
+    });
   });
 });
