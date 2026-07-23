@@ -159,7 +159,7 @@ Gate:
 
 Objetivo: permitir escritura offline en Vacunas solo tras definir conflictos de dominio.
 
-Estado: diseno iniciado. No implementar runtime hasta que la matriz quede cubierta por tests.
+Estado: matriz de conflictos documentada y testeada. Pendiente de conectar storage, endpoint, sincronizacion y UI.
 
 Operaciones offline candidatas:
 
@@ -170,16 +170,16 @@ Operaciones offline candidatas:
 
 Reglas de conflicto:
 
-| Secuencia local pendiente | Cambio remoto detectado | Resolucion |
-| --- | --- | --- |
-| `updatePlanned` sobre dosis no aplicada | La planificacion remota cambio | Conflicto manual si cambian `vaccineName`, `doseLabel` o `plannedDate`; merge automatico solo si el cambio local toca notas y no pisa campos clinicos. |
-| `markApplied` | Ya existe una aplicacion remota para la misma dosis planificada | Conflicto manual; nunca crear una segunda aplicacion vinculada. |
-| `markApplied` seguido de `updateApplication` | Sin aplicacion remota previa | Compactar en una sola aplicacion final antes de enviar. |
-| `updateApplication` | La aplicacion remota fue borrada o la dosis fue reabierta | Conflicto manual; conservar la aplicacion local en cola hasta revision. |
-| `reopen` | La aplicacion remota cambio desde el snapshot local | Conflicto manual antes de borrar informacion clinica remota mas reciente. |
-| `reopen` seguido de `markApplied` sobre la misma dosis | Sin cambios remotos incompatibles | Compactar al ultimo estado aplicado y no enviar borrado intermedio. |
-| `markApplied` seguido de `reopen` sobre la misma dosis | Sin aplicacion remota previa | Cancelar ambas operaciones locales; la dosis queda pendiente. |
-| `updatePlanned` y `markApplied` sobre la misma dosis | Sin cambios remotos incompatibles | Enviar primero planificacion y despues aplicacion para que la aplicacion use el contexto final visible al usuario. |
+| Secuencia local pendiente                              | Cambio remoto detectado                                         | Resolucion                                                                                                                                             |
+| ------------------------------------------------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `updatePlanned` sobre dosis no aplicada                | La planificacion remota cambio                                  | Conflicto manual si cambian `vaccineName`, `doseLabel` o `plannedDate`; merge automatico solo si el cambio local toca notas y no pisa campos clinicos. |
+| `markApplied`                                          | Ya existe una aplicacion remota para la misma dosis planificada | Conflicto manual; nunca crear una segunda aplicacion vinculada.                                                                                        |
+| `markApplied` seguido de `updateApplication`           | Sin aplicacion remota previa                                    | Compactar en una sola aplicacion final antes de enviar.                                                                                                |
+| `updateApplication`                                    | La aplicacion remota fue borrada o la dosis fue reabierta       | Conflicto manual; conservar la aplicacion local en cola hasta revision.                                                                                |
+| `reopen`                                               | La aplicacion remota cambio desde el snapshot local             | Conflicto manual antes de borrar informacion clinica remota mas reciente.                                                                              |
+| `reopen` seguido de `markApplied` sobre la misma dosis | Sin cambios remotos incompatibles                               | Compactar al ultimo estado aplicado y no enviar borrado intermedio.                                                                                    |
+| `markApplied` seguido de `reopen` sobre la misma dosis | Sin aplicacion remota previa                                    | Cancelar ambas operaciones locales; la dosis queda pendiente.                                                                                          |
+| `updatePlanned` y `markApplied` sobre la misma dosis   | Sin cambios remotos incompatibles                               | Enviar primero planificacion y despues aplicacion para que la aplicacion use el contexto final visible al usuario.                                     |
 
 Estados locales a mostrar:
 
@@ -190,14 +190,14 @@ Estados locales a mostrar:
 Tareas:
 
 - [x] Diseñar matriz de conflictos antes de implementar.
-- Cubrir como minimo: marcar aplicada, editar aplicacion, reabrir dosis y editar planificacion.
-- Evitar una regla generica de "ultimo cambio gana" para operaciones semanticas incompatibles.
+- [x] Cubrir como minimo: marcar aplicada, editar aplicacion, reabrir dosis y editar planificacion.
+- [x] Evitar una regla generica de "ultimo cambio gana" para operaciones semanticas incompatibles.
 - Mostrar conflictos que requieran revision manual.
 
 Gate:
 
 - [x] La matriz de conflictos esta documentada.
-- La matriz de conflictos esta testeada.
+- [x] La matriz de conflictos esta testeada.
 - Las operaciones offline no pueden dejar una dosis aplicada y reabierta a la vez.
 - Los errores de sincronizacion no ocultan informacion clinica introducida por el usuario.
 - Checks completos y validacion manual en PWA instalada.
