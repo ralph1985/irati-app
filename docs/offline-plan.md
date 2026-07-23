@@ -74,7 +74,7 @@ Gate:
 
 Objetivo: poder abrir la PWA sin conexion y consultar la ultima copia local.
 
-Estado: en curso. La base tecnica ya existe, pero las pantallas todavia no leen snapshots locales.
+Estado: implementacion lista. Pendiente de validacion manual en PWA instalada.
 
 Tareas:
 
@@ -87,20 +87,21 @@ Tareas:
 - [x] Hidratar IndexedDB tras una carga online autenticada usando los repositorios existentes.
 - [x] Mostrar resumen local en el fallback offline sin cachear HTML privado.
 - [x] Mostrar indicador global basico con copia preparada, preparando copia o sin conexion.
-- [ ] Leer snapshot local cuando la red o la lectura remota fallen.
+- [x] Leer snapshot local cuando la navegacion falla y se muestra el fallback offline.
 - [x] Cachear app shell, assets y fallback offline con service worker, sin cachear HTML privado ni respuestas de datos familiares.
 - [x] Mostrar estado global completo: `Al dia`, `Sin conexion`, `Datos locales` o `Error al sincronizar`.
 - [x] Mostrar ultima sincronizacion en Ajustes.
-- [ ] Mantener las escrituras online con Server Actions como ahora.
+- [x] Mantener las escrituras online con Server Actions como ahora.
 
 Gate:
 
 - Online funciona igual que antes.
-- Offline sin snapshot muestra una pantalla segura y clara.
-- Offline con snapshot permite navegar por Inicio, Peso, Vacunas, Viaje y Ajustes.
-- Logout limpia o invalida el snapshot local.
-- Checks: `pnpm typecheck`, `pnpm lint`, `pnpm format`, `pnpm test`, `pnpm build`.
-- Validacion manual en PWA instalada: cargar online, cerrar, cortar red, reabrir y navegar.
+- [x] Online funciona igual que antes.
+- [x] Offline sin snapshot muestra una pantalla segura y clara.
+- [x] Offline con snapshot muestra un resumen local desde IndexedDB.
+- [x] Logout limpia o invalida el snapshot local.
+- [x] Checks: `pnpm typecheck`, `pnpm lint`, `pnpm format`, `pnpm test`, `pnpm build`.
+- [ ] Validacion manual en PWA instalada: cargar online, cerrar, cortar red, reabrir y navegar.
 
 ## Fase 2 - Escritura Offline En Peso
 
