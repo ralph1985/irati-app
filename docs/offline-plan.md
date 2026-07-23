@@ -85,6 +85,7 @@ Tareas:
 - [x] Precachear el fallback `/~offline`.
 - [x] Conectar limpieza local al flujo real de logout.
 - [x] Hidratar IndexedDB tras una carga online autenticada usando los repositorios existentes.
+- [x] Mostrar resumen local en el fallback offline sin cachear HTML privado.
 - [ ] Leer snapshot local cuando la red o la lectura remota fallen.
 - [ ] Cachear app shell, assets y fallback offline con service worker, sin cachear HTML privado ni respuestas de datos familiares.
 - [ ] Mostrar estado global: `Al dia`, `Sin conexion`, `Datos locales` o `Error al sincronizar`.
