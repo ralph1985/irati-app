@@ -1,4 +1,5 @@
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
+import { LogoutForm } from "@/modules/auth/ui/logout-form";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
 import {
   BackupHealth,
@@ -8,6 +9,7 @@ import {
 import { getBabyProfile } from "@/modules/profile/application/get-baby-profile";
 import { formatBirthDate } from "@/modules/profile/domain/baby-profile";
 import { SupabaseProfileRepository } from "@/modules/profile/infrastructure/supabase-profile-repository";
+import { OfflineSyncStatus } from "@/shared/infrastructure/offline/offline-sync-status";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
 import styles from "./page.module.css";
 
@@ -59,11 +61,7 @@ export default async function SettingsPage() {
           La app usa un passcode compartido. Para cambiarlo hay que actualizar la variable
           `IRATI_PASSCODE_HASH` en el servidor.
         </p>
-        <form action="/logout" method="post" suppressHydrationWarning>
-          <button className={styles.logout} type="submit">
-            Cerrar sesión
-          </button>
-        </form>
+        <LogoutForm buttonClassName={styles.logout} label="Cerrar sesión" />
       </section>
 
       <section className={styles.panel} aria-labelledby="technical-title">
@@ -77,6 +75,14 @@ export default async function SettingsPage() {
           <li>Requiere conexión para leer y guardar.</li>
           <li>Sin realtime, email ni push.</li>
         </ul>
+      </section>
+
+      <section className={styles.panel} aria-labelledby="offline-title">
+        <div className={styles.sectionTitle}>
+          <h2 id="offline-title">Offline</h2>
+          <span>Fase 1</span>
+        </div>
+        <OfflineSyncStatus className={styles.copy} />
       </section>
 
       <BackupHealthPanel health={backupHealth} />

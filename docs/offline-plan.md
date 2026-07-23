@@ -83,12 +83,12 @@ Tareas:
 - [x] Añadir tests del storage local para snapshot vacio, reemplazo completo y limpieza en logout.
 - [x] Configurar Serwist con registro manual, fallback offline y cache restrictiva de assets.
 - [x] Precachear el fallback `/~offline`.
-- [ ] Conectar limpieza local al flujo real de logout.
-- [ ] Hidratar IndexedDB tras una carga online autenticada usando los repositorios existentes.
+- [x] Conectar limpieza local al flujo real de logout.
+- [x] Hidratar IndexedDB tras una carga online autenticada usando los repositorios existentes.
 - [ ] Leer snapshot local cuando la red o la lectura remota fallen.
 - [ ] Cachear app shell, assets y fallback offline con service worker, sin cachear HTML privado ni respuestas de datos familiares.
 - [ ] Mostrar estado global: `Al dia`, `Sin conexion`, `Datos locales` o `Error al sincronizar`.
-- [ ] Mostrar ultima sincronizacion en Ajustes.
+- [x] Mostrar ultima sincronizacion en Ajustes.
 - [ ] Mantener las escrituras online con Server Actions como ahora.
 
 Gate:

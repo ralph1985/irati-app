@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
+import { OfflineSnapshotHydrator } from "@/shared/infrastructure/offline/offline-snapshot-hydrator";
 import styles from "./app-shell.module.css";
 
 const tabs = [
@@ -68,6 +69,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className={styles.page}>
+      <OfflineSnapshotHydrator />
       <div className={styles.view}>
         <AnimatePresence custom={direction} initial={false} mode="popLayout">
           <motion.div

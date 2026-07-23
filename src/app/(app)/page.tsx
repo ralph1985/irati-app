@@ -2,6 +2,7 @@ import { getBabyProfile } from "@/modules/profile/application/get-baby-profile";
 import { formatBirthDate } from "@/modules/profile/domain/baby-profile";
 import { CachedProfileRepository } from "@/modules/profile/infrastructure/cached-profile-repository";
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
+import { LogoutForm } from "@/modules/auth/ui/logout-form";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
 import { buildHomeAgenda, HomeAgenda } from "@/modules/home/application/home-agenda";
 import { listVaccinePlan } from "@/modules/vaccines/application/list-vaccine-plan";
@@ -142,11 +143,7 @@ export default async function Home({ searchParams }: HomeProps) {
         </article>
       </section>
 
-      <form action="/logout" method="post" suppressHydrationWarning>
-        <button className={styles.logout} type="submit">
-          Salir
-        </button>
-      </form>
+      <LogoutForm buttonClassName={styles.logout} />
     </main>
   );
 }
