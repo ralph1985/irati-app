@@ -65,6 +65,7 @@ describe("resolvePendingVaccineMutation", () => {
         {
           operation: "markApplied",
           payload: {
+            applicationId: "application-1",
             dose: appliedDoseInput({}),
             plannedDoseId: "dose-1",
           },
@@ -133,6 +134,7 @@ describe("compactPendingVaccineMutations", () => {
         {
           operation: "markApplied",
           payload: {
+            applicationId: "application-1",
             dose: appliedDoseInput({ lot: "A1" }),
             plannedDoseId: "dose-1",
           },
@@ -151,6 +153,7 @@ describe("compactPendingVaccineMutations", () => {
       {
         operation: "markApplied",
         payload: {
+          applicationId: "application-1",
           dose: appliedDoseInput({ lot: "B2" }),
           plannedDoseId: "dose-1",
         },
@@ -164,6 +167,7 @@ describe("compactPendingVaccineMutations", () => {
         {
           operation: "markApplied",
           payload: {
+            applicationId: "application-1",
             dose: appliedDoseInput({}),
             plannedDoseId: "dose-1",
           },
@@ -198,6 +202,7 @@ describe("compactPendingVaccineMutations", () => {
     const markApplied: PendingVaccineMutation = {
       operation: "markApplied",
       payload: {
+        applicationId: "application-1",
         dose: appliedDoseInput({}),
         plannedDoseId: "dose-1",
       },

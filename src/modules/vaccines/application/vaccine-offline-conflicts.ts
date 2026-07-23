@@ -17,6 +17,7 @@ export type PendingVaccineMutation =
   | {
       operation: "markApplied";
       payload: {
+        applicationId: string;
         dose: NewAppliedVaccineDose;
         plannedDoseId: string;
       };
@@ -73,7 +74,11 @@ export function resolvePendingVaccineMutation(
     }
   }
 
-  if (mutation.operation === "markApplied" && remoteState.application) {
+  if (
+    mutation.operation === "markApplied" &&
+    remoteState.application &&
+    remoteState.application.id !== mutation.payload.applicationId
+  ) {
     return { code: "remote-application-exists", status: "manual-conflict" };
   }
 
@@ -138,6 +143,7 @@ function compactPair(
     return {
       operation: "markApplied",
       payload: {
+        applicationId: previous.payload.applicationId,
         dose: next.payload.dose,
         plannedDoseId: previous.payload.plannedDoseId,
       },
