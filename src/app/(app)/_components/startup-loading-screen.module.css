@@ -86,27 +86,6 @@
   color: #5b21b6;
 }
 
-.progressHeader {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  padding-top: 8px;
-}
-
-.progressHeader span {
-  color: #6b587c;
-  font-size: 13px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.progressHeader strong {
-  color: #5b21b6;
-  font-size: 28px;
-  line-height: 1;
-}
-
 .progressTrack {
   height: 12px;
   overflow: hidden;
@@ -117,14 +96,30 @@
 
 .progressTrack span {
   display: block;
+  width: 42%;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #7c3aed 0%, #5b21b6 48%, #f59e0b 100%);
-  transition: width 220ms ease-out;
+  animation: loading-slide 1.35s ease-in-out infinite;
+}
+
+@keyframes loading-slide {
+  0% {
+    transform: translateX(-105%);
+  }
+
+  50% {
+    transform: translateX(70%);
+  }
+
+  100% {
+    transform: translateX(245%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .progressTrack span {
-    transition: none;
+    animation: none;
+    transform: translateX(70%);
   }
 }

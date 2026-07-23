@@ -119,7 +119,7 @@ function BackupRunDetails({ label, run }: { label: string; run: BackupRunSummary
       ) : null}
       {run.fileSizeBytes ? (
         <div>
-          <dt>Tamano</dt>
+          <dt>Tamaño</dt>
           <dd>{formatFileSize(run.fileSizeBytes)}</dd>
         </div>
       ) : null}
