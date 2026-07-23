@@ -41,7 +41,7 @@ export function WeightCreateSheet({
 
       {isOpen ? (
         <BottomSheet
-          ariaLabel="Cerrar panel de peso"
+          ariaLabel="Cerrar nuevo peso"
           labelledBy="new-weight-title"
           onClose={closeSheet}
           styles={styles}
@@ -49,7 +49,7 @@ export function WeightCreateSheet({
           <form action={action} className={styles.sheetBody}>
             <div className={styles.sheetHeader}>
               <p>Peso</p>
-              <h2 id="new-weight-title">Nuevo peso</h2>
+              <h2 id="new-weight-title">Añadir peso</h2>
             </div>
 
             {returnTo ? <input name="returnTo" type="hidden" value={returnTo} /> : null}

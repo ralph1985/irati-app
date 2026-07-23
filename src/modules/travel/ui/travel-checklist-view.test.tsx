@@ -25,7 +25,7 @@ describe("TravelChecklistView", () => {
           updateAction={noopAction}
         />,
       ),
-    ).toContain("Todavia no hay items de viaje.");
+    ).toContain("Aún no hay nada en la lista de viaje.");
   });
 
   it("renders grouped checklist items and progress", () => {
@@ -45,7 +45,7 @@ describe("TravelChecklistView", () => {
     expect(html).toContain("Pañales");
     expect(html).toContain("Talla 1");
     expect(html).toContain("Preparado");
-    expect(html).toContain("Añadir item");
+    expect(html).toContain("Añadir a la lista");
   });
 });
 

@@ -28,11 +28,11 @@ type VaccinesPageProps = {
 
 const errorMessages: Record<string, string> = {
   validation: "Revisa la vacuna, la dosis y la fecha planificada.",
-  save: "No se pudo guardar la planificacion. Prueba otra vez.",
-  load: "No se pudo cargar el calendario de vacunas.",
-  "application-validation": "Revisa fecha, lugar, vacuna y dosis de la aplicacion.",
-  "application-save": "No se pudo guardar la vacuna aplicada. Prueba otra vez.",
-  reopen: "No se pudo volver la vacuna a pendiente. Prueba otra vez.",
+  save: "No pudimos guardar la planificación. Prueba otra vez.",
+  load: "No pudimos cargar el calendario de vacunas.",
+  "application-validation": "Revisa fecha, lugar, vacuna y dosis de la aplicación.",
+  "application-save": "No pudimos guardar la vacuna aplicada. Prueba otra vez.",
+  reopen: "No pudimos volver la vacuna a pendiente. Prueba otra vez.",
 };
 
 export default async function VaccinesPage({ searchParams }: VaccinesPageProps) {
@@ -47,7 +47,7 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
   const view = vista === "timeline" ? "timeline" : "status";
   const feedbackMessages: ToastFeedbackMessage[] = [
     ...(updated
-      ? [{ id: "updated", text: "Planificacion actualizada.", variant: "success" as const }]
+      ? [{ id: "updated", text: "Planificación actualizada.", variant: "success" as const }]
       : []),
     ...(applied
       ? [{ id: "applied", text: "Vacuna marcada como aplicada.", variant: "success" as const }]
@@ -56,7 +56,7 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
       ? [
           {
             id: "application-updated",
-            text: "Datos de aplicacion actualizados.",
+            text: "Datos de aplicación actualizados.",
             variant: "success" as const,
           },
         ]
@@ -79,7 +79,7 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
     <main className={styles.main}>
       <header className={styles.header}>
         <p>Vacunas</p>
-        <h1>Calendario de Irati</h1>
+        <h1>Vacunas de Irati</h1>
       </header>
 
       <section className={styles.panel} aria-labelledby="source-title">
@@ -88,7 +88,7 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
           <span>{madridVaccineCalendarSource.verifiedOn}</span>
         </div>
         <p className={styles.copy}>
-          Calendario 2026 de la Comunidad de Madrid. Las fechas iniciales estan calculadas desde el
+          Calendario 2026 de la Comunidad de Madrid. Las fechas iniciales están calculadas desde el
           nacimiento de Irati y se pueden ajustar manualmente.
         </p>
       </section>
@@ -105,7 +105,7 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
             <strong>{plan.summary.retrasada}</strong>
           </article>
           <article data-status="proxima">
-            <span>Proximas</span>
+            <span>Próximas</span>
             <strong>{plan.summary.proxima}</strong>
           </article>
           <article data-status="pendiente">
@@ -126,7 +126,7 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
             aria-current={view === "timeline" ? "page" : undefined}
             href="/vacunas?vista=timeline"
           >
-            Linea temporal
+            Línea temporal
           </Link>
         </nav>
 

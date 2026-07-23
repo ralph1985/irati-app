@@ -144,11 +144,11 @@ function validateTravelChecklistItem(input: NewTravelChecklistItem): string[] {
   const issues: string[] = [];
 
   if (input.label.length === 0 || input.label.length > 120) {
-    issues.push("El item debe tener entre 1 y 120 caracteres.");
+    issues.push("El elemento debe tener entre 1 y 120 caracteres.");
   }
 
   if (!isTravelChecklistCategory(input.category)) {
-    issues.push("La categoria de viaje no es valida.");
+    issues.push("La categoría de viaje no es válida.");
   }
 
   if (!Number.isInteger(input.sortOrder) || input.sortOrder < 0 || input.sortOrder > 10000) {

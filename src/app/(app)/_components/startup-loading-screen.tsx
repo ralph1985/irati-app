@@ -30,12 +30,21 @@ export function StartupLoadingScreen() {
   return (
     <main className={styles.screen} aria-labelledby="startup-loading-title">
       <section className={styles.panel} aria-live="polite" aria-busy="true">
-        <p className={styles.kicker}>Irati</p>
-        <h1 id="startup-loading-title">Preparando la app</h1>
+        <div className={styles.brand}>
+          <span aria-hidden="true">I</span>
+          <p>Irati</p>
+        </div>
+        <h1 id="startup-loading-title">Cargando lo importante</h1>
         <p className={styles.status}>{status}</p>
 
+        <div className={styles.checks} aria-label="Qué se está preparando">
+          <span data-active={progress >= 18}>Acceso</span>
+          <span data-active={progress >= 42}>Peso</span>
+          <span data-active={progress >= 72}>Vacunas</span>
+        </div>
+
         <div className={styles.progressHeader}>
-          <span>Carga estimada</span>
+          <span>Estimación</span>
           <strong>{progress}%</strong>
         </div>
         <div
@@ -55,12 +64,12 @@ export function StartupLoadingScreen() {
 
 function getLoadingStatus(progress: number) {
   if (progress < 42) {
-    return "Comprobando acceso...";
+    return "Comprobando el acceso.";
   }
 
   if (progress < 72) {
-    return "Preparando datos familiares...";
+    return "Traemos el peso y el calendario.";
   }
 
-  return "Montando la pantalla...";
+  return "Dejando la pantalla lista.";
 }

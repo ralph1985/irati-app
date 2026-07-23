@@ -13,7 +13,7 @@ export function buildVaccineAlerts(doses: PlannedVaccineDoseWithStatus[]): Vacci
     id: dose.id,
     kind: dose.status,
     title:
-      dose.status === "retrasada" ? `${dose.vaccineName} retrasada` : `${dose.vaccineName} proxima`,
+      dose.status === "retrasada" ? `${dose.vaccineName} retrasada` : `${dose.vaccineName} próxima`,
     detail: `${dose.doseLabel}${dose.ageLabel ? ` · ${dose.ageLabel}` : ""}`,
     plannedDate: dose.plannedDate,
   }));

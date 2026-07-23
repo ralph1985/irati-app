@@ -23,7 +23,7 @@ describe("PlannedVaccineList", () => {
           updateApplicationAction={noopAction}
         />,
       ),
-    ).toContain("Todavia no hay dosis planificadas.");
+    ).toContain("Aún no hay dosis planificadas.");
   });
 
   it("renders editable planned doses", () => {
@@ -54,12 +54,12 @@ describe("PlannedVaccineList", () => {
 
     expect(html).toContain("Meningococo ACWY");
     expect(html).toContain("Dosis 12 meses");
-    expect(html).toContain("Proxima");
+    expect(html).toContain("Próxima");
     expect(html).toContain("2027-07-02");
-    expect(html).toContain('aria-label="Marcar como aplicada"');
-    expect(html).toContain('title="Marcar como aplicada"');
-    expect(html).toContain('aria-label="Editar planificacion"');
-    expect(html).toContain('title="Editar planificacion"');
+    expect(html).toContain('aria-label="Registrar vacuna aplicada"');
+    expect(html).toContain('title="Registrar vacuna aplicada"');
+    expect(html).toContain('aria-label="Editar planificación"');
+    expect(html).toContain('title="Editar planificación"');
   });
 
   it("renders applied dose editing as a sheet action", () => {
@@ -97,8 +97,8 @@ describe("PlannedVaccineList", () => {
       />,
     );
 
-    expect(html).toContain("Editar aplicacion");
-    expect(html).toContain('title="Editar aplicacion"');
+    expect(html).toContain("Editar aplicación");
+    expect(html).toContain('title="Editar aplicación"');
     expect(html).not.toContain("Centro de salud");
     expect(html).not.toContain("Volver a pendiente");
   });

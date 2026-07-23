@@ -5,7 +5,7 @@ import { WeightChart } from "./weight-chart";
 describe("WeightChart", () => {
   it("renders an empty state without entries", () => {
     expect(renderToStaticMarkup(<WeightChart birthDate="2026-07-02" entries={[]} />)).toContain(
-      "No hay pesos para este filtro.",
+      "No hay pesos para mostrar aquí.",
     );
   });
 
@@ -31,9 +31,9 @@ describe("WeightChart", () => {
     );
 
     expect(html).toContain("<svg");
-    expect(html).toContain("Evolucion del peso de Irati");
+    expect(html).toContain("Evolución del peso de Irati");
     expect(html).toContain("2,52 kg");
-    expect(html).toContain("Ultimo");
+    expect(html).toContain("Último");
     expect(html).toContain("Hospital");
     expect(html).toContain("Referencia OMS");
     expect(html).toContain("Ver grande");
@@ -58,6 +58,6 @@ describe("WeightChart", () => {
 
     expect(html).toContain("2700 g");
     expect(html).toContain("2,7 kg");
-    expect(html).toContain("Ultimo");
+    expect(html).toContain("Último");
   });
 });

@@ -16,7 +16,7 @@ export function groupPlannedVaccineDosesByAge(
   const groups = new Map<string, PlannedVaccineDoseWithStatus[]>();
 
   for (const dose of [...doses].sort(compareDoses)) {
-    const ageLabel = dose.ageLabel || "Sin edad definida";
+    const ageLabel = dose.ageLabel || "Edad por definir";
     groups.set(ageLabel, [...(groups.get(ageLabel) ?? []), dose]);
   }
 

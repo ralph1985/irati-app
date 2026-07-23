@@ -306,7 +306,7 @@ export function groupPlannedVaccineDosesByStatus(
 export function getVaccineDoseStatusLabel(status: VaccineDoseStatus): string {
   const labels: Record<VaccineDoseStatus, string> = {
     retrasada: "Retrasada",
-    proxima: "Proxima",
+    proxima: "Próxima",
     pendiente: "Pendiente",
     aplicada: "Aplicada",
   };
@@ -344,7 +344,7 @@ function validatePlannedVaccineDose(input: NewPlannedVaccineDose): string[] {
   }
 
   if (!isIsoDate(input.plannedDate)) {
-    issues.push("La fecha planificada no es valida.");
+    issues.push("La fecha planificada no es válida.");
   }
 
   return issues;
@@ -354,7 +354,7 @@ function validateAppliedVaccineDose(input: NewAppliedVaccineDose): string[] {
   const issues: string[] = [];
 
   if (!isIsoDate(input.appliedOn)) {
-    issues.push("La fecha de aplicacion no es valida.");
+    issues.push("La fecha de aplicación no es válida.");
   }
 
   if (!input.vaccineName.trim()) {
@@ -366,7 +366,7 @@ function validateAppliedVaccineDose(input: NewAppliedVaccineDose): string[] {
   }
 
   if (!input.place.trim()) {
-    issues.push("El lugar de vacunacion es obligatorio.");
+    issues.push("El lugar de vacunación es obligatorio.");
   }
 
   return issues;

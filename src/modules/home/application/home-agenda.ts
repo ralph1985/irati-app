@@ -83,7 +83,9 @@ function buildWeightAgendaItem(
     detail:
       weightSummary.daysSinceLatest === 0
         ? "Registrado hoy"
-        : `Ultimo control hace ${weightSummary.daysSinceLatest} dias`,
+        : `Último control hace ${weightSummary.daysSinceLatest} día${
+            weightSummary.daysSinceLatest === 1 ? "" : "s"
+          }`,
     href: "/peso",
     id: `weight-${weightSummary.latest.id}-${todayIso}`,
     kind: "weight",
@@ -126,7 +128,7 @@ function buildReviewPrompt({
       detail: `${soonDose.doseLabel}, prevista el ${formatDate(soonDose.plannedDate)}`,
       href: "/vacunas",
       kind: "upcoming-vaccine",
-      title: `${soonDose.vaccineName} proxima`,
+      title: `${soonDose.vaccineName} próxima`,
     };
   }
 
@@ -136,7 +138,9 @@ function buildReviewPrompt({
     weightSummary.daysSinceLatest >= WEIGHT_REVIEW_DAYS
   ) {
     return {
-      detail: `Ultimo control hace ${weightSummary.daysSinceLatest} dias`,
+      detail: `Último control hace ${weightSummary.daysSinceLatest} día${
+        weightSummary.daysSinceLatest === 1 ? "" : "s"
+      }`,
       href: "/peso",
       kind: "weight",
       title: "Revisar peso",

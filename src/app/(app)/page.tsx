@@ -66,14 +66,14 @@ export default async function Home({ searchParams }: HomeProps) {
   return (
     <main className={styles.main}>
       <section className={styles.hero} aria-labelledby="home-title">
-        <p className={styles.kicker}>App privada familiar</p>
+        <p className={styles.kicker}>Hoy</p>
         <h1 id="home-title">{profile.name}</h1>
         <p className={styles.birthDate}>Nacida el {formatBirthDate(profile)}</p>
         {source === "fallback" ? (
-          <p className={styles.dataNotice}>Mostrando datos locales temporales.</p>
+          <p className={styles.dataNotice}>Usando datos locales temporales.</p>
         ) : null}
         {weightResult.loadError || vaccinePlan.loadError ? (
-          <p className={styles.dataNotice}>Algunos datos no se pudieron cargar.</p>
+          <p className={styles.dataNotice}>No pudimos cargar todo. Puedes seguir navegando.</p>
         ) : null}
         <ToastFeedback messages={feedbackMessages} />
       </section>
@@ -97,7 +97,7 @@ export default async function Home({ searchParams }: HomeProps) {
             ))}
           </ol>
         ) : (
-          <p>Sin vacunas proximas ni retrasadas.</p>
+          <p>No hay vacunas que revisar ahora.</p>
         )}
       </section>
 
@@ -117,11 +117,11 @@ export default async function Home({ searchParams }: HomeProps) {
           <strong>
             {weightResult.summary.latest
               ? `${weightResult.summary.latest.weightGrams.toLocaleString("es-ES")} g`
-              : "Sin registros"}
+              : "Aún sin pesos"}
           </strong>
         </article>
         <article>
-          <span>Ultimo control</span>
+          <span>Último control</span>
           <strong>{formatLatestWeightMeta(weightResult.summary)}</strong>
         </article>
         <article>
@@ -133,12 +133,12 @@ export default async function Home({ searchParams }: HomeProps) {
           <strong>{formatVaccineSummary(vaccinePlan.summary)}</strong>
         </article>
         <article>
-          <span>Proxima accion</span>
+          <span>Próxima acción</span>
           <strong>{formatNextVaccineDose(vaccinePlan.nextDose)}</strong>
         </article>
         <article>
           <span>CIPA</span>
-          <strong>{profile.cipa ?? "Sin anotar"}</strong>
+          <strong>{profile.cipa ?? "Sin registrar"}</strong>
         </article>
       </section>
 
@@ -205,8 +205,8 @@ function ReviewSoon({ agenda }: { agenda: HomeAgenda }) {
       <section className={styles.reviewSoon} data-kind="calm" aria-labelledby="review-title">
         <div>
           <span>Revisar pronto</span>
-          <h2 id="review-title">Todo tranquilo</h2>
-          <p>Sin vacunas urgentes ni peso pendiente de revisar.</p>
+          <h2 id="review-title">Todo al día</h2>
+          <p>No hay vacunas urgentes ni peso pendiente de revisar.</p>
         </div>
       </section>
     );
@@ -232,7 +232,7 @@ function AgendaNext30Days({ agenda }: { agenda: HomeAgenda }) {
   return (
     <section className={styles.agenda} aria-labelledby="agenda-title">
       <div className={styles.sectionTitle}>
-        <h2 id="agenda-title">Proximos 30 dias</h2>
+        <h2 id="agenda-title">Próximos 30 días</h2>
         <Link href="/vacunas">Ver calendario</Link>
       </div>
 
@@ -249,7 +249,7 @@ function AgendaNext30Days({ agenda }: { agenda: HomeAgenda }) {
           ))}
         </ol>
       ) : (
-        <p>Sin tareas previstas en los proximos 30 dias.</p>
+        <p>No hay nada previsto en los próximos 30 días.</p>
       )}
     </section>
   );
@@ -265,7 +265,7 @@ function formatVaccineSummary(summary: {
   }
 
   if (summary.proxima > 0) {
-    return `${summary.proxima} proxima${summary.proxima === 1 ? "" : "s"}`;
+    return `${summary.proxima} próxima${summary.proxima === 1 ? "" : "s"}`;
   }
 
   return `${summary.pendiente} pendiente${summary.pendiente === 1 ? "" : "s"}`;
@@ -273,34 +273,34 @@ function formatVaccineSummary(summary: {
 
 function formatLatestWeightMeta(summary: WeightTrendSummary): string {
   if (!summary.latest) {
-    return "Sin registros";
+    return "Aún sin pesos";
   }
 
   const dayLabel =
     summary.daysSinceLatest === 0
       ? "hoy"
-      : `hace ${summary.daysSinceLatest} dia${summary.daysSinceLatest === 1 ? "" : "s"}`;
+      : `hace ${summary.daysSinceLatest} día${summary.daysSinceLatest === 1 ? "" : "s"}`;
 
   return `${formatDate(summary.latest.measuredOn)}, ${dayLabel}`;
 }
 
 function formatWeightTrend(summary: WeightTrendSummary): string {
   if (!summary.latest || !summary.previous || summary.differenceGrams === null) {
-    return "Sin comparativa";
+    return "Sin comparación";
   }
 
   const sign = summary.differenceGrams > 0 ? "+" : "";
   const average =
     summary.averageGramsPerDay === null
       ? ""
-      : ` · ${sign}${summary.averageGramsPerDay.toLocaleString("es-ES")} g/dia`;
+      : ` · ${sign}${summary.averageGramsPerDay.toLocaleString("es-ES")} g/día`;
 
   return `${sign}${summary.differenceGrams.toLocaleString("es-ES")} g${average}`;
 }
 
 function formatNextVaccineDose(dose: PlannedVaccineDoseWithStatus | null): string {
   if (!dose) {
-    return "Sin pendientes";
+    return "Nada pendiente";
   }
 
   return `${dose.vaccineName}, ${formatDate(dose.plannedDate)}`;
@@ -308,14 +308,14 @@ function formatNextVaccineDose(dose: PlannedVaccineDoseWithStatus | null): strin
 
 function getHomeErrorMessage(error: string): string {
   const messages: Record<string, string> = {
-    "application-save": "No se pudo registrar la vacuna desde Inicio. Prueba de nuevo.",
+    "application-save": "No pudimos registrar la vacuna desde Inicio. Prueba otra vez.",
     "application-validation": "Revisa fecha, lugar, vacuna y dosis antes de guardar.",
-    session: "La sesion ha caducado. Entra de nuevo para continuar.",
-    "weight-save": "No se pudo guardar el peso.",
+    session: "La sesión ha caducado. Entra de nuevo para continuar.",
+    "weight-save": "No pudimos guardar el peso.",
     "weight-validation": "Revisa la fecha, el peso y el lugar.",
   };
 
-  return messages[error] ?? "No se pudo completar la accion.";
+  return messages[error] ?? "No pudimos completar la acción.";
 }
 
 function formatDate(date: string): string {

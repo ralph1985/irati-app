@@ -15,7 +15,7 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
   const [editingEntry, setEditingEntry] = useState<WeightEntry | null>(null);
 
   if (entries.length === 0) {
-    return <p className={styles.empty}>Todavia no hay pesos registrados.</p>;
+    return <p className={styles.empty}>Aún no hay pesos en este filtro.</p>;
   }
 
   function openEditor(entry: WeightEntry) {
@@ -75,7 +75,7 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
 
       {editingEntry ? (
         <BottomSheet
-          ariaLabel="Cerrar panel de edicion de peso"
+          ariaLabel="Cerrar edición de peso"
           labelledBy="edit-weight-title"
           onClose={closeEditor}
           styles={styles}
@@ -83,7 +83,7 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
           <form action={updateAction} className={styles.sheetBody}>
             <div className={styles.sheetHeader}>
               <p>Peso</p>
-              <h2 id="edit-weight-title">Editar peso</h2>
+              <h2 id="edit-weight-title">Ajustar peso</h2>
             </div>
 
             <input name="id" type="hidden" value={editingEntry.id} />

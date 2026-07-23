@@ -33,7 +33,7 @@ export function PlannedVaccineList({
   const doses = vaccineDoseStatuses.flatMap((status) => groups[status]);
 
   if (doses.length === 0) {
-    return <p className={styles.empty}>Todavia no hay dosis planificadas.</p>;
+    return <p className={styles.empty}>Aún no hay dosis planificadas.</p>;
   }
 
   if (view === "timeline") {
@@ -85,7 +85,7 @@ export function PlannedVaccineList({
               ))}
             </ol>
           ) : (
-            <p className={styles.empty}>Sin dosis en este estado.</p>
+            <p className={styles.empty}>Nada en este grupo.</p>
           )}
         </section>
       ))}
@@ -159,10 +159,10 @@ function PlannedVaccineEditor({
   return (
     <>
       <button
-        aria-label="Editar planificacion"
+        aria-label="Editar planificación"
         className={styles.secondaryActionButton}
         onClick={() => setIsOpen(true)}
-        title="Editar planificacion"
+        title="Editar planificación"
         type="button"
       >
         <EditIcon />
@@ -170,7 +170,7 @@ function PlannedVaccineEditor({
 
       {isOpen ? (
         <BottomSheet
-          ariaLabel="Cerrar panel de planificacion"
+          ariaLabel="Cerrar planificación"
           labelledBy={titleId}
           onClose={() => setIsOpen(false)}
           styles={styles}
@@ -201,7 +201,7 @@ function PlannedVaccineForm({
   return (
     <form action={action} className={styles.sheetBody}>
       <div className={styles.sheetHeader}>
-        <p>Planificacion</p>
+        <p>Planificación</p>
         <h2 id={titleId}>Editar dosis planificada</h2>
         <span>
           {dose.vaccineName} · {dose.doseLabel}
@@ -289,10 +289,10 @@ function MarkAppliedForm({
   return (
     <>
       <button
-        aria-label="Marcar como aplicada"
+        aria-label="Registrar vacuna aplicada"
         className={buttonClassName ?? styles.actionButton}
         onClick={() => setIsOpen(true)}
-        title="Marcar como aplicada"
+        title="Registrar vacuna aplicada"
         type="button"
       >
         {children ?? <CheckIcon />}
@@ -300,7 +300,7 @@ function MarkAppliedForm({
 
       {isOpen ? (
         <BottomSheet
-          ariaLabel="Cerrar panel de vacuna"
+          ariaLabel="Cerrar vacuna aplicada"
           labelledBy={titleId}
           onClose={() => setIsOpen(false)}
           styles={styles}
@@ -310,7 +310,7 @@ function MarkAppliedForm({
             dose={dose}
             onCancel={() => setIsOpen(false)}
             returnTo={returnTo}
-            submitLabel="Guardar aplicacion"
+            submitLabel="Guardar aplicación"
             title="Registrar vacuna aplicada"
             titleId={titleId}
           />
@@ -340,10 +340,10 @@ function AppliedVaccineEditor({
   return (
     <>
       <button
-        aria-label="Editar aplicacion"
+        aria-label="Editar aplicación"
         className={styles.actionButton}
         onClick={() => setIsOpen(true)}
-        title="Editar aplicacion"
+        title="Editar aplicación"
         type="button"
       >
         <EditIcon />
@@ -351,7 +351,7 @@ function AppliedVaccineEditor({
 
       {isOpen ? (
         <BottomSheet
-          ariaLabel="Cerrar panel de aplicacion"
+          ariaLabel="Cerrar aplicación"
           labelledBy={titleId}
           onClose={() => setIsOpen(false)}
           styles={styles}
@@ -361,8 +361,8 @@ function AppliedVaccineEditor({
             applicationId={application.id}
             dose={dose}
             onCancel={() => setIsOpen(false)}
-            submitLabel="Guardar aplicacion"
-            title="Editar aplicacion"
+            submitLabel="Guardar aplicación"
+            title="Editar aplicación"
             titleId={titleId}
           />
 
@@ -410,7 +410,7 @@ function VaccineApplicationForm({
   return (
     <form action={action} className={styles.sheetBody}>
       <div className={styles.sheetHeader}>
-        <p>Aplicacion</p>
+        <p>Aplicación</p>
         <h2 id={titleId}>{title}</h2>
         <span>
           {dose.vaccineName} · {dose.doseLabel}
@@ -423,7 +423,7 @@ function VaccineApplicationForm({
 
       <div className={styles.sheetFields}>
         <label>
-          Fecha de aplicacion
+          Fecha de aplicación
           <input
             name="appliedOn"
             required

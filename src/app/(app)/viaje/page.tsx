@@ -24,11 +24,11 @@ type TravelPageProps = {
 };
 
 const errorMessages: Record<string, string> = {
-  validation: "Revisa el texto, la categoria y el orden.",
-  save: "No se pudo guardar el item. Prueba otra vez.",
-  delete: "No se pudo borrar el item. Prueba otra vez.",
-  reset: "No se pudo reiniciar la lista. Prueba otra vez.",
-  load: "No se pudo cargar la lista de viaje.",
+  validation: "Revisa el texto y la categoría.",
+  save: "No pudimos guardar el elemento. Prueba otra vez.",
+  delete: "No pudimos borrar el elemento. Prueba otra vez.",
+  reset: "No pudimos reiniciar la lista. Prueba otra vez.",
+  load: "No pudimos cargar la lista de viaje.",
 };
 
 export default async function TravelPage({ searchParams }: TravelPageProps) {
@@ -41,9 +41,13 @@ export default async function TravelPage({ searchParams }: TravelPageProps) {
   const { checklist, loadError } = await getTravelChecklist();
   const currentError = error ?? loadError;
   const feedbackMessages: ToastFeedbackMessage[] = [
-    ...(created ? [{ id: "created", text: "Item añadido.", variant: "success" as const }] : []),
-    ...(updated ? [{ id: "updated", text: "Item actualizado.", variant: "success" as const }] : []),
-    ...(deleted ? [{ id: "deleted", text: "Item borrado.", variant: "success" as const }] : []),
+    ...(created
+      ? [{ id: "created", text: "Añadido a la lista.", variant: "success" as const }]
+      : []),
+    ...(updated
+      ? [{ id: "updated", text: "Elemento actualizado.", variant: "success" as const }]
+      : []),
+    ...(deleted ? [{ id: "deleted", text: "Elemento borrado.", variant: "success" as const }] : []),
     ...(reset ? [{ id: "reset", text: "Lista reiniciada.", variant: "success" as const }] : []),
     ...(currentError
       ? [
@@ -60,7 +64,7 @@ export default async function TravelPage({ searchParams }: TravelPageProps) {
     <main className={styles.main}>
       <header className={styles.header}>
         <p>Viaje</p>
-        <h1>Lista de viaje</h1>
+        <h1>Maleta de Irati</h1>
       </header>
 
       <ToastFeedback messages={feedbackMessages} />

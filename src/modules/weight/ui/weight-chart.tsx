@@ -49,15 +49,15 @@ export function WeightChart({ birthDate, entries }: WeightChartProps) {
   }, [closeExpandedChart, isExpanded]);
 
   if (series.points.length === 0) {
-    return <p className={styles.empty}>No hay pesos para este filtro.</p>;
+    return <p className={styles.empty}>No hay pesos para mostrar aquí.</p>;
   }
 
   return (
     <div className={styles.chart}>
       <div className={styles.chartHeader}>
-        <p>Referencia OMS orientativa, no diagnostico medico.</p>
+        <p>Referencia OMS orientativa. No sustituye una revisión médica.</p>
         <button
-          aria-label="Ver grafica de peso a pantalla completa"
+          aria-label="Ver gráfica de peso a pantalla completa"
           className={styles.chartExpandButton}
           onClick={() => setIsExpanded(true)}
           type="button"
@@ -98,10 +98,10 @@ export function WeightChart({ birthDate, entries }: WeightChartProps) {
             <div className={styles.chartFullscreenHeader}>
               <div>
                 <p>Peso</p>
-                <h2 id="weight-chart-fullscreen-title">Evolucion y referencia OMS</h2>
+                <h2 id="weight-chart-fullscreen-title">Evolución y referencia OMS</h2>
               </div>
               <button
-                aria-label="Cerrar grafica a pantalla completa"
+                aria-label="Cerrar gráfica a pantalla completa"
                 className={styles.chartCloseButton}
                 onClick={closeExpandedChart}
                 type="button"
@@ -150,13 +150,13 @@ function WeightChartSvg({
   series,
 }: WeightChartSvgProps) {
   return (
-    <div className={styles.chartCanvas} aria-label="Evolucion del peso">
+    <div className={styles.chartCanvas} aria-label="Evolución del peso">
       <svg
         viewBox={`0 0 ${series.chartWidth} ${series.chartHeight}`}
         role="img"
         aria-labelledby={`${idPrefix}-title ${idPrefix}-description`}
       >
-        <title id={`${idPrefix}-title`}>Evolucion del peso de Irati</title>
+        <title id={`${idPrefix}-title`}>Evolución del peso de Irati</title>
         <desc id={`${idPrefix}-description`}>
           Peso entre {series.minWeight.toLocaleString("es-ES")} y{" "}
           {series.maxWeight.toLocaleString("es-ES")} gramos, con referencia OMS de peso para la edad
@@ -233,7 +233,7 @@ function WeightChartSvg({
 
 function WeightChartLegend() {
   return (
-    <div className={styles.chartLegend} aria-label="Leyenda de la grafica">
+    <div className={styles.chartLegend} aria-label="Leyenda de la gráfica">
       <span className={styles.chartLegendWeight}>Peso registrado</span>
       <span>Referencia OMS: P3 P15 P50 P85 P97</span>
     </div>
@@ -250,13 +250,13 @@ function WeightChartMeta({ latestPoint, maxWeight, minWeight }: WeightChartMetaP
   return (
     <div className={styles.chartMeta}>
       <span>
-        Minimo <strong>{minWeight.toLocaleString("es-ES")} g</strong>
+        Mínimo <strong>{minWeight.toLocaleString("es-ES")} g</strong>
       </span>
       <span className={styles.chartMetaPrimary}>
-        Ultimo <strong>{latestPoint?.weightGrams.toLocaleString("es-ES")} g</strong>
+        Último <strong>{latestPoint?.weightGrams.toLocaleString("es-ES")} g</strong>
       </span>
       <span>
-        Maximo <strong>{maxWeight.toLocaleString("es-ES")} g</strong>
+        Máximo <strong>{maxWeight.toLocaleString("es-ES")} g</strong>
       </span>
     </div>
   );

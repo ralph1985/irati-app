@@ -10,7 +10,7 @@ describe("WeightHistory", () => {
       renderToStaticMarkup(
         <WeightHistory deleteAction={noopAction} entries={[]} updateAction={noopAction} />,
       ),
-    ).toContain("Todavia no hay pesos registrados.");
+    ).toContain("Aún no hay pesos en este filtro.");
   });
 
   it("renders registered weight entries", () => {

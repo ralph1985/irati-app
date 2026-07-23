@@ -13,9 +13,9 @@ export function LoginScreen({ error }: LoginScreenProps) {
     <main className="auth-shell">
       <form className="auth-panel" action="/login" method="post" suppressHydrationWarning>
         <p className="auth-kicker">Irati</p>
-        <h1>Acceso privado</h1>
+        <h1>Entrar en Irati</h1>
         <label>
-          Passcode
+          Passcode familiar
           <input
             autoComplete="current-password"
             inputMode="numeric"

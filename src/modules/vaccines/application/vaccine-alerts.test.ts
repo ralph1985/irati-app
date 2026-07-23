@@ -22,7 +22,7 @@ describe("buildVaccineAlerts", () => {
       {
         id: "upcoming",
         kind: "proxima",
-        title: "Vacuna upcoming proxima",
+        title: "Vacuna upcoming próxima",
         detail: "1.ª dosis · Test",
         plannedDate: "2026-07-25",
       },

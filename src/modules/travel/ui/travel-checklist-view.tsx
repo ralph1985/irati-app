@@ -47,10 +47,10 @@ export function TravelChecklistView({
         />
         <div className={styles.actions}>
           <button
-            aria-label="Añadir item"
+            aria-label="Añadir a la lista"
             className={styles.iconCommandButton}
             onClick={() => setSheetState({ mode: "create" })}
-            title="Añadir item"
+            title="Añadir a la lista"
             type="button"
           >
             <span aria-hidden="true">+</span>
@@ -94,7 +94,7 @@ export function TravelChecklistView({
             ))}
           </div>
         ) : (
-          <p className={styles.empty}>Todavia no hay items de viaje.</p>
+          <p className={styles.empty}>Aún no hay nada en la lista de viaje.</p>
         )}
       </section>
 
@@ -160,7 +160,7 @@ function TravelChecklistGroupView({
               <form
                 action={deleteAction}
                 onSubmit={(event) => {
-                  if (!confirm("¿Borrar este item?")) {
+                  if (!confirm("¿Borrar este elemento?")) {
                     event.preventDefault();
                   }
                 }}
@@ -211,7 +211,7 @@ function TravelChecklistSheet({
   }
 
   const isEdit = sheetState.mode === "edit";
-  const title = isEdit ? "Editar item" : "Nuevo item";
+  const title = isEdit ? "Editar elemento" : "Añadir a la lista";
 
   function closeSheet() {
     onClose();
@@ -219,7 +219,7 @@ function TravelChecklistSheet({
 
   return (
     <BottomSheet
-      ariaLabel="Cerrar panel de viaje"
+      ariaLabel="Cerrar lista de viaje"
       labelledBy="travel-sheet-title"
       onClose={closeSheet}
       styles={styles}
@@ -245,7 +245,7 @@ function TravelChecklistSheet({
               : undefined
           }
           onCancel={closeSheet}
-          submitLabel={isEdit ? "Guardar cambios" : "Guardar item"}
+          submitLabel={isEdit ? "Guardar cambios" : "Añadir"}
         />
       </div>
     </BottomSheet>
@@ -282,12 +282,12 @@ function TravelChecklistItemForm({
       ) : null}
 
       <label>
-        Item
+        Elemento
         <input maxLength={120} name="label" required defaultValue={defaults?.label ?? ""} />
       </label>
 
       <label>
-        Categoria
+        Categoría
         <select name="category" required defaultValue={defaults?.category ?? "cambio"}>
           {travelChecklistCategories.map((category) => (
             <option key={category} value={category}>

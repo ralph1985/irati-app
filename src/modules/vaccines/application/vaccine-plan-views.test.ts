@@ -19,7 +19,7 @@ describe("vaccine plan views", () => {
 
   it("uses a fallback group when a dose has no age label", () => {
     expect(groupPlannedVaccineDosesByAge([dose({ ageLabel: null })])[0]?.ageLabel).toBe(
-      "Sin edad definida",
+      "Edad por definir",
     );
   });
 

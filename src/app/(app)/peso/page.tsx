@@ -38,9 +38,9 @@ type WeightPageProps = {
 
 const errorMessages: Record<string, string> = {
   validation: "Revisa la fecha, el peso y el lugar.",
-  save: "No se pudo guardar el peso. Prueba otra vez.",
-  delete: "No se pudo borrar el peso. Prueba otra vez.",
-  load: "No se pudo cargar el historico de pesos.",
+  save: "No pudimos guardar el peso. Prueba otra vez.",
+  delete: "No pudimos borrar el peso. Prueba otra vez.",
+  load: "No pudimos cargar el histórico de pesos.",
 };
 
 export default async function WeightPage({ searchParams }: WeightPageProps) {
@@ -78,14 +78,14 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
       <main className={styles.main}>
         <header className={styles.header}>
           <p>Peso</p>
-          <h1>Registro de peso</h1>
+          <h1>Pesos de Irati</h1>
         </header>
 
         <ToastFeedback messages={feedbackMessages} offset="floatingAction" />
 
         <section className={styles.panel} aria-labelledby="chart-title">
           <div className={styles.sectionTitle}>
-            <h2 id="chart-title">Evolucion</h2>
+            <h2 id="chart-title">Evolución</h2>
             <span>{formatWeightFilterLabel(activeFilter)}</span>
           </div>
 
@@ -106,7 +106,7 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
 
         <section className={styles.panel} aria-labelledby="history-title">
           <div className={styles.sectionTitle}>
-            <h2 id="history-title">Historico</h2>
+            <h2 id="history-title">Histórico</h2>
             <span>{filteredEntries.length} registros</span>
           </div>
 
@@ -133,13 +133,13 @@ function WeightTrendPanel({ summary }: { summary: WeightTrendSummary }) {
   return (
     <div className={styles.trendSummary} aria-label="Resumen de peso">
       <article>
-        <span>Ultimo</span>
+        <span>Último</span>
         <strong>{summary.latest.weightGrams.toLocaleString("es-ES")} g</strong>
       </article>
       <article>
         <span>Hace</span>
         <strong>
-          {summary.daysSinceLatest} dia{summary.daysSinceLatest === 1 ? "" : "s"}
+          {summary.daysSinceLatest} día{summary.daysSinceLatest === 1 ? "" : "s"}
         </strong>
       </article>
       <article>
@@ -152,7 +152,7 @@ function WeightTrendPanel({ summary }: { summary: WeightTrendSummary }) {
 
 function formatWeightTrend(summary: WeightTrendSummary): string {
   if (!summary.previous || summary.differenceGrams === null) {
-    return "Sin comparativa";
+    return "Sin comparación";
   }
 
   const sign = summary.differenceGrams > 0 ? "+" : "";

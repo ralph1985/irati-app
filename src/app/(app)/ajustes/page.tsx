@@ -45,7 +45,7 @@ export default async function SettingsPage() {
           </div>
           <div>
             <dt>CIPA</dt>
-            <dd>{profile.cipa ?? "Sin anotar"}</dd>
+            <dd>{profile.cipa ?? "Sin registrar"}</dd>
           </div>
         </dl>
       </section>
@@ -61,7 +61,7 @@ export default async function SettingsPage() {
         </p>
         <form action="/logout" method="post" suppressHydrationWarning>
           <button className={styles.logout} type="submit">
-            Cerrar sesion
+            Cerrar sesión
           </button>
         </form>
       </section>
@@ -69,12 +69,12 @@ export default async function SettingsPage() {
       <section className={styles.panel} aria-labelledby="technical-title">
         <div className={styles.sectionTitle}>
           <h2 id="technical-title">MVP</h2>
-          <span>Conexion requerida</span>
+          <span>Conexión requerida</span>
         </div>
         <ul className={styles.list}>
           <li>PWA instalable.</li>
           <li>Datos guardados en Supabase.</li>
-          <li>Sin modo offline de datos.</li>
+          <li>Requiere conexión para leer y guardar.</li>
           <li>Sin realtime, email ni push.</li>
         </ul>
       </section>
@@ -95,10 +95,10 @@ function BackupHealthPanel({ health }: { health: BackupHealth }) {
       </div>
       <p className={styles.copy}>{statusCopy.description}</p>
       {health.latestSuccess ? (
-        <BackupRunDetails label="Ultima correcta" run={health.latestSuccess} />
+        <BackupRunDetails label="Última correcta" run={health.latestSuccess} />
       ) : null}
       {health.latestFailure ? (
-        <BackupRunDetails label="Ultimo fallo" run={health.latestFailure} />
+        <BackupRunDetails label="Último fallo" run={health.latestFailure} />
       ) : null}
     </section>
   );
@@ -139,31 +139,31 @@ function getBackupStatusCopy(health: BackupHealth) {
       return {
         className: "statusSuccess",
         label: "Correcta",
-        description: "La ultima copia correcta esta dentro de la ventana esperada.",
+        description: "La última copia correcta está dentro de la ventana esperada.",
       };
     case "stale":
       return {
         className: "statusWarning",
         label: "Revisar",
-        description: `Hace mas de ${health.staleAfterHours} horas que no hay una copia correcta.`,
+        description: `Hace más de ${health.staleAfterHours} horas que no hay una copia correcta.`,
       };
     case "failed":
       return {
         className: "statusWarning",
         label: "Fallando",
-        description: "La ultima ejecucion registrada fallo y no hay copia correcta previa.",
+        description: "La última ejecución registrada falló y no hay copia correcta previa.",
       };
     case "empty":
       return {
         className: "statusWarning",
         label: "Sin copias",
-        description: "Todavia no hay ninguna copia correcta registrada.",
+        description: "Todavía no hay ninguna copia correcta registrada.",
       };
     case "unavailable":
       return {
         className: "statusWarning",
         label: "No disponible",
-        description: "No se pudo leer el estado tecnico de copias de seguridad.",
+        description: "No pudimos leer el estado técnico de las copias de seguridad.",
       };
   }
 }
