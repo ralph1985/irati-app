@@ -117,9 +117,9 @@ Tareas:
 - [x] Mantener mutaciones fallidas visibles hasta que se sincronicen o retiren.
 - [x] Crear endpoint autenticado para aplicar mutaciones de Peso en Supabase con id local idempotente.
 - Mostrar pesos pendientes con estado visual propio.
-- Enviar operaciones al servidor en orden al recuperar conexion.
-- Reconciliar respuesta remota con el snapshot local.
-- Mantener operaciones fallidas visibles y reintentables.
+- [x] Enviar operaciones al servidor en orden al recuperar conexion.
+- [x] Reconciliar respuesta remota con el snapshot local.
+- [x] Mantener operaciones fallidas visibles y reintentables.
 
 Gate:
 
