@@ -107,7 +107,7 @@ Gate:
 
 Objetivo: crear, editar y borrar pesos sin conexion, y sincronizarlos al recuperar red.
 
-Estado: en curso. La base de cola local existe, pero los formularios aun no escriben offline.
+Estado: implementacion lista. Pendiente de validacion manual en PWA instalada.
 
 Tareas:
 
@@ -125,12 +125,13 @@ Tareas:
 
 Gate:
 
-- Crear peso offline deja el registro visible y pendiente.
-- Editar peso offline conserva el ultimo cambio local.
-- Borrar peso offline no reaparece al recargar offline.
-- Al volver online, los cambios llegan a Supabase una sola vez.
-- Si Supabase rechaza una operacion, no se descarta silenciosamente.
-- Checks completos y validacion manual en PWA instalada.
+- [x] Crear peso offline deja el registro visible y pendiente.
+- [x] Editar peso offline conserva el ultimo cambio local.
+- [x] Borrar peso offline no reaparece al recargar offline.
+- [x] Al volver online, los cambios llegan a Supabase una sola vez.
+- [x] Si Supabase rechaza una operacion, no se descarta silenciosamente.
+- [x] Checks completos.
+- [ ] Validacion manual en PWA instalada.
 
 ## Fase 3 - Escritura Offline En Viaje
 
