@@ -7,8 +7,10 @@ import {
   deleteOfflineTravelChecklistItem,
   deleteOfflineWeightEntry,
   enqueuePendingTravelMutation,
+  enqueuePendingVaccineMutation,
   enqueuePendingWeightMutation,
   listPendingTravelMutations,
+  listPendingVaccineMutations,
   listPendingWeightMutations,
   markPendingMutationError,
   readOfflineSnapshot,
@@ -244,6 +246,56 @@ describe("Irati offline database", () => {
     await expect(listPendingTravelMutations()).resolves.toMatchObject([
       { id: "travel-mutation-1", operation: "create" },
       { id: "travel-mutation-2", operation: "delete" },
+    ]);
+  });
+
+  it("queues pending vaccine mutations in creation order", async () => {
+    await enqueuePendingVaccineMutation({
+      createdAt: "2026-07-23T10:01:00.000Z",
+      id: "vaccine-mutation-2",
+      operation: "reopen",
+      payload: {
+        applicationId: "application-1",
+        baseApplication: {
+          appliedOn: "2026-09-02",
+          doseLabel: "1 dosis",
+          id: "application-1",
+          lot: "A1",
+          notes: null,
+          place: "Centro de salud",
+          plannedDoseId: "planned-1",
+          vaccineName: "Hexavalente",
+        },
+        plannedDoseId: "planned-1",
+      },
+    });
+    await enqueuePendingVaccineMutation({
+      createdAt: "2026-07-23T10:00:00.000Z",
+      id: "vaccine-mutation-1",
+      operation: "updatePlanned",
+      payload: {
+        basePlannedDose: {
+          ageLabel: "2 meses",
+          doseLabel: "1 dosis",
+          id: "planned-1",
+          notes: null,
+          plannedDate: "2026-09-02",
+          vaccineName: "Hexavalente",
+        },
+        dose: {
+          ageLabel: "2 meses",
+          doseLabel: "1 dosis",
+          notes: "Llamar antes",
+          plannedDate: "2026-09-02",
+          vaccineName: "Hexavalente",
+        },
+        id: "planned-1",
+      },
+    });
+
+    await expect(listPendingVaccineMutations()).resolves.toMatchObject([
+      { id: "vaccine-mutation-1", operation: "updatePlanned" },
+      { id: "vaccine-mutation-2", operation: "reopen" },
     ]);
   });
 

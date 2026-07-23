@@ -192,7 +192,11 @@ Tareas:
 - [x] Diseñar matriz de conflictos antes de implementar.
 - [x] Cubrir como minimo: marcar aplicada, editar aplicacion, reabrir dosis y editar planificacion.
 - [x] Evitar una regla generica de "ultimo cambio gana" para operaciones semanticas incompatibles.
+- [x] Crear cola local `pending_mutations` para Vacunas con operaciones `updatePlanned`, `markApplied`, `updateApplication` y `reopen`.
 - Mostrar conflictos que requieran revision manual.
+- Crear endpoint autenticado para aplicar mutaciones de Vacunas en Supabase.
+- Conectar sincronizacion de mutaciones pendientes al recuperar red.
+- Conectar los formularios de Vacunas a escritura offline.
 
 Gate:
 

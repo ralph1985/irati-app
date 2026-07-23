@@ -1,6 +1,7 @@
 import Dexie, { type Table } from "dexie";
 import type { BabyProfile } from "@/modules/profile/domain/baby-profile";
 import type { TravelChecklistItem } from "@/modules/travel/domain/travel-checklist-item";
+import type { PendingVaccineMutation as PendingVaccineMutationPayload } from "@/modules/vaccines/application/vaccine-offline-conflicts";
 import type {
   AppliedVaccineDose,
   PlannedVaccineDose,
@@ -44,7 +45,15 @@ export type PendingTravelMutation = {
   lastError: string | null;
 };
 
-export type PendingMutation = PendingWeightMutation | PendingTravelMutation;
+export type PendingVaccineMutation = PendingVaccineMutationPayload & {
+  id: string;
+  entity: "vaccine";
+  createdAt: string;
+  lastError: string | null;
+};
+
+export type PendingMutation =
+  PendingWeightMutation | PendingTravelMutation | PendingVaccineMutation;
 
 type StoredBabyProfile = BabyProfile & {
   id: "irati";
@@ -190,6 +199,20 @@ export async function enqueuePendingTravelMutation(
   });
 }
 
+export async function enqueuePendingVaccineMutation(
+  mutation: Omit<PendingVaccineMutation, "createdAt" | "entity" | "lastError"> &
+    Partial<Pick<PendingVaccineMutation, "createdAt" | "lastError">>,
+): Promise<void> {
+  const pendingMutation = {
+    ...mutation,
+    createdAt: mutation.createdAt ?? new Date().toISOString(),
+    entity: "vaccine",
+    lastError: mutation.lastError ?? null,
+  } as PendingVaccineMutation;
+
+  await iratiOfflineDb.pendingMutations.put(pendingMutation);
+}
+
 export async function applyOfflineWeightEntry(entry: WeightEntry): Promise<void> {
   await iratiOfflineDb.weightEntries.put(entry);
 }
@@ -245,6 +268,17 @@ export async function listPendingTravelMutations(): Promise<PendingTravelMutatio
 
   return mutations.filter(
     (mutation): mutation is PendingTravelMutation => mutation.entity === "travel",
+  );
+}
+
+export async function listPendingVaccineMutations(): Promise<PendingVaccineMutation[]> {
+  const mutations = await iratiOfflineDb.pendingMutations
+    .where("entity")
+    .equals("vaccine")
+    .sortBy("createdAt");
+
+  return mutations.filter(
+    (mutation): mutation is PendingVaccineMutation => mutation.entity === "vaccine",
   );
 }
 
