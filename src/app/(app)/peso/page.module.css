@@ -347,6 +347,14 @@
   border-top: 1px solid rgba(96, 72, 115, 0.14);
 }
 
+.history li[data-pending="true"] {
+  background: #fff7ed;
+}
+
+.history li[data-pending="true"] span {
+  color: #b45309;
+}
+
 .historySummary {
   min-width: 0;
 }

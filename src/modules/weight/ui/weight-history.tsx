@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BottomSheet } from "../../../shared/ui/bottom-sheet";
 import { WeightEntry } from "../domain/weight-entry";
+import {
+  listPendingWeightMutations,
+  PendingWeightMutation,
+} from "../../../shared/infrastructure/offline/irati-offline-db";
 import styles from "../../../app/(app)/peso/page.module.css";
 
 type WeightHistoryProps = {
@@ -13,8 +17,39 @@ type WeightHistoryProps = {
 
 export function WeightHistory({ deleteAction, entries, updateAction }: WeightHistoryProps) {
   const [editingEntry, setEditingEntry] = useState<WeightEntry | null>(null);
+  const [pendingMutations, setPendingMutations] = useState<PendingWeightMutation[]>([]);
+  const pendingEntries = pendingMutations
+    .map((mutation) => ({
+      entry: getPendingWeightEntry(mutation),
+      mutation,
+    }))
+    .filter((item): item is { entry: WeightEntry; mutation: PendingWeightMutation } =>
+      Boolean(item.entry),
+    );
 
-  if (entries.length === 0) {
+  useEffect(() => {
+    let isActive = true;
+
+    async function refreshPendingMutations() {
+      const nextPendingMutations = await listPendingWeightMutations();
+
+      if (isActive) {
+        setPendingMutations(nextPendingMutations);
+      }
+    }
+
+    void refreshPendingMutations();
+    window.addEventListener("irati-offline-weight-updated", refreshPendingMutations);
+    window.addEventListener("irati-offline-sync-updated", refreshPendingMutations);
+
+    return () => {
+      isActive = false;
+      window.removeEventListener("irati-offline-weight-updated", refreshPendingMutations);
+      window.removeEventListener("irati-offline-sync-updated", refreshPendingMutations);
+    };
+  }, []);
+
+  if (entries.length === 0 && pendingEntries.length === 0) {
     return <p className={styles.empty}>Aún no hay pesos en este filtro.</p>;
   }
 
@@ -29,6 +64,21 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
   return (
     <>
       <ol className={styles.history}>
+        {pendingEntries.map(({ entry, mutation }) => (
+          <li data-pending="true" key={mutation.id}>
+            <div className={styles.historySummary}>
+              <div>
+                <strong>{entry.weightGrams.toLocaleString("es-ES")} g</strong>
+                <span>
+                  {mutation.lastError ? "Error pendiente" : "Pendiente"} ·{" "}
+                  {formatPlace(entry.place)} ·{" "}
+                  <time dateTime={entry.measuredOn}>{formatDate(entry.measuredOn)}</time>
+                </span>
+              </div>
+            </div>
+          </li>
+        ))}
+
         {entries.map((entry) => (
           <li key={entry.id}>
             <div className={styles.historySummary}>
@@ -137,6 +187,14 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
       ) : null}
     </>
   );
+}
+
+function getPendingWeightEntry(mutation: PendingWeightMutation): WeightEntry | null {
+  if (mutation.operation === "delete") {
+    return null;
+  }
+
+  return "measuredOn" in mutation.payload ? mutation.payload : null;
 }
 
 function EditIcon() {

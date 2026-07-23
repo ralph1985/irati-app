@@ -116,10 +116,11 @@ Tareas:
 - [x] Aplicar cambios optimistas en IndexedDB.
 - [x] Mantener mutaciones fallidas visibles hasta que se sincronicen o retiren.
 - [x] Crear endpoint autenticado para aplicar mutaciones de Peso en Supabase con id local idempotente.
-- Mostrar pesos pendientes con estado visual propio.
+- [x] Mostrar pesos pendientes con estado visual propio.
 - [x] Enviar operaciones al servidor en orden al recuperar conexion.
 - [x] Reconciliar respuesta remota con el snapshot local.
 - [x] Mantener operaciones fallidas visibles y reintentables.
+- [x] Permitir alta de peso offline desde el formulario de Peso.
 
 Gate:
 

@@ -1,7 +1,12 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { FormEvent, ReactNode, useState } from "react";
 import { BottomSheet } from "../../../shared/ui/bottom-sheet";
+import { createWeightEntry, isWeightPlace } from "../domain/weight-entry";
+import {
+  applyOfflineWeightEntry,
+  enqueuePendingWeightMutation,
+} from "../../../shared/infrastructure/offline/irati-offline-db";
 
 type WeightCreateSheetProps = {
   action: (formData: FormData) => void | Promise<void>;
@@ -19,6 +24,7 @@ export function WeightCreateSheet({
   styles,
 }: WeightCreateSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [offlineError, setOfflineError] = useState<string | null>(null);
 
   function openSheet() {
     setIsOpen(true);
@@ -26,6 +32,53 @@ export function WeightCreateSheet({
 
   function closeSheet() {
     setIsOpen(false);
+    setOfflineError(null);
+  }
+
+  async function submitWeight(event: FormEvent<HTMLFormElement>) {
+    if (navigator.onLine) {
+      return;
+    }
+
+    event.preventDefault();
+    setOfflineError(null);
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const place = String(formData.get("place") ?? "");
+
+    if (!isWeightPlace(place)) {
+      setOfflineError("Revisa el lugar del peso.");
+      return;
+    }
+
+    try {
+      const entry = {
+        id: crypto.randomUUID(),
+        ...createWeightEntry({
+          measuredOn: String(formData.get("measuredOn") ?? ""),
+          notes: String(formData.get("notes") ?? ""),
+          place,
+          weightGrams: Number(formData.get("weightGrams")),
+        }),
+      };
+      const createdAt = new Date().toISOString();
+
+      await applyOfflineWeightEntry(entry);
+      await enqueuePendingWeightMutation({
+        createdAt,
+        id: `weight-create-${entry.id}`,
+        operation: "create",
+        payload: entry,
+      });
+
+      window.dispatchEvent(new Event("irati-offline-weight-updated"));
+      window.dispatchEvent(new Event("irati-offline-sync-updated"));
+      form.reset();
+      closeSheet();
+    } catch {
+      setOfflineError("No pudimos guardar el peso offline.");
+    }
   }
 
   return (
@@ -46,7 +99,7 @@ export function WeightCreateSheet({
           onClose={closeSheet}
           styles={styles}
         >
-          <form action={action} className={styles.sheetBody}>
+          <form action={action} className={styles.sheetBody} onSubmit={submitWeight}>
             <div className={styles.sheetHeader}>
               <p>Peso</p>
               <h2 id="new-weight-title">Añadir peso</h2>
@@ -86,6 +139,8 @@ export function WeightCreateSheet({
                 <textarea name="notes" rows={3} />
               </label>
             </div>
+
+            {offlineError ? <p role="alert">{offlineError}</p> : null}
 
             <div className={styles.sheetActions}>
               <button className={styles.secondaryButton} onClick={closeSheet} type="button">
