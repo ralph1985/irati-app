@@ -42,6 +42,10 @@ const serwist = new Serwist({
     ],
   },
   navigationPreload: true,
+  precacheOptions: {
+    navigateFallback: "/~offline",
+    navigateFallbackDenylist: [/^\/api\//, /^\/login(?:\/|$)/, /^\/logout(?:\/|$)/],
+  },
   precacheEntries: self.__SW_MANIFEST,
   runtimeCaching: staticAssetCache,
   skipWaiting: true,
