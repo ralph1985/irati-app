@@ -21,6 +21,7 @@ export type SyncMetadata = {
   lastSuccessfulSyncAt: string | null;
   schemaVersion: number;
   lastError: string | null;
+  offlineAccessGranted: boolean;
 };
 
 export type PendingWeightMutationOperation = "create" | "update" | "delete";
@@ -126,6 +127,7 @@ export async function replaceOfflineSnapshot(
         id: metadataId,
         lastError: null,
         lastSuccessfulSyncAt: syncedAt,
+        offlineAccessGranted: true,
         schemaVersion: currentSchemaVersion,
       });
     },
@@ -159,6 +161,7 @@ export async function readSyncMetadata(): Promise<SyncMetadata> {
       id: metadataId,
       lastError: null,
       lastSuccessfulSyncAt: null,
+      offlineAccessGranted: false,
       schemaVersion: currentSchemaVersion,
     }
   );
@@ -171,6 +174,8 @@ export async function recordOfflineSyncError(error: string): Promise<void> {
     ...currentMetadata,
     id: metadataId,
     lastError: error,
+    offlineAccessGranted:
+      currentMetadata.offlineAccessGranted ?? currentMetadata.lastSuccessfulSyncAt !== null,
     schemaVersion: currentSchemaVersion,
   });
 }

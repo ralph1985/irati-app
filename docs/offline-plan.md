@@ -1,17 +1,17 @@
-# Plan Offline Progresivo
+# Plan Offline-First
 
-Este documento guia la incorporacion de modo offline en Irati sin romper la app actual. El trabajo debe hacerse por fases pequeñas, con validacion al cerrar cada fase y manteniendo Supabase remoto como fuente principal.
+Este documento guia la conversion de Irati a una experiencia offline-first sin romper la app actual. Supabase remoto sigue siendo la fuente principal compartida, pero la PWA instalada debe usar IndexedDB como fuente local de lectura y escritura inmediata, y sincronizar despues con el servidor.
 
 ## Objetivo
 
-- Permitir que la PWA instalada abra y muestre la ultima copia disponible cuando no haya conexion.
-- Permitir escritura offline solo cuando la fase anterior este estable.
-- Empezar la escritura offline por Peso, porque sus conflictos son mas simples que Vacunas.
+- Permitir que la PWA instalada abra las mismas URLs (`/`, `/peso`, `/vacunas`, `/viaje` y `/ajustes`) y muestre la ultima copia disponible cuando no haya conexion.
+- Permitir datos locales offline solo en dispositivos con una sesion online valida previa y sin logout posterior.
+- Usar IndexedDB como fuente local de lectura y como destino inmediato de escritura local-first.
+- Sincronizar Supabase en segundo plano al recuperar conexion o cuando haya red disponible.
 - Mantener el comportamiento online actual despues de cada fase.
 
 ## Limites
 
-- No se implementa todo el offline de golpe.
 - No se introduce realtime.
 - No se introducen push notifications.
 - No se introducen cuentas separadas.
@@ -25,16 +25,17 @@ Este documento guia la incorporacion de modo offline en Irati sin romper la app 
 - IndexedDB solo puede hidratarse despues de una sesion valida.
 - Las escrituras remotas siguen pasando por servidor autenticado.
 - El logout debe limpiar o invalidar la copia local.
-- La UI debe mostrar cuando los datos son locales, antiguos, pendientes de sincronizar o tienen error.
+- La UI debe mostrar cuando los datos son locales, antiguos, pendientes de sincronizar, con error o con conflicto manual.
 - Los datos familiares persistidos en el dispositivo son un riesgo aceptado solo si queda explicito antes de implementar.
 
 ## Estado Actual
 
-- Irati es una PWA instalable, pero los datos requieren conexion.
-- Las pantallas principales leen datos desde Server Components y repositorios cacheados de servidor.
-- Las escrituras usan Server Actions y adaptadores Supabase de servidor.
+- Irati es una PWA instalable con Dexie, Serwist, snapshot local y colas de mutacion para Peso, Viaje y Vacunas.
+- El fallback `/~offline` renderiza un shell local que decide la pantalla por `window.location.pathname`, conserva las URLs principales y lee desde IndexedDB.
+- Las pantallas online mantienen Server Components y repositorios cacheados de servidor durante la transicion.
+- Las escrituras de Peso, Viaje y Vacunas tienen camino offline con IndexedDB, cola local y endpoints autenticados de sincronizacion.
 - La cache actual de Next.js reduce lecturas a Supabase, pero no sirve como offline de navegador.
-- El MVP inicial excluyo IndexedDB, cola de sincronizacion y service worker offline.
+- Falta completar la migracion a escritura local-first tambien cuando el navegador esta online y validar manualmente la PWA instalada.
 
 ## Fase 0 - Preparacion
 
@@ -92,6 +93,9 @@ Tareas:
 - [x] Mostrar estado global completo: `Al dia`, `Sin conexion`, `Datos locales` o `Error al sincronizar`.
 - [x] Mostrar ultima sincronizacion en Ajustes.
 - [x] Mantener las escrituras online con Server Actions como ahora.
+- [x] Guardar marcador local `offlineAccessGranted` tras hidratacion autenticada.
+- [x] Bloquear datos privados offline si el dispositivo no tiene marcador local y snapshot valido.
+- [x] Renderizar `/`, `/peso`, `/vacunas`, `/viaje` y `/ajustes` desde el shell local cuando el service worker sirve `/~offline`.
 
 Gate:
 

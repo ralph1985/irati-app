@@ -27,7 +27,8 @@ Incluido:
 - Estados de vacunas.
 - Avisos internos de proximas y retrasadas.
 - Checklist de viaje reutilizable, editable y compartida.
-- Supabase como persistencia principal.
+- Supabase como persistencia remota principal.
+- Copia local offline-first por dispositivo tras una sesion online valida.
 - Despliegue en Vercel.
 
 Backups:
@@ -48,7 +49,7 @@ Backups:
 
 Excluido:
 
-- Modo offline de datos en el MVP inicial. El plan evolutivo vive en [`docs/offline-plan.md`](offline-plan.md).
+- Modo offline de datos en el MVP inicial. La evolucion offline-first vive en [`docs/offline-plan.md`](offline-plan.md).
 - Realtime.
 - Email.
 - Push notifications.
@@ -116,13 +117,14 @@ PWA:
 
 - La aplicacion debe ser instalable desde el inicio.
 - La base incluye manifest, metadata web app, `id`, `scope`, iconos PNG de 192 y 512 px e icono SVG maskable.
-- El shell puede cachearse para instalacion y carga basica cuando se active el plan offline progresivo.
-- Los datos requieren conexion en el MVP inicial.
-- No se implementa IndexedDB ni cola de sincronizacion en el MVP inicial.
+- El shell puede cachearse para instalacion y carga basica dentro del plan offline-first.
+- Los datos requirieron conexion en el MVP inicial; la PWA instalada puede leer la copia local tras una primera carga online autenticada.
+- IndexedDB almacena perfil, pesos, vacunas planificadas, vacunas aplicadas, checklist de viaje, metadatos de sincronizacion y colas de mutacion.
 - No se implementa realtime.
 - No se incorpora service worker offline en el MVP inicial porque la aplicacion requiere conexion.
 - La incorporacion de lectura offline, IndexedDB y cola de sincronizacion debe seguir [`docs/offline-plan.md`](offline-plan.md).
 - Para el plan offline progresivo, la decision de Fase 0 es usar Dexie para IndexedDB y Serwist para el service worker de Next. La configuracion debe cachear shell, assets y fallback offline, no HTML privado ni respuestas de datos familiares.
+- El fallback `/~offline` actua como entrypoint del shell local cuando no hay red, mantiene las mismas URLs principales mediante `window.location.pathname` y no muestra datos privados si falta `offlineAccessGranted` o snapshot valido.
 - Mientras se use `@serwist/next`, el build de produccion se ejecuta con webpack por compatibilidad con Next 16.
 
 Caches:
@@ -131,7 +133,7 @@ Caches:
 - La cache de servidor cubre perfil, historico de peso y listas base del plan de vacunas.
 - Las acciones de escritura invalidan la cache afectada antes de redirigir para conservar lecturas frescas tras guardar, editar o borrar.
 - Los estados derivados de vacunas, como proxima o retrasada, se recalculan por request a partir de las listas cacheadas y la fecha actual.
-- No se cachean datos privados en IndexedDB ni se ofrece lectura de datos sin conexion en el MVP inicial. El cambio a copia local por dispositivo requiere seguir [`docs/offline-plan.md`](offline-plan.md).
+- No se cachean HTML privado ni respuestas privadas en el service worker. La copia local de datos privados vive en IndexedDB solo tras sesion valida y debe limpiarse o invalidarse en logout.
 
 ## Arquitectura
 
