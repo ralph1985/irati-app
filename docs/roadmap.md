@@ -303,7 +303,7 @@ El modo offline se implementara por fases segun [`docs/offline-plan.md`](offline
 - [x] Fase 1: permitir lectura offline desde snapshot local despues de una carga online autenticada.
 - [x] Fase 2: permitir escritura offline solo en Peso con cola local e idempotencia.
 - [x] Fase 3: ampliar escritura offline a Viaje si Peso queda estable.
-- [ ] Fase 4: diseñar e implementar escritura offline en Vacunas con matriz de conflictos.
+- [x] Fase 4: diseñar e implementar escritura offline en Vacunas con matriz de conflictos.
 - [ ] Validar cada fase con checks completos cuando haya codigo y prueba manual en PWA instalada.
 
 ## Fuera del MVP inicial

@@ -1,14 +1,28 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 import { BottomSheet } from "../../../shared/ui/bottom-sheet";
 import {
+  AppliedVaccineDose,
+  assignPlannedVaccineDoseStatuses,
+  createAppliedVaccineDose,
+  createPlannedVaccineDose,
+  groupPlannedVaccineDosesByStatus,
   getVaccineDoseStatusLabel,
+  PlannedVaccineDose,
   PlannedVaccineDoseGroups,
   PlannedVaccineDoseWithStatus,
   vaccineDoseStatuses,
 } from "../domain/vaccine-calendar";
 import { VaccineTimelineGroup } from "../application/vaccine-plan-views";
+import {
+  applyOfflineAppliedVaccineDose,
+  applyOfflinePlannedVaccineDose,
+  deleteOfflineAppliedVaccineDose,
+  enqueuePendingVaccineMutation,
+  listPendingVaccineMutations,
+  type PendingVaccineMutation,
+} from "../../../shared/infrastructure/offline/irati-offline-db";
 import styles from "../../../app/(app)/vacunas/page.module.css";
 
 type PlannedVaccineListProps = {
@@ -30,7 +44,47 @@ export function PlannedVaccineList({
   updateApplicationAction,
   view = "status",
 }: PlannedVaccineListProps) {
-  const doses = vaccineDoseStatuses.flatMap((status) => groups[status]);
+  const [pendingMutations, setPendingMutations] = useState<PendingVaccineMutation[]>([]);
+  const [today] = useState(() => new Date());
+  const baseDoses = useMemo(
+    () => vaccineDoseStatuses.flatMap((status) => groups[status]),
+    [groups],
+  );
+  const visibleDoses = useMemo(
+    () => buildVisibleVaccineDoses(baseDoses, pendingMutations, today),
+    [baseDoses, pendingMutations, today],
+  );
+  const visibleGroups = useMemo(
+    () => groupPlannedVaccineDosesByStatus(visibleDoses),
+    [visibleDoses],
+  );
+  const visibleTimelineGroups = useMemo(
+    () => buildVisibleTimelineGroups(timelineGroups, visibleDoses),
+    [timelineGroups, visibleDoses],
+  );
+  const doses = visibleDoses;
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function refreshPendingMutations() {
+      const nextPendingMutations = await listPendingVaccineMutations();
+
+      if (isActive) {
+        setPendingMutations(nextPendingMutations);
+      }
+    }
+
+    void refreshPendingMutations();
+    window.addEventListener("irati-offline-vaccines-updated", refreshPendingMutations);
+    window.addEventListener("irati-offline-sync-updated", refreshPendingMutations);
+
+    return () => {
+      isActive = false;
+      window.removeEventListener("irati-offline-vaccines-updated", refreshPendingMutations);
+      window.removeEventListener("irati-offline-sync-updated", refreshPendingMutations);
+    };
+  }, []);
 
   if (doses.length === 0) {
     return <p className={styles.empty}>Aún no hay dosis planificadas.</p>;
@@ -39,7 +93,7 @@ export function PlannedVaccineList({
   if (view === "timeline") {
     return (
       <div className={styles.timelineGroups}>
-        {timelineGroups.map((group) => (
+        {visibleTimelineGroups.map((group) => (
           <section className={styles.timelineGroup} key={group.ageLabel}>
             <div className={styles.timelineTitle}>
               <h3>{group.ageLabel}</h3>
@@ -54,6 +108,7 @@ export function PlannedVaccineList({
                   reopenAction={reopenAction}
                   updateAction={updateAction}
                   updateApplicationAction={updateApplicationAction}
+                  pendingMutations={pendingMutations}
                 />
               ))}
             </ol>
@@ -69,11 +124,11 @@ export function PlannedVaccineList({
         <section className={styles.statusGroup} key={status} aria-labelledby={`status-${status}`}>
           <div className={styles.statusTitle}>
             <h3 id={`status-${status}`}>{getVaccineDoseStatusLabel(status)}</h3>
-            <span>{groups[status].length}</span>
+            <span>{visibleGroups[status].length}</span>
           </div>
-          {groups[status].length > 0 ? (
+          {visibleGroups[status].length > 0 ? (
             <ol className={styles.doseList}>
-              {groups[status].map((dose) => (
+              {visibleGroups[status].map((dose) => (
                 <PlannedVaccineItem
                   dose={dose}
                   key={dose.id}
@@ -81,6 +136,7 @@ export function PlannedVaccineList({
                   reopenAction={reopenAction}
                   updateAction={updateAction}
                   updateApplicationAction={updateApplicationAction}
+                  pendingMutations={pendingMutations}
                 />
               ))}
             </ol>
@@ -96,18 +152,22 @@ export function PlannedVaccineList({
 function PlannedVaccineItem({
   dose,
   markAppliedAction,
+  pendingMutations,
   reopenAction,
   updateAction,
   updateApplicationAction,
 }: {
   dose: PlannedVaccineDoseWithStatus;
   markAppliedAction: (formData: FormData) => void | Promise<void>;
+  pendingMutations: PendingVaccineMutation[];
   reopenAction: (formData: FormData) => void | Promise<void>;
   updateAction: (formData: FormData) => void | Promise<void>;
   updateApplicationAction: (formData: FormData) => void | Promise<void>;
 }) {
+  const pendingMessage = getPendingVaccineDoseMessage(pendingMutations, dose);
+
   return (
-    <li>
+    <li data-pending={pendingMessage ? "true" : "false"}>
       <div className={styles.doseSummary}>
         <div>
           <strong>{dose.vaccineName}</strong>
@@ -128,6 +188,7 @@ function PlannedVaccineItem({
         <p className={styles.notes}>Aplicada el {formatDate(dose.appliedOn)}.</p>
       ) : null}
       {dose.notes ? <p className={styles.notes}>{dose.notes}</p> : null}
+      {pendingMessage ? <p className={styles.pendingNote}>{pendingMessage}</p> : null}
 
       <div className={styles.doseActions}>
         {dose.application ? (
@@ -199,7 +260,16 @@ function PlannedVaccineForm({
   titleId: string;
 }) {
   return (
-    <form action={action} className={styles.sheetBody}>
+    <form
+      action={action}
+      className={styles.sheetBody}
+      onSubmit={(event) => {
+        if (!navigator.onLine) {
+          event.preventDefault();
+          void updatePlannedVaccineDoseOffline(event.currentTarget, dose, onCancel);
+        }
+      }}
+    >
       <div className={styles.sheetHeader}>
         <p>Planificación</p>
         <h2 id={titleId}>Editar dosis planificada</h2>
@@ -372,6 +442,12 @@ function AppliedVaccineEditor({
             onSubmit={(event) => {
               if (!confirm("¿Volver esta vacuna a pendiente?")) {
                 event.preventDefault();
+                return;
+              }
+
+              if (!navigator.onLine) {
+                event.preventDefault();
+                void reopenVaccineDoseOffline(event, dose, () => setIsOpen(false));
               }
             }}
           >
@@ -408,7 +484,16 @@ function VaccineApplicationForm({
   const application = dose.application;
 
   return (
-    <form action={action} className={styles.sheetBody}>
+    <form
+      action={action}
+      className={styles.sheetBody}
+      onSubmit={(event) => {
+        if (!navigator.onLine) {
+          event.preventDefault();
+          void applyVaccineApplicationOffline(event.currentTarget, dose, applicationId, onCancel);
+        }
+      }}
+    >
       <div className={styles.sheetHeader}>
         <p>Aplicación</p>
         <h2 id={titleId}>{title}</h2>
@@ -502,4 +587,230 @@ function formatDate(date: string): string {
     year: "numeric",
     timeZone: "UTC",
   }).format(new Date(`${date}T00:00:00.000Z`));
+}
+
+function buildVisibleVaccineDoses(
+  baseDoses: PlannedVaccineDoseWithStatus[],
+  pendingMutations: PendingVaccineMutation[],
+  today: Date,
+): PlannedVaccineDoseWithStatus[] {
+  const plannedDosesById = new Map<string, PlannedVaccineDose>(
+    baseDoses.map((dose) => [dose.id, stripPlannedDose(dose)]),
+  );
+  const appliedDosesById = new Map<string, AppliedVaccineDose>(
+    baseDoses
+      .flatMap((dose) => (dose.application ? [dose.application] : []))
+      .map((application) => [application.id, application]),
+  );
+
+  for (const mutation of pendingMutations) {
+    if (mutation.operation === "updatePlanned") {
+      plannedDosesById.set(mutation.payload.id, {
+        id: mutation.payload.id,
+        ...mutation.payload.dose,
+      });
+      continue;
+    }
+
+    if (mutation.operation === "markApplied") {
+      appliedDosesById.set(mutation.payload.applicationId, {
+        id: mutation.payload.applicationId,
+        ...mutation.payload.dose,
+      });
+      continue;
+    }
+
+    if (mutation.operation === "updateApplication") {
+      appliedDosesById.set(mutation.payload.id, {
+        id: mutation.payload.id,
+        ...mutation.payload.dose,
+      });
+      continue;
+    }
+
+    appliedDosesById.delete(mutation.payload.applicationId);
+  }
+
+  return assignPlannedVaccineDoseStatuses(
+    [...plannedDosesById.values()],
+    [...appliedDosesById.values()],
+    today,
+  );
+}
+
+function buildVisibleTimelineGroups(
+  timelineGroups: VaccineTimelineGroup[],
+  visibleDoses: PlannedVaccineDoseWithStatus[],
+): VaccineTimelineGroup[] {
+  const visibleDosesById = new Map(visibleDoses.map((dose) => [dose.id, dose]));
+
+  return timelineGroups
+    .map((group) => ({
+      ...group,
+      doses: group.doses.flatMap((dose) => {
+        const visibleDose = visibleDosesById.get(dose.id);
+        return visibleDose ? [visibleDose] : [];
+      }),
+    }))
+    .filter((group) => group.doses.length > 0);
+}
+
+async function updatePlannedVaccineDoseOffline(
+  form: HTMLFormElement,
+  dose: PlannedVaccineDoseWithStatus,
+  onDone: () => void,
+) {
+  const formData = new FormData(form);
+  const plannedDose = {
+    id: dose.id,
+    ...createPlannedVaccineDose({
+      ageLabel: String(formData.get("ageLabel") ?? ""),
+      doseLabel: String(formData.get("doseLabel") ?? ""),
+      notes: String(formData.get("notes") ?? ""),
+      plannedDate: String(formData.get("plannedDate") ?? ""),
+      vaccineName: String(formData.get("vaccineName") ?? ""),
+    }),
+  };
+
+  await applyOfflinePlannedVaccineDose(plannedDose);
+  await enqueuePendingVaccineMutation({
+    id: `vaccine-update-planned-${dose.id}-${crypto.randomUUID()}`,
+    operation: "updatePlanned",
+    payload: {
+      basePlannedDose: stripPlannedDose(dose),
+      dose: stripPlannedDose(plannedDose),
+      id: dose.id,
+    },
+  });
+  onDone();
+  dispatchOfflineVaccineEvents();
+}
+
+async function applyVaccineApplicationOffline(
+  form: HTMLFormElement,
+  dose: PlannedVaccineDoseWithStatus,
+  applicationId: string | undefined,
+  onDone: () => void,
+) {
+  const formData = new FormData(form);
+  const nextApplicationId = applicationId ?? crypto.randomUUID();
+  const application = {
+    id: nextApplicationId,
+    ...createAppliedVaccineDose({
+      appliedOn: String(formData.get("appliedOn") ?? ""),
+      doseLabel: String(formData.get("doseLabel") ?? ""),
+      lot: String(formData.get("lot") ?? ""),
+      notes: String(formData.get("notes") ?? ""),
+      place: String(formData.get("place") ?? ""),
+      plannedDoseId: dose.id,
+      vaccineName: String(formData.get("vaccineName") ?? ""),
+    }),
+  };
+
+  await applyOfflineAppliedVaccineDose(application);
+  await enqueuePendingVaccineMutation(
+    applicationId
+      ? {
+          id: `vaccine-update-application-${applicationId}-${crypto.randomUUID()}`,
+          operation: "updateApplication",
+          payload: {
+            baseApplication: requireVaccineApplication(dose),
+            dose: stripAppliedDose(application),
+            id: applicationId,
+            plannedDoseId: dose.id,
+          },
+        }
+      : {
+          id: `vaccine-mark-applied-${nextApplicationId}`,
+          operation: "markApplied",
+          payload: {
+            applicationId: nextApplicationId,
+            dose: stripAppliedDose(application),
+            plannedDoseId: dose.id,
+          },
+        },
+  );
+  onDone();
+  dispatchOfflineVaccineEvents();
+}
+
+async function reopenVaccineDoseOffline(
+  _event: FormEvent<HTMLFormElement>,
+  dose: PlannedVaccineDoseWithStatus,
+  onDone: () => void,
+) {
+  const application = requireVaccineApplication(dose);
+
+  await deleteOfflineAppliedVaccineDose(application.id);
+  await enqueuePendingVaccineMutation({
+    id: `vaccine-reopen-${application.id}-${crypto.randomUUID()}`,
+    operation: "reopen",
+    payload: {
+      applicationId: application.id,
+      baseApplication: application,
+      plannedDoseId: dose.id,
+    },
+  });
+  onDone();
+  dispatchOfflineVaccineEvents();
+}
+
+function getPendingVaccineDoseMessage(
+  pendingMutations: PendingVaccineMutation[],
+  dose: PlannedVaccineDoseWithStatus,
+): string | null {
+  const pendingMutation = pendingMutations.find((mutation) => isMutationForDose(mutation, dose));
+
+  if (!pendingMutation) {
+    return null;
+  }
+
+  return pendingMutation.lastError ?? "Pendiente de sincronizar.";
+}
+
+function isMutationForDose(
+  mutation: PendingVaccineMutation,
+  dose: PlannedVaccineDoseWithStatus,
+): boolean {
+  if (mutation.operation === "updatePlanned") {
+    return mutation.payload.id === dose.id;
+  }
+
+  return mutation.payload.plannedDoseId === dose.id;
+}
+
+function requireVaccineApplication(dose: PlannedVaccineDoseWithStatus): AppliedVaccineDose {
+  if (!dose.application) {
+    throw new Error("Missing vaccine application");
+  }
+
+  return dose.application;
+}
+
+function stripPlannedDose(dose: PlannedVaccineDose): PlannedVaccineDose {
+  return {
+    ageLabel: dose.ageLabel,
+    doseLabel: dose.doseLabel,
+    id: dose.id,
+    notes: dose.notes,
+    plannedDate: dose.plannedDate,
+    vaccineName: dose.vaccineName,
+  };
+}
+
+function stripAppliedDose(dose: AppliedVaccineDose): Omit<AppliedVaccineDose, "id"> {
+  return {
+    appliedOn: dose.appliedOn,
+    doseLabel: dose.doseLabel,
+    lot: dose.lot,
+    notes: dose.notes,
+    place: dose.place,
+    plannedDoseId: dose.plannedDoseId,
+    vaccineName: dose.vaccineName,
+  };
+}
+
+function dispatchOfflineVaccineEvents() {
+  window.dispatchEvent(new Event("irati-offline-vaccines-updated"));
+  window.dispatchEvent(new Event("irati-offline-sync-updated"));
 }

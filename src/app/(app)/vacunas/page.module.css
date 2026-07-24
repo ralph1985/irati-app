@@ -204,6 +204,10 @@
   padding: 10px 10px 10px 12px;
 }
 
+.doseList li[data-pending="true"] {
+  background: #fff7ed;
+}
+
 .doseList li + li {
   border-top: 1px solid rgba(96, 72, 115, 0.14);
 }
@@ -284,6 +288,15 @@
   border-radius: 10px;
   background: #f8fafc;
   font-weight: 600;
+  padding: 7px 8px;
+}
+
+.pendingNote {
+  border-radius: 10px;
+  background: #fed7aa;
+  color: #9a3412;
+  font-size: 13px;
+  font-weight: 800;
   padding: 7px 8px;
 }
 

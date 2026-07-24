@@ -236,6 +236,18 @@ export async function applyOfflineTravelChecklistItem(item: TravelChecklistItem)
   await iratiOfflineDb.travelChecklistItems.put(item);
 }
 
+export async function applyOfflinePlannedVaccineDose(dose: PlannedVaccineDose): Promise<void> {
+  await iratiOfflineDb.plannedVaccineDoses.put(dose);
+}
+
+export async function applyOfflineAppliedVaccineDose(dose: AppliedVaccineDose): Promise<void> {
+  await iratiOfflineDb.appliedVaccineDoses.put(dose);
+}
+
+export async function deleteOfflineAppliedVaccineDose(id: string): Promise<void> {
+  await iratiOfflineDb.appliedVaccineDoses.delete(id);
+}
+
 export async function setOfflineTravelChecklistItemPacked(
   id: string,
   isPacked: boolean,

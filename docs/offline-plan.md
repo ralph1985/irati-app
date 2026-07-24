@@ -159,7 +159,7 @@ Gate:
 
 Objetivo: permitir escritura offline en Vacunas solo tras definir conflictos de dominio.
 
-Estado: matriz de conflictos documentada y testeada. Pendiente de conectar storage, endpoint, sincronizacion y UI.
+Estado: implementacion lista. Pendiente de validacion manual en PWA instalada.
 
 Operaciones offline candidatas:
 
@@ -193,18 +193,19 @@ Tareas:
 - [x] Cubrir como minimo: marcar aplicada, editar aplicacion, reabrir dosis y editar planificacion.
 - [x] Evitar una regla generica de "ultimo cambio gana" para operaciones semanticas incompatibles.
 - [x] Crear cola local `pending_mutations` para Vacunas con operaciones `updatePlanned`, `markApplied`, `updateApplication` y `reopen`.
-- Mostrar conflictos que requieran revision manual.
+- [x] Mostrar conflictos que requieran revision manual.
 - [x] Crear endpoint autenticado para aplicar mutaciones de Vacunas en Supabase.
 - [x] Conectar sincronizacion de mutaciones pendientes al recuperar red.
-- Conectar los formularios de Vacunas a escritura offline.
+- [x] Conectar los formularios de Vacunas a escritura offline.
 
 Gate:
 
 - [x] La matriz de conflictos esta documentada.
 - [x] La matriz de conflictos esta testeada.
-- Las operaciones offline no pueden dejar una dosis aplicada y reabierta a la vez.
-- Los errores de sincronizacion no ocultan informacion clinica introducida por el usuario.
-- Checks completos y validacion manual en PWA instalada.
+- [x] Las operaciones offline no pueden dejar una dosis aplicada y reabierta a la vez.
+- [x] Los errores de sincronizacion no ocultan informacion clinica introducida por el usuario.
+- [x] Checks completos.
+- [ ] Validacion manual en PWA instalada.
 
 ## Criterios Para Parar O Revertir
 

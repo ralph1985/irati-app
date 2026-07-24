@@ -3,7 +3,10 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   applyOfflineWeightEntry,
   applyOfflineTravelChecklistItem,
+  applyOfflineAppliedVaccineDose,
+  applyOfflinePlannedVaccineDose,
   clearOfflineData,
+  deleteOfflineAppliedVaccineDose,
   deleteOfflineTravelChecklistItem,
   deleteOfflineWeightEntry,
   enqueuePendingTravelMutation,
@@ -297,6 +300,39 @@ describe("Irati offline database", () => {
       { id: "vaccine-mutation-1", operation: "updatePlanned" },
       { id: "vaccine-mutation-2", operation: "reopen" },
     ]);
+  });
+
+  it("applies optimistic vaccine changes to the local snapshot", async () => {
+    await applyOfflinePlannedVaccineDose({
+      ageLabel: "2 meses",
+      doseLabel: "1 dosis",
+      id: "planned-1",
+      notes: null,
+      plannedDate: "2026-09-02",
+      vaccineName: "Hexavalente",
+    });
+    await applyOfflineAppliedVaccineDose({
+      appliedOn: "2026-09-02",
+      doseLabel: "1 dosis",
+      id: "application-1",
+      lot: null,
+      notes: null,
+      place: "Centro de salud",
+      plannedDoseId: "planned-1",
+      vaccineName: "Hexavalente",
+    });
+
+    await expect(readOfflineSnapshot()).resolves.toMatchObject({
+      appliedVaccineDoses: [{ id: "application-1", plannedDoseId: "planned-1" }],
+      plannedVaccineDoses: [{ id: "planned-1", vaccineName: "Hexavalente" }],
+    });
+
+    await deleteOfflineAppliedVaccineDose("application-1");
+
+    await expect(readOfflineSnapshot()).resolves.toMatchObject({
+      appliedVaccineDoses: [],
+      plannedVaccineDoses: [{ id: "planned-1" }],
+    });
   });
 
   it("applies optimistic travel changes to the local snapshot", async () => {
