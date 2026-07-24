@@ -2,8 +2,8 @@
 
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
 import { OfflineSnapshotHydrator } from "@/shared/infrastructure/offline/offline-snapshot-hydrator";
 import { OfflineStatusIndicator } from "@/shared/infrastructure/offline/offline-status-indicator";
 import { OfflineTravelMutationSync } from "@/shared/infrastructure/offline/offline-travel-mutation-sync";
@@ -30,6 +30,11 @@ type NavigationState = {
   pathname: string;
 };
 
+type OptimisticNavigationState = {
+  basePathname: string;
+  pathname: string;
+};
+
 const viewVariants: Variants = {
   enter: (direction: Direction) => ({
     opacity: direction === "none" ? 1 : 0,
@@ -53,13 +58,28 @@ const reducedMotionVariants: Variants = {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [optimisticNavigationState, setOptimisticNavigationState] =
+    useState<OptimisticNavigationState>(() => ({
+      basePathname: pathname,
+      pathname,
+    }));
   const [navigationState, setNavigationState] = useState<NavigationState>(() => ({
     direction: "none",
     pathname,
   }));
   const shouldReduceMotion = useReducedMotion();
 
+  useEffect(() => {
+    for (const tab of tabs) {
+      if (tab.href !== pathname) {
+        router.prefetch(tab.href);
+      }
+    }
+  }, [pathname, router]);
+
   let currentNavigationState = navigationState;
+  let currentOptimisticNavigationState = optimisticNavigationState;
 
   if (navigationState.pathname !== pathname) {
     currentNavigationState = {
@@ -67,6 +87,14 @@ export function AppShell({ children }: { children: ReactNode }) {
       pathname,
     };
     setNavigationState(currentNavigationState);
+  }
+
+  if (optimisticNavigationState.basePathname !== pathname) {
+    currentOptimisticNavigationState = {
+      basePathname: pathname,
+      pathname,
+    };
+    setOptimisticNavigationState(currentOptimisticNavigationState);
   }
 
   const direction = currentNavigationState.direction;
@@ -98,10 +126,26 @@ export function AppShell({ children }: { children: ReactNode }) {
       <nav className={styles.nav} aria-label="Navegacion principal">
         {tabs.map((tab) => (
           <Link
-            aria-current={pathname === tab.href ? "page" : undefined}
+            aria-current={
+              currentOptimisticNavigationState.pathname === tab.href ? "page" : undefined
+            }
             aria-label={tab.label}
             href={tab.href}
             key={tab.href}
+            onFocus={() => {
+              if (tab.href !== pathname) {
+                router.prefetch(tab.href);
+              }
+            }}
+            onPointerDown={() => {
+              if (tab.href !== pathname) {
+                setOptimisticNavigationState({
+                  basePathname: pathname,
+                  pathname: tab.href,
+                });
+                router.prefetch(tab.href);
+              }
+            }}
             title={tab.label}
           >
             <TabIcon name={tab.icon} />
