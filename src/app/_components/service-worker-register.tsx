@@ -4,9 +4,11 @@ import { useEffect } from "react";
 
 export function ServiceWorkerRegister() {
   useEffect(() => {
-    if ("serviceWorker" in navigator && window.serwist !== undefined) {
-      void window.serwist.register();
+    if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) {
+      return;
     }
+
+    void navigator.serviceWorker.register("/sw.js", { scope: "/" });
   }, []);
 
   return null;
