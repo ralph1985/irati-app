@@ -1,6 +1,7 @@
 import { getBabyProfile } from "@/modules/profile/application/get-baby-profile";
-import { formatAge, formatBirthDate } from "@/modules/profile/domain/baby-profile";
+import { formatBirthDate } from "@/modules/profile/domain/baby-profile";
 import { CachedProfileRepository } from "@/modules/profile/infrastructure/cached-profile-repository";
+import { LiveAge } from "@/modules/profile/ui/live-age";
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import { LogoutForm } from "@/modules/auth/ui/logout-form";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
@@ -84,7 +85,9 @@ export default async function Home({ searchParams }: HomeProps) {
         <p className={styles.kicker}>Hoy</p>
         <h1 id="home-title">{profile.name}</h1>
         <p className={styles.birthDate}>Nacida el {formatBirthDate(profile)}</p>
-        <p className={styles.age}>Edad: {formatAge(profile, new Date())}</p>
+        <p className={styles.age}>
+          Edad: <LiveAge initialNow={new Date().toISOString()} profile={profile} />
+        </p>
         {source === "fallback" ? (
           <p className={styles.dataNotice}>Usando datos locales temporales.</p>
         ) : null}

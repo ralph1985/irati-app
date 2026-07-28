@@ -36,6 +36,9 @@ export type BabyAge = {
   years: number;
   months: number;
   days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
 };
 
 export function calculateAge(profile: BabyProfile, today: Date): BabyAge {
@@ -43,7 +46,7 @@ export function calculateAge(profile: BabyProfile, today: Date): BabyAge {
   const currentDate = getEffectiveCurrentDate(profile, today);
 
   if (currentDate < birthDate) {
-    return { days: 0, months: 0, years: 0 };
+    return { days: 0, hours: 0, minutes: 0, months: 0, seconds: 0, years: 0 };
   }
 
   let years = currentDate.getUTCFullYear() - birthDate.getUTCFullYear();
@@ -62,26 +65,29 @@ export function calculateAge(profile: BabyProfile, today: Date): BabyAge {
     months += 12;
   }
 
-  return { days, months, years };
+  const currentTime = getMadridDateTime(today);
+  const [birthHour, birthMinute] = (profile.birthTime ?? IRATI_BIRTH_TIME).split(":").map(Number);
+  let elapsedSeconds =
+    currentTime.hour * 3_600 +
+    currentTime.minute * 60 +
+    currentTime.second -
+    birthHour * 3_600 -
+    birthMinute * 60;
+
+  if (elapsedSeconds < 0) {
+    elapsedSeconds += 86_400;
+  }
+
+  const hours = Math.floor(elapsedSeconds / 3_600);
+  elapsedSeconds %= 3_600;
+  const minutes = Math.floor(elapsedSeconds / 60);
+  const seconds = elapsedSeconds % 60;
+
+  return { days, hours, minutes, months, seconds, years };
 }
 
 function getEffectiveCurrentDate(profile: BabyProfile, today: Date): Date {
-  const madridParts = new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    hour: "2-digit",
-    hourCycle: "h23",
-    minute: "2-digit",
-    month: "2-digit",
-    timeZone: "Europe/Madrid",
-    year: "numeric",
-  })
-    .formatToParts(today)
-    .reduce<Record<string, number>>((parts, part) => {
-      if (part.type !== "literal") {
-        parts[part.type] = Number(part.value);
-      }
-      return parts;
-    }, {});
+  const madridParts = getMadridDateTime(today);
   const [birthHour, birthMinute] = (profile.birthTime ?? IRATI_BIRTH_TIME).split(":").map(Number);
   const currentDate = new Date(Date.UTC(madridParts.year, madridParts.month - 1, madridParts.day));
 
@@ -95,10 +101,46 @@ function getEffectiveCurrentDate(profile: BabyProfile, today: Date): Date {
   return currentDate;
 }
 
+function getMadridDateTime(date: Date): {
+  day: number;
+  hour: number;
+  minute: number;
+  month: number;
+  second: number;
+  year: number;
+} {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    hour: "2-digit",
+    hourCycle: "h23",
+    minute: "2-digit",
+    month: "2-digit",
+    second: "2-digit",
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+  })
+    .formatToParts(date)
+    .reduce<Record<string, number>>((parts, part) => {
+      if (part.type !== "literal") {
+        parts[part.type] = Number(part.value);
+      }
+      return parts;
+    }, {});
+
+  return {
+    day: parts.day,
+    hour: parts.hour,
+    minute: parts.minute,
+    month: parts.month,
+    second: parts.second,
+    year: parts.year,
+  };
+}
+
 export function formatAge(profile: BabyProfile, today: Date): string {
   const age = calculateAge(profile, today);
 
-  return `${age.years} ${pluralize(age.years, "año")}, ${age.months} ${pluralize(age.months, "mes")} y ${age.days} ${pluralize(age.days, "día")}`;
+  return `${age.years} ${pluralize(age.years, "año")}, ${age.months} ${pluralize(age.months, "mes")}, ${age.days} ${pluralize(age.days, "día")}, ${age.hours} ${pluralize(age.hours, "hora")}, ${age.minutes} ${pluralize(age.minutes, "minuto")} y ${age.seconds} ${pluralize(age.seconds, "segundo")}`;
 }
 
 function pluralize(value: number, singular: string): string {

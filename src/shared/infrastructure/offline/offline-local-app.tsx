@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { buildHomeAgenda } from "@/modules/home/application/home-agenda";
 import type { CalendarSnapshot } from "@/modules/calendar/domain/calendar-event";
 import { CalendarView } from "@/modules/calendar/ui/calendar-view";
-import { formatAge, formatBirthDate } from "@/modules/profile/domain/baby-profile";
+import { formatBirthDate } from "@/modules/profile/domain/baby-profile";
+import { LiveAge } from "@/modules/profile/ui/live-age";
 import {
   calculateTravelChecklistProgress,
   groupTravelChecklistItems,
@@ -226,7 +227,9 @@ function OfflineHomeScreen({ snapshot }: { snapshot: OfflineSnapshot }) {
         {snapshot.profile ? (
           <>
             <p className={homeStyles.birthDate}>Nacida el {formatBirthDate(snapshot.profile)}</p>
-            <p className={homeStyles.age}>Edad: {formatAge(snapshot.profile, new Date())}</p>
+            <p className={homeStyles.age}>
+              Edad: <LiveAge initialNow={new Date().toISOString()} profile={snapshot.profile} />
+            </p>
           </>
         ) : null}
         <p className={homeStyles.dataNotice}>Usando copia local del dispositivo.</p>
