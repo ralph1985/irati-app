@@ -1,5 +1,6 @@
 import ical, { type CalendarResponse, type VEvent } from "node-ical";
 import {
+  buildGoogleCalendarEventUrl,
   getCalendarRange,
   normalizeGoogleCalendarUrl,
   sortCalendarEvents,
@@ -61,7 +62,11 @@ function parseEvents(
 
     const event = component as VEvent;
     const instances = event.rrule
-      ? ical.expandRecurringEvent(event, { from, to, expandOngoing: true })
+      ? ical.expandRecurringEvent(event, {
+          from: event.start < from ? event.start : from,
+          to,
+          expandOngoing: true,
+        })
       : [
           {
             end: event.end ?? event.start,
@@ -74,7 +79,7 @@ function parseEvents(
         ];
 
     for (const instance of instances) {
-      if (instance.start > to || instance.end < from) {
+      if (instance.start > to) {
         continue;
       }
 
@@ -82,7 +87,10 @@ function parseEvents(
       events.push({
         description: readText(instanceEvent.description),
         endsAt: instance.end.toISOString(),
-        googleUrl: readText(instanceEvent.url) ?? googleUrl,
+        googleUrl:
+          readText(instanceEvent.url) ??
+          buildGoogleCalendarEventUrl(instanceEvent.uid, googleUrl) ??
+          googleUrl,
         id: `${event.uid}-${instance.start.toISOString()}`,
         isAllDay: "isAllDay" in instance ? instance.isAllDay : instanceEvent.datetype === "date",
         location: readText(instanceEvent.location),

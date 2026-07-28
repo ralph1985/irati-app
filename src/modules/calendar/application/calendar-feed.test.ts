@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   filterCalendarEvents,
+  buildGoogleCalendarEventUrl,
   getCalendarRange,
   normalizeGoogleCalendarUrl,
   sortCalendarEvents,
@@ -82,6 +83,15 @@ describe("calendar events", () => {
         "https://calendar.google.com/calendar/embed?src=irati%40group.calendar.google.com&ctz=Europe%2FMadrid",
       ),
     ).toBe("https://calendar.google.com/calendar/u/0/r?cid=irati%40group.calendar.google.com");
+  });
+
+  it("builds a direct event URL from the iCal UID", () => {
+    const url = buildGoogleCalendarEventUrl(
+      "event-id-123@google.com",
+      "https://calendar.google.com/calendar/u/0/r?cid=irati%40group.calendar.google.com",
+    );
+
+    expect(url).toMatch(/^https:\/\/calendar\.google\.com\/calendar\/event\?eid=.+/);
   });
 
   it("reports missing feed configuration", async () => {

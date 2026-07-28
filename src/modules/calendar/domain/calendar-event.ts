@@ -54,10 +54,7 @@ export function normalizeGoogleCalendarUrl(value: string | null): string | null 
 
   try {
     const url = new URL(value);
-    const calendarId =
-      url.hostname === "calendar.google.com" && url.pathname === "/calendar/embed"
-        ? url.searchParams.get("src")
-        : null;
+    const calendarId = getGoogleCalendarId(url);
 
     return calendarId
       ? `https://calendar.google.com/calendar/u/0/r?cid=${encodeURIComponent(calendarId)}`
@@ -65,4 +62,50 @@ export function normalizeGoogleCalendarUrl(value: string | null): string | null 
   } catch {
     return value;
   }
+}
+
+export function buildGoogleCalendarEventUrl(
+  uid: string,
+  calendarUrl: string | null,
+): string | null {
+  if (!calendarUrl) {
+    return null;
+  }
+
+  try {
+    const url = new URL(calendarUrl);
+    const calendarId = getGoogleCalendarId(url);
+    const eventId = uid.split("@")[0];
+
+    if (!calendarId || !eventId) {
+      return null;
+    }
+
+    return `https://calendar.google.com/calendar/event?eid=${encodeBase64Url(`${eventId} ${calendarId}`)}`;
+  } catch {
+    return null;
+  }
+}
+
+function getGoogleCalendarId(url: URL): string | null {
+  if (url.hostname !== "calendar.google.com") {
+    return null;
+  }
+
+  if (url.pathname === "/calendar/embed") {
+    return url.searchParams.get("src");
+  }
+
+  return url.searchParams.get("cid");
+}
+
+function encodeBase64Url(value: string): string {
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+
+  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
 }

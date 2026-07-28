@@ -6,8 +6,12 @@ import {
   readCalendarSnapshot,
   replaceCalendarSnapshot,
 } from "@/shared/infrastructure/offline/irati-offline-db";
-import type { CalendarEvent, CalendarSnapshot } from "@/modules/calendar/domain/calendar-event";
-import { filterCalendarEvents } from "@/modules/calendar/domain/calendar-event";
+import {
+  filterCalendarEvents,
+  sortCalendarEvents,
+  type CalendarEvent,
+  type CalendarSnapshot,
+} from "@/modules/calendar/domain/calendar-event";
 import styles from "./calendar-view.module.css";
 
 type CalendarViewProps = {
@@ -23,7 +27,7 @@ export function CalendarView({ googleUrl, initialError, initialSnapshot }: Calen
   const [error, setError] = useState(initialError);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("agenda");
-  const [includePastEvents, setIncludePastEvents] = useState(false);
+  const [pastEventsVisible, setPastEventsVisible] = useState(0);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
   useEffect(() => {
@@ -67,6 +71,7 @@ export function CalendarView({ googleUrl, initialError, initialSnapshot }: Calen
 
       setSnapshot(result.snapshot);
       setError(null);
+      setPastEventsVisible(0);
       await replaceCalendarSnapshot(result.snapshot);
     } catch {
       setError("unavailable");
@@ -76,8 +81,13 @@ export function CalendarView({ googleUrl, initialError, initialSnapshot }: Calen
   }
 
   const events = snapshot?.events ?? [];
-  const visibleEvents = filterCalendarEvents(events, { includePast: includePastEvents });
-  const hasPastEvents = visibleEvents.length < events.length;
+  const pastEvents = filterCalendarEvents(events, { includePast: true }).filter(
+    (event) => new Date(event.endsAt) < new Date(),
+  );
+  const upcomingEvents = filterCalendarEvents(events, { includePast: false });
+  const visiblePastEvents = pastEvents.slice(Math.max(0, pastEvents.length - pastEventsVisible));
+  const visibleEvents = sortCalendarEvents([...visiblePastEvents, ...upcomingEvents]);
+  const remainingPastEvents = pastEvents.length - visiblePastEvents.length;
   const hasStaleData = Boolean(error && snapshot);
 
   return (
@@ -110,13 +120,13 @@ export function CalendarView({ googleUrl, initialError, initialSnapshot }: Calen
           >
             {isRefreshing ? "Actualizando…" : "Actualizar"}
           </button>
-          {hasPastEvents || includePastEvents ? (
+          {remainingPastEvents > 0 ? (
             <button
               className={styles.pastButton}
-              onClick={() => setIncludePastEvents((current) => !current)}
+              onClick={() => setPastEventsVisible((current) => current + 3)}
               type="button"
             >
-              {includePastEvents ? "Ocultar pasados" : "Mostrar pasados"}
+              Ver {Math.min(3, remainingPastEvents)} eventos anteriores
             </button>
           ) : null}
         </div>
@@ -141,7 +151,7 @@ export function CalendarView({ googleUrl, initialError, initialSnapshot }: Calen
         {snapshot && visibleEvents.length === 0 ? (
           <p className={styles.emptyState}>
             {events.length > 0
-              ? "No hay eventos próximos. Puedes mostrar los eventos pasados."
+              ? "No hay eventos próximos. Puedes consultar los eventos anteriores."
               : "No hay eventos en el mes actual ni en los próximos tres meses."}
           </p>
         ) : null}
