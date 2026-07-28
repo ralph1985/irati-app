@@ -7,6 +7,7 @@ import {
   replaceCalendarSnapshot,
 } from "@/shared/infrastructure/offline/irati-offline-db";
 import type { CalendarEvent, CalendarSnapshot } from "@/modules/calendar/domain/calendar-event";
+import { filterCalendarEvents } from "@/modules/calendar/domain/calendar-event";
 import styles from "./calendar-view.module.css";
 
 type CalendarViewProps = {
@@ -22,6 +23,7 @@ export function CalendarView({ googleUrl, initialError, initialSnapshot }: Calen
   const [error, setError] = useState(initialError);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("agenda");
+  const [includePastEvents, setIncludePastEvents] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
   useEffect(() => {
@@ -74,6 +76,8 @@ export function CalendarView({ googleUrl, initialError, initialSnapshot }: Calen
   }
 
   const events = snapshot?.events ?? [];
+  const visibleEvents = filterCalendarEvents(events, { includePast: includePastEvents });
+  const hasPastEvents = visibleEvents.length < events.length;
   const hasStaleData = Boolean(error && snapshot);
 
   return (
@@ -106,6 +110,15 @@ export function CalendarView({ googleUrl, initialError, initialSnapshot }: Calen
           >
             {isRefreshing ? "Actualizando…" : "Actualizar"}
           </button>
+          {hasPastEvents || includePastEvents ? (
+            <button
+              className={styles.pastButton}
+              onClick={() => setIncludePastEvents((current) => !current)}
+              type="button"
+            >
+              {includePastEvents ? "Ocultar pasados" : "Mostrar pasados"}
+            </button>
+          ) : null}
         </div>
 
         {hasStaleData ? (
@@ -125,18 +138,20 @@ export function CalendarView({ googleUrl, initialError, initialSnapshot }: Calen
           </div>
         ) : null}
 
-        {snapshot && events.length === 0 ? (
+        {snapshot && visibleEvents.length === 0 ? (
           <p className={styles.emptyState}>
-            No hay eventos en el mes actual ni en los próximos tres meses.
+            {events.length > 0
+              ? "No hay eventos próximos. Puedes mostrar los eventos pasados."
+              : "No hay eventos en el mes actual ni en los próximos tres meses."}
           </p>
         ) : null}
 
-        {snapshot && events.length > 0 && viewMode === "agenda" ? (
-          <Agenda events={events} onSelect={setSelectedEvent} />
+        {snapshot && visibleEvents.length > 0 && viewMode === "agenda" ? (
+          <Agenda events={visibleEvents} onSelect={setSelectedEvent} />
         ) : null}
 
-        {snapshot && events.length > 0 && viewMode === "month" ? (
-          <MonthCalendar events={events} onSelect={setSelectedEvent} />
+        {snapshot && visibleEvents.length > 0 && viewMode === "month" ? (
+          <MonthCalendar events={visibleEvents} onSelect={setSelectedEvent} />
         ) : null}
 
         {snapshot ? (
@@ -147,7 +162,7 @@ export function CalendarView({ googleUrl, initialError, initialSnapshot }: Calen
       </section>
 
       {googleUrl ? (
-        <a className={styles.googleLink} href={googleUrl} rel="noreferrer" target="_blank">
+        <a className={styles.googleLink} href={googleUrl}>
           Abrir el calendario de Google
         </a>
       ) : null}
@@ -181,12 +196,7 @@ export function CalendarView({ googleUrl, initialError, initialSnapshot }: Calen
               ) : null}
             </dl>
             {selectedEvent.googleUrl ? (
-              <a
-                className={styles.primaryButton}
-                href={selectedEvent.googleUrl}
-                rel="noreferrer"
-                target="_blank"
-              >
+              <a className={styles.primaryButton} href={selectedEvent.googleUrl}>
                 Abrir en Google Calendar
               </a>
             ) : null}

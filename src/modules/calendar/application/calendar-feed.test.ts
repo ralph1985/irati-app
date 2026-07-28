@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { getCalendarRange, sortCalendarEvents } from "../domain/calendar-event";
+import {
+  filterCalendarEvents,
+  getCalendarRange,
+  normalizeGoogleCalendarUrl,
+  sortCalendarEvents,
+} from "../domain/calendar-event";
 
 describe("calendar range", () => {
   it("starts at the current month and ends after three following months", () => {
@@ -36,6 +41,47 @@ describe("calendar events", () => {
     ]);
 
     expect(events.map((event) => event.title)).toEqual(["A", "B"]);
+  });
+
+  it("hides completed events unless requested", () => {
+    const events = [
+      {
+        id: "past",
+        title: "Pasado",
+        startsAt: "2026-07-27T10:00:00.000Z",
+        endsAt: "2026-07-27T11:00:00.000Z",
+        isAllDay: false,
+        location: null,
+        description: null,
+        googleUrl: null,
+      },
+      {
+        id: "future",
+        title: "Futuro",
+        startsAt: "2026-07-29T10:00:00.000Z",
+        endsAt: "2026-07-29T11:00:00.000Z",
+        isAllDay: false,
+        location: null,
+        description: null,
+        googleUrl: null,
+      },
+    ];
+
+    expect(
+      filterCalendarEvents(events, {
+        includePast: false,
+        now: new Date("2026-07-28T12:00:00.000Z"),
+      }),
+    ).toHaveLength(1);
+    expect(filterCalendarEvents(events, { includePast: true })).toHaveLength(2);
+  });
+
+  it("turns an embed URL into a Google Calendar app-compatible URL", () => {
+    expect(
+      normalizeGoogleCalendarUrl(
+        "https://calendar.google.com/calendar/embed?src=irati%40group.calendar.google.com&ctz=Europe%2FMadrid",
+      ),
+    ).toBe("https://calendar.google.com/calendar/u/0/r?cid=irati%40group.calendar.google.com");
   });
 
   it("reports missing feed configuration", async () => {

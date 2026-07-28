@@ -315,10 +315,12 @@ El modo offline-first se implementa por fases segun [`docs/offline-plan.md`](off
 - [x] Crear parser de eventos con recurrencias, zonas horarias y eventos de día completo.
 - [x] Crear vista autenticada `/calendario` con agenda y calendario mensual.
 - [x] Añadir detalle de evento y enlace al calendario original de Google.
+- [x] Abrir Google Calendar mediante enlace compatible con la aplicación móvil.
+- [x] Ocultar eventos pasados por defecto con opción para mostrarlos.
 - [x] Añadir actualización manual y fallback a la última copia correcta.
 - [x] Guardar la última copia del calendario en IndexedDB.
 - [x] Añadir Calendario a la navegación online y offline.
-- [ ] Configurar las URLs reales en el entorno de despliegue y validar con el calendario de Irati.
+- [x] Configurar las URLs reales en el entorno de despliegue y validar con el calendario de Irati.
 - [x] Ejecutar validación automática completa.
 - [ ] Hacer prueba manual en móvil con las URLs reales.
 

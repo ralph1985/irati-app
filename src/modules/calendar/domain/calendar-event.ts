@@ -34,3 +34,35 @@ export function sortCalendarEvents(events: CalendarEvent[]): CalendarEvent[] {
     (a, b) => a.startsAt.localeCompare(b.startsAt) || a.title.localeCompare(b.title),
   );
 }
+
+export function filterCalendarEvents(
+  events: CalendarEvent[],
+  options: { includePast: boolean; now?: Date },
+): CalendarEvent[] {
+  if (options.includePast) {
+    return events;
+  }
+
+  const now = options.now ?? new Date();
+  return events.filter((event) => new Date(event.endsAt) >= now);
+}
+
+export function normalizeGoogleCalendarUrl(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    const url = new URL(value);
+    const calendarId =
+      url.hostname === "calendar.google.com" && url.pathname === "/calendar/embed"
+        ? url.searchParams.get("src")
+        : null;
+
+    return calendarId
+      ? `https://calendar.google.com/calendar/u/0/r?cid=${encodeURIComponent(calendarId)}`
+      : value;
+  } catch {
+    return value;
+  }
+}

@@ -52,6 +52,17 @@
   background: #ede9fe;
 }
 
+.pastButton {
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  padding: 9px 0;
+  color: #7c3aed;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .refreshButton:disabled {
   cursor: progress;
   opacity: 0.6;

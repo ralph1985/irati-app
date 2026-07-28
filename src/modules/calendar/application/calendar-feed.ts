@@ -1,6 +1,7 @@
 import ical, { type CalendarResponse, type VEvent } from "node-ical";
 import {
   getCalendarRange,
+  normalizeGoogleCalendarUrl,
   sortCalendarEvents,
   type CalendarEvent,
   type CalendarSnapshot,
@@ -12,7 +13,7 @@ export type CalendarFeedResult =
 
 export async function loadCalendarFeed(referenceDate = new Date()): Promise<CalendarFeedResult> {
   const icalUrl = process.env.IRATI_GOOGLE_CALENDAR_ICAL_URL;
-  const googleUrl = process.env.IRATI_GOOGLE_CALENDAR_WEB_URL ?? null;
+  const googleUrl = normalizeGoogleCalendarUrl(process.env.IRATI_GOOGLE_CALENDAR_WEB_URL ?? null);
 
   if (!icalUrl) {
     return { error: "missing-config", googleUrl, snapshot: null };

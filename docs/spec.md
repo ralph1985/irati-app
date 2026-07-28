@@ -504,6 +504,7 @@ Reglas:
 - La pantalla muestra agenda y calendario mensual.
 - El rango visible comprende el mes actual y los tres meses siguientes.
 - La agenda se ordena cronológicamente y el calendario mensual permite abrir el detalle de cada evento.
+- Los eventos cuya hora de finalización ya ha pasado se ocultan por defecto; un botón permite mostrarlos.
 - El detalle muestra título, fecha, hora, lugar y descripción cuando estén disponibles.
 - La lectura soporta eventos recurrentes, eventos de día completo y zonas horarias mediante un parser iCal dedicado.
 - La carga se realiza al abrir la pantalla y puede forzarse mediante un botón de actualización.
