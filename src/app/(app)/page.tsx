@@ -1,5 +1,5 @@
 import { getBabyProfile } from "@/modules/profile/application/get-baby-profile";
-import { formatBirthDate } from "@/modules/profile/domain/baby-profile";
+import { formatAge, formatBirthDate } from "@/modules/profile/domain/baby-profile";
 import { CachedProfileRepository } from "@/modules/profile/infrastructure/cached-profile-repository";
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import { LogoutForm } from "@/modules/auth/ui/logout-form";
@@ -70,6 +70,7 @@ export default async function Home({ searchParams }: HomeProps) {
         <p className={styles.kicker}>Hoy</p>
         <h1 id="home-title">{profile.name}</h1>
         <p className={styles.birthDate}>Nacida el {formatBirthDate(profile)}</p>
+        <p className={styles.age}>Edad: {formatAge(profile, new Date())}</p>
         {source === "fallback" ? (
           <p className={styles.dataNotice}>Usando datos locales temporales.</p>
         ) : null}

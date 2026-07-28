@@ -33,6 +33,13 @@
   line-height: 1.5;
 }
 
+.age {
+  margin: -4px 0 0;
+  color: #6b587c;
+  font-size: 16px;
+  font-weight: 800;
+}
+
 .dataNotice {
   color: #7c2d12;
   font-size: 14px;
