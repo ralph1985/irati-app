@@ -4,6 +4,12 @@ import { CachedProfileRepository } from "@/modules/profile/infrastructure/cached
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import { LogoutForm } from "@/modules/auth/ui/logout-form";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
+import { loadCalendarFeed } from "@/modules/calendar/application/calendar-feed";
+import {
+  filterCalendarEvents,
+  sortCalendarEvents,
+  type CalendarEvent,
+} from "@/modules/calendar/domain/calendar-event";
 import { buildHomeAgenda, HomeAgenda } from "@/modules/home/application/home-agenda";
 import { listVaccinePlan } from "@/modules/vaccines/application/list-vaccine-plan";
 import { VaccineAlert } from "@/modules/vaccines/application/vaccine-alerts";
@@ -39,8 +45,16 @@ export default async function Home({ searchParams }: HomeProps) {
   }
 
   const { profile, source } = await getBabyProfile(new CachedProfileRepository());
-  const weightResult = await getLatestWeight(new CachedWeightReadRepository());
-  const vaccinePlan = await getVaccinePlan(new CachedVaccinePlanReadRepository());
+  const [weightResult, vaccinePlan, calendarResult] = await Promise.all([
+    getLatestWeight(new CachedWeightReadRepository()),
+    getVaccinePlan(new CachedVaccinePlanReadRepository()),
+    loadCalendarFeed(),
+  ]);
+  const upcomingCalendarEvents = calendarResult.snapshot
+    ? sortCalendarEvents(
+        filterCalendarEvents(calendarResult.snapshot.events, { includePast: false }),
+      ).slice(0, 2)
+    : [];
   const homeAgenda = buildHomeAgenda({
     today: new Date(),
     vaccineDoses: vaccinePlan.doses,
@@ -112,6 +126,8 @@ export default async function Home({ searchParams }: HomeProps) {
       <ReviewSoon agenda={homeAgenda} />
 
       <AgendaNext30Days agenda={homeAgenda} />
+
+      <UpcomingCalendarEvents error={calendarResult.error} events={upcomingCalendarEvents} />
 
       <section className={styles.summary} aria-label="Resumen inicial">
         <article>
@@ -251,6 +267,54 @@ function AgendaNext30Days({ agenda }: { agenda: HomeAgenda }) {
       )}
     </section>
   );
+}
+
+function UpcomingCalendarEvents({
+  error,
+  events,
+}: {
+  error: string | null;
+  events: CalendarEvent[];
+}) {
+  return (
+    <section className={styles.calendarAgenda} aria-labelledby="calendar-agenda-title">
+      <div className={styles.sectionTitle}>
+        <h2 id="calendar-agenda-title">Próximos eventos</h2>
+        <Link href="/calendario">Ver calendario</Link>
+      </div>
+
+      {events.length > 0 ? (
+        <ol>
+          {events.map((event) => (
+            <li key={event.id}>
+              <div>
+                <strong>{event.title}</strong>
+                {event.location ? <span>{event.location}</span> : null}
+              </div>
+              <time dateTime={event.startsAt}>{formatCalendarEventDate(event)}</time>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p>{error ? "No se pudo cargar el calendario ahora." : "No hay próximos eventos."}</p>
+      )}
+    </section>
+  );
+}
+
+function formatCalendarEventDate(event: CalendarEvent): string {
+  if (event.isAllDay) {
+    return new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short" }).format(
+      new Date(event.startsAt),
+    );
+  }
+
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "short",
+  }).format(new Date(event.startsAt));
 }
 
 function formatVaccineSummary(summary: {

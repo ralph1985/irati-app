@@ -312,6 +312,70 @@
   padding: 14px;
 }
 
+.calendarAgenda {
+  display: grid;
+  gap: 12px;
+}
+
+.calendarAgenda ol {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid rgba(124, 58, 237, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 16px 44px rgba(76, 29, 149, 0.08);
+  list-style: none;
+}
+
+.calendarAgenda li {
+  display: flex;
+  min-height: 62px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+.calendarAgenda li + li {
+  border-top: 1px solid rgba(96, 72, 115, 0.12);
+}
+
+.calendarAgenda li div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.calendarAgenda strong {
+  color: #241335;
+  font-size: 14px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.calendarAgenda span,
+.calendarAgenda time,
+.calendarAgenda p {
+  color: #6b587c;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.calendarAgenda time {
+  flex: 0 0 auto;
+  text-align: right;
+}
+
+.calendarAgenda p {
+  margin: 0;
+  border: 1px solid rgba(124, 58, 237, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 16px 44px rgba(76, 29, 149, 0.08);
+  padding: 14px;
+}
+
 .summary {
   display: grid;
   grid-template-columns: 1fr;
