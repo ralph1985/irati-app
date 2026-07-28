@@ -307,9 +307,11 @@ function UpcomingCalendarEvents({
 
 function formatCalendarEventDate(event: CalendarEvent): string {
   if (event.isAllDay) {
-    return new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short" }).format(
-      new Date(event.startsAt),
-    );
+    return new Intl.DateTimeFormat("es-ES", {
+      day: "numeric",
+      month: "short",
+      timeZone: "Europe/Madrid",
+    }).format(new Date(event.startsAt));
   }
 
   return new Intl.DateTimeFormat("es-ES", {
@@ -317,6 +319,7 @@ function formatCalendarEventDate(event: CalendarEvent): string {
     hour: "2-digit",
     minute: "2-digit",
     month: "short",
+    timeZone: "Europe/Madrid",
   }).format(new Date(event.startsAt));
 }
 
