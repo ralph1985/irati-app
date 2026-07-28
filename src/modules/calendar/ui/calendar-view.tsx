@@ -119,7 +119,7 @@ export function CalendarView({ initialError, initialSnapshot }: CalendarViewProp
           >
             {isRefreshing ? "Actualizando…" : "Actualizar"}
           </button>
-          {remainingPastEvents > 0 ? (
+          {remainingPastEvents > 0 && viewMode === "agenda" ? (
             <button
               className={styles.pastButton}
               onClick={() => setPastEventsVisible((current) => current + 3)}
@@ -147,7 +147,7 @@ export function CalendarView({ initialError, initialSnapshot }: CalendarViewProp
           </div>
         ) : null}
 
-        {snapshot && visibleEvents.length === 0 ? (
+        {snapshot && (viewMode === "month" ? events.length : visibleEvents.length) === 0 ? (
           <p className={styles.emptyState}>
             {events.length > 0
               ? "No hay eventos próximos. Puedes consultar los eventos anteriores."
@@ -159,8 +159,8 @@ export function CalendarView({ initialError, initialSnapshot }: CalendarViewProp
           <Agenda events={visibleEvents} onSelect={setSelectedEvent} />
         ) : null}
 
-        {snapshot && visibleEvents.length > 0 && viewMode === "month" ? (
-          <MonthCalendar events={visibleEvents} onSelect={setSelectedEvent} />
+        {snapshot && events.length > 0 && viewMode === "month" ? (
+          <MonthCalendar events={events} onSelect={setSelectedEvent} />
         ) : null}
 
         {snapshot ? (
