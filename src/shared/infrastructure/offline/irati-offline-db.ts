@@ -1,5 +1,6 @@
 import Dexie, { type Table } from "dexie";
 import type { BabyProfile } from "@/modules/profile/domain/baby-profile";
+import type { CalendarSnapshot } from "@/modules/calendar/domain/calendar-event";
 import type { TravelChecklistItem } from "@/modules/travel/domain/travel-checklist-item";
 import type { PendingVaccineMutation as PendingVaccineMutationPayload } from "@/modules/vaccines/application/vaccine-offline-conflicts";
 import type {
@@ -23,6 +24,8 @@ export type SyncMetadata = {
   lastError: string | null;
   offlineAccessGranted: boolean;
 };
+
+export type StoredCalendarSnapshot = CalendarSnapshot & { id: "main" };
 
 export type PendingWeightMutationOperation = "create" | "update" | "delete";
 
@@ -60,7 +63,7 @@ type StoredBabyProfile = BabyProfile & {
   id: "irati";
 };
 
-const currentSchemaVersion = 3;
+const currentSchemaVersion = 4;
 const profileId = "irati";
 const metadataId = "main";
 
@@ -72,6 +75,7 @@ class IratiOfflineDatabase extends Dexie {
   travelChecklistItems!: Table<TravelChecklistItem, string>;
   syncMetadata!: Table<SyncMetadata, string>;
   pendingMutations!: Table<PendingMutation, string>;
+  calendarSnapshots!: Table<StoredCalendarSnapshot, string>;
 
   constructor() {
     super("irati-offline");
@@ -84,11 +88,26 @@ class IratiOfflineDatabase extends Dexie {
       syncMetadata: "id",
       travelChecklistItems: "id, category, sortOrder, isPacked",
       weightEntries: "id, measuredOn",
+      calendarSnapshots: "id, fetchedAt",
     });
   }
 }
 
 export const iratiOfflineDb = new IratiOfflineDatabase();
+
+export async function replaceCalendarSnapshot(snapshot: CalendarSnapshot): Promise<void> {
+  await iratiOfflineDb.calendarSnapshots.put({ ...snapshot, id: "main" });
+}
+
+export async function readCalendarSnapshot(): Promise<CalendarSnapshot | null> {
+  const snapshot = await iratiOfflineDb.calendarSnapshots.get("main");
+
+  if (!snapshot) {
+    return null;
+  }
+
+  return { events: snapshot.events, fetchedAt: snapshot.fetchedAt };
+}
 
 export async function replaceOfflineSnapshot(
   snapshot: OfflineSnapshot,
@@ -111,7 +130,6 @@ export async function replaceOfflineSnapshot(
       await iratiOfflineDb.plannedVaccineDoses.clear();
       await iratiOfflineDb.appliedVaccineDoses.clear();
       await iratiOfflineDb.travelChecklistItems.clear();
-
       if (snapshot.profile) {
         await iratiOfflineDb.babyProfiles.put({
           ...snapshot.profile,
@@ -318,6 +336,7 @@ export async function clearOfflineData(): Promise<void> {
       iratiOfflineDb.plannedVaccineDoses,
       iratiOfflineDb.appliedVaccineDoses,
       iratiOfflineDb.travelChecklistItems,
+      iratiOfflineDb.calendarSnapshots,
       iratiOfflineDb.syncMetadata,
       iratiOfflineDb.pendingMutations,
     ],
@@ -327,6 +346,7 @@ export async function clearOfflineData(): Promise<void> {
       await iratiOfflineDb.plannedVaccineDoses.clear();
       await iratiOfflineDb.appliedVaccineDoses.clear();
       await iratiOfflineDb.travelChecklistItems.clear();
+      await iratiOfflineDb.calendarSnapshots.clear();
       await iratiOfflineDb.syncMetadata.clear();
       await iratiOfflineDb.pendingMutations.clear();
     },

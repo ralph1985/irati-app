@@ -16,6 +16,7 @@ const tabs = [
   { href: "/peso", icon: "weight", label: "Peso" },
   { href: "/vacunas", icon: "vaccine", label: "Vacunas" },
   { href: "/viaje", icon: "bag", label: "Viaje" },
+  { href: "/calendario", icon: "calendar", label: "Calendario" },
   { href: "/ajustes", icon: "settings", label: "Ajustes" },
 ] as const;
 
@@ -225,6 +226,13 @@ function TabIcon({ name }: { name: TabIcon }) {
         <svg aria-hidden="true" className={styles.navIcon} viewBox="0 0 24 24">
           <path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z" />
           <path d="M18.5 12a6.8 6.8 0 0 0-.1-1l2-1.6-2-3.5-2.4 1a6.6 6.6 0 0 0-1.8-1L14 3.2h-4l-.2 2.7a6.6 6.6 0 0 0-1.8 1l-2.4-1-2 3.5 2 1.6a6.8 6.8 0 0 0 0 2l-2 1.6 2 3.5 2.4-1a6.6 6.6 0 0 0 1.8 1l.2 2.7h4l.2-2.7a6.6 6.6 0 0 0 1.8-1l2.4 1 2-3.5-2-1.6c.1-.3.1-.7.1-1Z" />
+        </svg>
+      );
+    case "calendar":
+      return (
+        <svg aria-hidden="true" className={styles.navIcon} viewBox="0 0 24 24">
+          <rect height="15" rx="2" width="16" x="4" y="6" />
+          <path d="M8 3v6M16 3v6M4 11h16M8 15h.01M12 15h.01M16 15h.01M8 18h.01M12 18h.01" />
         </svg>
       );
   }

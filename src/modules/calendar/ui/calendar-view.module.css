@@ -1,0 +1,308 @@
+.panel {
+  display: grid;
+  gap: 16px;
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.84);
+  padding: 14px;
+  box-shadow: 0 20px 60px rgba(76, 29, 149, 0.08);
+}
+
+.toolbar,
+.monthHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.segmentedControl {
+  display: flex;
+  gap: 4px;
+  border-radius: 12px;
+  background: #f3e8ff;
+  padding: 4px;
+}
+
+.segmentedControl button,
+.refreshButton,
+.monthHeader button,
+.primaryButton,
+.googleLink {
+  border: 0;
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: #5b21b6;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.segmentedControl button {
+  background: transparent;
+}
+
+.segmentedControl .selected,
+.primaryButton {
+  background: #7c3aed;
+  color: white;
+}
+
+.refreshButton {
+  background: #ede9fe;
+}
+
+.refreshButton:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.warning {
+  margin: 0;
+  border-radius: 12px;
+  background: #fff7ed;
+  padding: 10px;
+  color: #9a3412;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.agenda,
+.day,
+.day ul {
+  display: grid;
+  gap: 12px;
+}
+
+.day h2,
+.monthHeader h2 {
+  margin: 0;
+  color: #5b21b6;
+  font-size: 14px;
+  text-transform: capitalize;
+}
+
+.day ul {
+  gap: 8px;
+  list-style: none;
+}
+
+.eventButton {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 70px minmax(0, 1fr) 20px;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  border-radius: 14px;
+  background: #fff;
+  padding: 11px 10px;
+  text-align: left;
+}
+
+.eventTime,
+.eventBody small,
+.updatedAt,
+.emptyState,
+.googleLink {
+  color: #6b587d;
+  font-size: 13px;
+}
+
+.eventBody {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.eventBody strong {
+  overflow: hidden;
+  color: #2e1748;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  color: #7c3aed;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.emptyState {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  border-radius: 14px;
+  background: #faf5ff;
+  padding: 18px;
+  line-height: 1.4;
+}
+
+.emptyState strong,
+.emptyState p {
+  margin: 0;
+}
+
+.primaryButton,
+.googleLink {
+  display: inline-flex;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.updatedAt {
+  margin: 0;
+}
+
+.googleLink {
+  background: #ede9fe;
+}
+
+.monthView {
+  display: grid;
+  gap: 12px;
+}
+
+.monthHeader button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: #f3e8ff;
+  font-size: 24px;
+}
+
+.weekdays,
+.monthGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.weekdays {
+  color: #6b587d;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.monthDay {
+  display: grid;
+  min-height: 78px;
+  align-content: start;
+  gap: 4px;
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  border-radius: 8px;
+  background: #fff;
+  padding: 5px;
+}
+
+.monthDay > span {
+  color: #2e1748;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.monthDay button {
+  overflow: hidden;
+  border: 0;
+  border-radius: 5px;
+  background: #ede9fe;
+  padding: 3px;
+  color: #5b21b6;
+  font-size: 10px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.monthDay small {
+  color: #6b587d;
+  font-size: 10px;
+}
+
+.outsideMonth {
+  opacity: 0.42;
+}
+
+.sheetBackdrop {
+  position: fixed;
+  z-index: 10;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(46, 23, 72, 0.25);
+}
+
+.sheet {
+  width: 100%;
+  max-height: min(78dvh, 620px);
+  overflow: auto;
+  transform: translateY(var(--sheet-drag-offset));
+  border-radius: 24px 24px 0 0;
+  background: #fff;
+  padding: 8px 18px 28px;
+  transition: transform 120ms ease-out;
+}
+
+.sheetHandle {
+  display: grid;
+  height: 28px;
+  place-items: center;
+  cursor: grab;
+}
+
+.sheetHandle span {
+  width: 44px;
+  height: 5px;
+  border-radius: 99px;
+  background: #d8c7e8;
+}
+
+.sheetContent {
+  display: grid;
+  gap: 14px;
+}
+
+.sheetKicker {
+  margin: 0;
+  color: #7c3aed;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.sheetContent h2 {
+  margin: 0;
+  color: #2e1748;
+}
+
+.details {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.details div {
+  display: grid;
+  gap: 3px;
+}
+
+.details dt {
+  color: #6b587d;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.details dd {
+  margin: 0;
+  color: #2e1748;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+@media (min-width: 700px) {
+  .sheet {
+    max-width: 560px;
+    margin: 0 auto;
+  }
+}

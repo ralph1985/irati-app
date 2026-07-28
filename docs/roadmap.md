@@ -309,11 +309,24 @@ El modo offline-first se implementa por fases segun [`docs/offline-plan.md`](off
 - [ ] Convertir las escrituras online a local-first, con IndexedDB como primer estado visible y Supabase como sync posterior.
 - [ ] Validar cada fase con checks completos cuando haya codigo y prueba manual en PWA instalada.
 
+## Hito 20 - Calendario de Irati desde Google Calendar
+
+- [x] Definir feed iCal/ICS y enlace web de Google mediante variables de entorno.
+- [x] Crear parser de eventos con recurrencias, zonas horarias y eventos de día completo.
+- [x] Crear vista autenticada `/calendario` con agenda y calendario mensual.
+- [x] Añadir detalle de evento y enlace al calendario original de Google.
+- [x] Añadir actualización manual y fallback a la última copia correcta.
+- [x] Guardar la última copia del calendario en IndexedDB.
+- [x] Añadir Calendario a la navegación online y offline.
+- [ ] Configurar las URLs reales en el entorno de despliegue y validar con el calendario de Irati.
+- [x] Ejecutar validación automática completa.
+- [ ] Hacer prueba manual en móvil con las URLs reales.
+
 ## Fuera del MVP inicial
 
 - Exportacion o impresion para pediatra.
 - Percentiles oficiales o curvas clinicas.
-- Nuevas superficies offline fuera de Inicio, Peso, Vacunas, Viaje y Ajustes.
+- Nuevas superficies offline fuera de Inicio, Peso, Vacunas, Viaje, Calendario y Ajustes.
 - Realtime.
 - Multiusuario con cuentas separadas.
 - Permisos por rol.

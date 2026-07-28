@@ -404,9 +404,10 @@ Pestañas iniciales:
 - Peso.
 - Vacunas.
 - Viaje.
+- Calendario.
 - Ajustes.
 
-La estructura puede crecer despues con mas pestañas o menus secundarios, pero el MVP parte de estas cinco.
+La estructura puede crecer despues con mas pestañas o menus secundarios, pero el MVP parte de estas seis.
 
 La transicion entre pestañas principales usa una animacion lateral ligera sobre el contenido, manteniendo fijo el menu inferior. La direccion sigue el orden Inicio, Peso, Vacunas, Viaje y Ajustes. La animacion no se aplica a login, logout, modales, filtros ni cambios de query, y debe desactivarse cuando el usuario prefiera reducir movimiento.
 
@@ -491,6 +492,25 @@ La pantalla de Viaje debe priorizar:
 - Listado compacto para revisar muchos items sin demasiado scroll.
 - El orden se gestiona automaticamente: los nuevos items se añaden al final de la categoria y no se muestra un campo manual de orden.
 - Los formularios de crear y editar item usan el bottom sheet compartido de la app.
+
+### Calendario
+
+La pantalla de Calendario muestra exclusivamente los eventos del calendario de Google de Irati, sin mezclar eventos personales.
+
+Reglas:
+
+- Los eventos se leen desde un feed iCal/ICS configurado en servidor mediante `IRATI_GOOGLE_CALENDAR_ICAL_URL`.
+- El enlace web de Google se configura mediante `IRATI_GOOGLE_CALENDAR_WEB_URL` y permite abrir el calendario original para consultar o editar.
+- La pantalla muestra agenda y calendario mensual.
+- El rango visible comprende el mes actual y los tres meses siguientes.
+- La agenda se ordena cronológicamente y el calendario mensual permite abrir el detalle de cada evento.
+- El detalle muestra título, fecha, hora, lugar y descripción cuando estén disponibles.
+- La lectura soporta eventos recurrentes, eventos de día completo y zonas horarias mediante un parser iCal dedicado.
+- La carga se realiza al abrir la pantalla y puede forzarse mediante un botón de actualización.
+- Si falla una actualización, se muestra la última copia correcta junto con su fecha de actualización.
+- El feed solo se usa para lectura; la creación y edición se realiza en Google Calendar.
+
+La última copia del feed se guarda localmente en IndexedDB para poder consultarla offline después de una carga online válida. No se persiste en Supabase.
 
 ### Formularios
 

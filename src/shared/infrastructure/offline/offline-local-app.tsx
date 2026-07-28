@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { buildHomeAgenda } from "@/modules/home/application/home-agenda";
+import type { CalendarSnapshot } from "@/modules/calendar/domain/calendar-event";
+import { CalendarView } from "@/modules/calendar/ui/calendar-view";
 import { formatBirthDate } from "@/modules/profile/domain/baby-profile";
 import {
   calculateTravelChecklistProgress,
@@ -37,6 +39,7 @@ import {
   listPendingVaccineMutations,
   listPendingWeightMutations,
   readOfflineSnapshot,
+  readCalendarSnapshot,
   readSyncMetadata,
   type OfflineSnapshot,
   type SyncMetadata,
@@ -46,8 +49,9 @@ import homeStyles from "../../../app/(app)/page.module.css";
 import travelStyles from "../../../app/(app)/viaje/page.module.css";
 import vaccineStyles from "../../../app/(app)/vacunas/page.module.css";
 import weightStyles from "../../../app/(app)/peso/page.module.css";
+import calendarPageStyles from "../../../app/(app)/calendario/page.module.css";
 
-type OfflineRoute = "/" | "/peso" | "/vacunas" | "/viaje" | "/ajustes";
+type OfflineRoute = "/" | "/peso" | "/vacunas" | "/viaje" | "/calendario" | "/ajustes";
 
 const noopAction = async () => {};
 
@@ -56,12 +60,14 @@ const tabs: Array<{ href: OfflineRoute; label: string }> = [
   { href: "/peso", label: "Peso" },
   { href: "/vacunas", label: "Vacunas" },
   { href: "/viaje", label: "Viaje" },
+  { href: "/calendario", label: "Calendario" },
   { href: "/ajustes", label: "Ajustes" },
 ];
 
 export function OfflineLocalApp() {
   const [snapshot, setSnapshot] = useState<OfflineSnapshot | null>(null);
   const [metadata, setMetadata] = useState<SyncMetadata | null>(null);
+  const [calendarSnapshot, setCalendarSnapshot] = useState<CalendarSnapshot | null>(null);
   const [route, setRoute] = useState<OfflineRoute>("/");
   const [search, setSearch] = useState("");
   const [pendingCounts, setPendingCounts] = useState({
@@ -79,13 +85,15 @@ export function OfflineLocalApp() {
     }
 
     async function refreshLocalData() {
-      const [nextSnapshot, nextMetadata, weight, travel, vaccines] = await Promise.all([
-        readOfflineSnapshot(),
-        readSyncMetadata(),
-        listPendingWeightMutations(),
-        listPendingTravelMutations(),
-        listPendingVaccineMutations(),
-      ]);
+      const [nextSnapshot, nextMetadata, nextCalendarSnapshot, weight, travel, vaccines] =
+        await Promise.all([
+          readOfflineSnapshot(),
+          readSyncMetadata(),
+          readCalendarSnapshot(),
+          listPendingWeightMutations(),
+          listPendingTravelMutations(),
+          listPendingVaccineMutations(),
+        ]);
 
       if (!isActive) {
         return;
@@ -93,6 +101,7 @@ export function OfflineLocalApp() {
 
       setSnapshot(nextSnapshot);
       setMetadata(nextMetadata);
+      setCalendarSnapshot(nextCalendarSnapshot);
       setPendingCounts({
         travel: travel.length,
         vaccines: vaccines.length,
@@ -144,7 +153,7 @@ export function OfflineLocalApp() {
         Datos locales. Ultima sincronizacion: {formatDateTime(metadata.lastSuccessfulSyncAt)}.
       </p>
       <div className={localStyles.view}>
-        {renderRoute(route, search, snapshot, metadata, pendingCounts)}
+        {renderRoute(route, search, snapshot, metadata, pendingCounts, calendarSnapshot)}
       </div>
       <nav className={localStyles.nav} aria-label="Navegacion offline">
         {tabs.map((tab) => (
@@ -163,6 +172,7 @@ function renderRoute(
   snapshot: OfflineSnapshot,
   metadata: SyncMetadata,
   pendingCounts: { travel: number; vaccines: number; weight: number },
+  calendarSnapshot: CalendarSnapshot | null,
 ) {
   switch (route) {
     case "/peso":
@@ -171,6 +181,8 @@ function renderRoute(
       return <OfflineVaccinesScreen search={search} snapshot={snapshot} />;
     case "/viaje":
       return <OfflineTravelScreen snapshot={snapshot} />;
+    case "/calendario":
+      return <OfflineCalendarScreen snapshot={calendarSnapshot} />;
     case "/ajustes":
       return (
         <OfflineSettingsScreen
@@ -182,6 +194,22 @@ function renderRoute(
     case "/":
       return <OfflineHomeScreen snapshot={snapshot} />;
   }
+}
+
+function OfflineCalendarScreen({ snapshot }: { snapshot: CalendarSnapshot | null }) {
+  return (
+    <main className={calendarPageStyles.main}>
+      <header className={calendarPageStyles.header}>
+        <p>Calendario</p>
+        <h1>Agenda de Irati</h1>
+      </header>
+      <CalendarView
+        googleUrl={null}
+        initialError={snapshot ? null : "offline"}
+        initialSnapshot={snapshot}
+      />
+    </main>
+  );
 }
 
 function OfflineHomeScreen({ snapshot }: { snapshot: OfflineSnapshot }) {
@@ -558,6 +586,7 @@ function toOfflineRoute(pathname: string): OfflineRoute {
     pathname === "/peso" ||
     pathname === "/vacunas" ||
     pathname === "/viaje" ||
+    pathname === "/calendario" ||
     pathname === "/ajustes"
   ) {
     return pathname;

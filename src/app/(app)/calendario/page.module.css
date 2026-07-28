@@ -1,0 +1,25 @@
+.main {
+  display: grid;
+  gap: 14px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.header {
+  display: grid;
+  gap: 6px;
+}
+
+.header p {
+  margin: 0;
+  color: #7c3aed;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: clamp(32px, 8vw, 52px);
+  line-height: 1;
+}
