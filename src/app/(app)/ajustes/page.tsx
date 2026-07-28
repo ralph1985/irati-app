@@ -64,19 +64,6 @@ export default async function SettingsPage() {
         <LogoutForm buttonClassName={styles.logout} label="Cerrar sesión" />
       </section>
 
-      <section className={styles.panel} aria-labelledby="technical-title">
-        <div className={styles.sectionTitle}>
-          <h2 id="technical-title">MVP</h2>
-          <span>Conexión requerida</span>
-        </div>
-        <ul className={styles.list}>
-          <li>PWA instalable.</li>
-          <li>Datos guardados en Supabase.</li>
-          <li>Requiere conexión para leer y guardar.</li>
-          <li>Sin realtime, email ni push.</li>
-        </ul>
-      </section>
-
       <section className={styles.panel} aria-labelledby="offline-title">
         <div className={styles.sectionTitle}>
           <h2 id="offline-title">Offline</h2>

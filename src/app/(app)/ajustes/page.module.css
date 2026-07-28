@@ -95,12 +95,6 @@
   word-break: break-word;
 }
 
-.list {
-  display: grid;
-  gap: 8px;
-  padding-left: 18px;
-}
-
 .logout {
   min-height: 44px;
   border: 0;
