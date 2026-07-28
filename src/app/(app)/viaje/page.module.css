@@ -26,11 +26,11 @@
 
 .panel {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   border: 1px solid rgba(124, 58, 237, 0.12);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.84);
-  padding: 14px;
+  padding: 12px;
   box-shadow: 0 20px 60px rgba(76, 29, 149, 0.08);
 }
 
@@ -85,7 +85,7 @@
 
 .groups {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .group {
@@ -103,7 +103,7 @@
   gap: 10px;
   align-items: center;
   cursor: pointer;
-  padding: 9px 10px;
+  padding: 7px 9px;
   color: #2e1748;
   font-weight: 800;
   list-style: none;
@@ -146,11 +146,11 @@
 
 .items li {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) 38px;
-  gap: 6px;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  gap: 5px;
   align-items: center;
   background: #fff;
-  padding: 6px 6px 6px 8px;
+  padding: 4px 6px 4px 7px;
 }
 
 .items li + li {
@@ -179,8 +179,8 @@
 
 .itemCheck button {
   display: grid;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   place-items: center;
   overflow: hidden;
   border: 1px solid #c4b5fd;
@@ -214,7 +214,7 @@
 
 .itemBody strong {
   color: #2e1748;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.25;
 }
 
@@ -227,10 +227,10 @@
 }
 
 .itemActions {
-  display: grid;
+  display: flex;
   align-items: center;
-  justify-items: center;
-  gap: 3px;
+  justify-content: flex-end;
+  gap: 4px;
 }
 
 .itemActions form {
@@ -304,6 +304,13 @@
   place-items: center;
   width: 38px;
   padding: 0;
+}
+
+.itemActions .iconButton,
+.itemActions .dangerIconButton {
+  width: 32px;
+  min-height: 32px;
+  border-radius: 10px;
 }
 
 .iconCommandButton {
@@ -395,19 +402,13 @@
 
 @media (max-width: 560px) {
   .actions,
-  .sheetActions,
-  .items li {
-    grid-template-columns: 34px minmax(0, 1fr) 38px;
-  }
-
-  .actions,
   .sheetActions {
     display: flex;
   }
 
   .itemCheck button {
     width: 32px;
-    height: 36px;
+    height: 30px;
     border-radius: 12px;
   }
 
