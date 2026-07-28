@@ -13,12 +13,35 @@ describe("calculateAgeInDays", () => {
 
 describe("calculateAge", () => {
   it("calculates years, months and days", () => {
-    const age = calculateAge(iratiProfile, new Date("2027-09-15T12:00:00Z"));
+    const age = calculateAge(iratiProfile, new Date("2027-09-15T23:00:00Z"));
 
     expect(age).toEqual({ days: 13, months: 2, years: 1 });
-    expect(formatAge(iratiProfile, new Date("2027-09-15T12:00:00Z"))).toBe(
+    expect(formatAge(iratiProfile, new Date("2027-09-15T23:00:00Z"))).toBe(
       "1 año, 2 meses y 13 días",
     );
+  });
+
+  it("does not complete the birth day before the birth time in Madrid", () => {
+    expect(calculateAge(iratiProfile, new Date("2026-07-02T19:59:00Z"))).toEqual({
+      days: 0,
+      months: 0,
+      years: 0,
+    });
+    expect(calculateAge(iratiProfile, new Date("2026-07-02T20:00:00Z"))).toEqual({
+      days: 0,
+      months: 0,
+      years: 0,
+    });
+    expect(calculateAge(iratiProfile, new Date("2026-07-02T20:02:00Z"))).toEqual({
+      days: 0,
+      months: 0,
+      years: 0,
+    });
+    expect(calculateAge(iratiProfile, new Date("2026-07-03T20:02:00Z"))).toEqual({
+      days: 1,
+      months: 0,
+      years: 0,
+    });
   });
 
   it("does not return a negative age before birth", () => {

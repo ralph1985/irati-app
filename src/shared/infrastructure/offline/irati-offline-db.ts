@@ -166,7 +166,12 @@ export async function readOfflineSnapshot(): Promise<OfflineSnapshot> {
     appliedVaccineDoses,
     plannedVaccineDoses,
     profile: profile
-      ? { birthDate: profile.birthDate, cipa: profile.cipa, name: profile.name }
+      ? {
+          birthDate: profile.birthDate,
+          ...(profile.birthTime ? { birthTime: profile.birthTime } : {}),
+          cipa: profile.cipa,
+          name: profile.name,
+        }
       : null,
     travelChecklistItems,
     weightEntries,

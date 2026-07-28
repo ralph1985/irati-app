@@ -207,6 +207,7 @@ Datos iniciales:
 
 - Nombre: Irati.
 - Fecha de nacimiento: 2026-07-02.
+- Hora local de nacimiento: 22:02, Europe/Madrid.
 - CIPA: identificador sanitario opcional y estable, visible completo solo tras autenticacion.
 
 La fecha de nacimiento se usa para calcular la planificacion inicial de vacunas desde el calendario de la Comunidad de Madrid.

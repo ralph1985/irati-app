@@ -1,6 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { ProfileRepository } from "../application/profile-repository";
-import { BabyProfile } from "../domain/baby-profile";
+import { BabyProfile, IRATI_BIRTH_TIME } from "../domain/baby-profile";
 import { Database } from "@/shared/infrastructure/supabase/database.types";
 
 export class SupabaseProfileRepository implements ProfileRepository {
@@ -21,6 +21,7 @@ export class SupabaseProfileRepository implements ProfileRepository {
     return {
       name: data.name,
       birthDate: data.birth_date,
+      birthTime: IRATI_BIRTH_TIME,
       cipa: data.cipa,
     };
   }
