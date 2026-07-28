@@ -203,11 +203,7 @@ function OfflineCalendarScreen({ snapshot }: { snapshot: CalendarSnapshot | null
         <p>Calendario</p>
         <h1>Agenda de Irati</h1>
       </header>
-      <CalendarView
-        googleUrl={null}
-        initialError={snapshot ? null : "offline"}
-        initialSnapshot={snapshot}
-      />
+      <CalendarView initialError={snapshot ? null : "offline"} initialSnapshot={snapshot} />
     </main>
   );
 }

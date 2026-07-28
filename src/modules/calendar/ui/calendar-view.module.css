@@ -27,8 +27,7 @@
 .segmentedControl button,
 .refreshButton,
 .monthHeader button,
-.primaryButton,
-.googleLink {
+.primaryButton {
   border: 0;
   border-radius: 10px;
   padding: 9px 12px;
@@ -114,8 +113,7 @@
 .eventTime,
 .eventBody small,
 .updatedAt,
-.emptyState,
-.googleLink {
+.emptyState {
   color: #6b587d;
   font-size: 13px;
 }
@@ -154,8 +152,7 @@
   margin: 0;
 }
 
-.primaryButton,
-.googleLink {
+.primaryButton {
   display: inline-flex;
   justify-content: center;
   text-decoration: none;
@@ -163,10 +160,6 @@
 
 .updatedAt {
   margin: 0;
-}
-
-.googleLink {
-  background: #ede9fe;
 }
 
 .monthView {

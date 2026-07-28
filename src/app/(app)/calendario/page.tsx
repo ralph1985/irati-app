@@ -17,11 +17,7 @@ export default async function CalendarPage() {
         <p>Calendario</p>
         <h1>Agenda de Irati</h1>
       </header>
-      <CalendarView
-        googleUrl={result.googleUrl}
-        initialError={result.error}
-        initialSnapshot={result.snapshot}
-      />
+      <CalendarView initialError={result.error} initialSnapshot={result.snapshot} />
     </main>
   );
 }

@@ -15,14 +15,13 @@ import {
 import styles from "./calendar-view.module.css";
 
 type CalendarViewProps = {
-  googleUrl: string | null;
   initialError: string | null;
   initialSnapshot: CalendarSnapshot | null;
 };
 
 type ViewMode = "agenda" | "month";
 
-export function CalendarView({ googleUrl, initialError, initialSnapshot }: CalendarViewProps) {
+export function CalendarView({ initialError, initialSnapshot }: CalendarViewProps) {
   const [snapshot, setSnapshot] = useState(initialSnapshot);
   const [error, setError] = useState(initialError);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -170,12 +169,6 @@ export function CalendarView({ googleUrl, initialError, initialSnapshot }: Calen
           </p>
         ) : null}
       </section>
-
-      {googleUrl ? (
-        <a className={styles.googleLink} href={googleUrl}>
-          Abrir el calendario de Google
-        </a>
-      ) : null}
 
       {selectedEvent ? (
         <BottomSheet
