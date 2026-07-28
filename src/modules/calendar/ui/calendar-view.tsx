@@ -312,7 +312,8 @@ function MonthCalendar({
 
           return (
             <div
-              className={`${styles.monthDay} ${day.inMonth ? "" : styles.outsideMonth}`}
+              aria-current={day.isToday ? "date" : undefined}
+              className={`${styles.monthDay} ${day.inMonth ? "" : styles.outsideMonth} ${day.isToday ? styles.today : ""}`}
               key={day.key}
             >
               <span>{day.day}</span>
@@ -339,12 +340,14 @@ function buildMonthDays(year: number, month: number) {
   const first = new Date(year, month, 1);
   const startOffset = (first.getDay() + 6) % 7;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = toDateKey(new Date());
 
   return Array.from({ length: 42 }, (_, index) => {
     const date = new Date(year, month, index - startOffset + 1);
     return {
       day: date.getDate(),
       inMonth: date.getMonth() === month,
+      isToday: date.getMonth() === month && toDateKey(date) === today,
       key: toDateKey(date),
     };
   }).slice(0, Math.ceil((startOffset + daysInMonth) / 7) * 7);

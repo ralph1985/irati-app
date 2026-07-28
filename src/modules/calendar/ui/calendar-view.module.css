@@ -206,6 +206,22 @@
   font-weight: 800;
 }
 
+.today {
+  border-color: #7c3aed;
+  background: #f3e8ff;
+  box-shadow: inset 0 0 0 1px #7c3aed;
+}
+
+.today > span {
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 50%;
+  background: #7c3aed;
+  color: #fff;
+}
+
 .monthDay button {
   overflow: hidden;
   border: 0;
