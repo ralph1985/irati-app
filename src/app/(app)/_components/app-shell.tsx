@@ -150,7 +150,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             title={tab.label}
           >
             <TabIcon name={tab.icon} />
-            <span className={styles.srOnly}>{tab.label}</span>
+            <span className={styles.navLabel}>{tab.label}</span>
           </Link>
         ))}
       </nav>

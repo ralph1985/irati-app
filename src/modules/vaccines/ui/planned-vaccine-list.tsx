@@ -320,12 +320,14 @@ export function VaccineApplicationSheet({
   children,
   dose,
   markAppliedAction,
+  onOpen,
   returnTo,
 }: {
   buttonClassName?: string;
   children?: ReactNode;
   dose: PlannedVaccineDoseWithStatus;
   markAppliedAction: (formData: FormData) => void | Promise<void>;
+  onOpen?: () => void;
   returnTo?: string;
 }) {
   return (
@@ -333,6 +335,7 @@ export function VaccineApplicationSheet({
       buttonClassName={buttonClassName}
       dose={dose}
       markAppliedAction={markAppliedAction}
+      onOpen={onOpen}
       returnTo={returnTo}
     >
       {children}
@@ -345,12 +348,14 @@ function MarkAppliedForm({
   children,
   dose,
   markAppliedAction,
+  onOpen,
   returnTo,
 }: {
   buttonClassName?: string;
   children?: ReactNode;
   dose: PlannedVaccineDoseWithStatus;
   markAppliedAction: (formData: FormData) => void | Promise<void>;
+  onOpen?: () => void;
   returnTo?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -361,7 +366,10 @@ function MarkAppliedForm({
       <button
         aria-label="Registrar vacuna aplicada"
         className={buttonClassName ?? styles.actionButton}
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          onOpen?.();
+          setIsOpen(true);
+        }}
         title="Registrar vacuna aplicada"
         type="button"
       >

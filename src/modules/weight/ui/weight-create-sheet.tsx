@@ -12,6 +12,7 @@ type WeightCreateSheetProps = {
   action: (formData: FormData) => void | Promise<void>;
   buttonClassName?: string;
   children?: ReactNode;
+  onOpen?: () => void;
   returnTo?: string;
   styles: Record<string, string>;
 };
@@ -20,6 +21,7 @@ export function WeightCreateSheet({
   action,
   buttonClassName,
   children = "+",
+  onOpen,
   returnTo,
   styles,
 }: WeightCreateSheetProps) {
@@ -86,7 +88,10 @@ export function WeightCreateSheet({
       <button
         aria-label="Añadir peso"
         className={buttonClassName ?? styles.floatingAddButton}
-        onClick={openSheet}
+        onClick={() => {
+          onOpen?.();
+          openSheet();
+        }}
         type="button"
       >
         {children}
