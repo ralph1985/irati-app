@@ -17,6 +17,7 @@ type WeightChartProps = {
 
 export function WeightChart({ birthDate, entries }: WeightChartProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [selectedPoint, setSelectedPoint] = useState<ChartTooltipPoint | null>(null);
   const expandedChartRef = useRef<HTMLElement>(null);
   const series = buildWeightChartSeries(entries, birthDate);
   const path = buildWeightChartPath(series.points);
@@ -72,6 +73,8 @@ export function WeightChart({ birthDate, entries }: WeightChartProps) {
         latestPoint={latestPoint}
         linePath={path}
         series={series}
+        selectedPoint={selectedPoint}
+        onPointSelect={setSelectedPoint}
       />
       <WeightChartLegend />
       <WeightChartMeta
@@ -117,6 +120,8 @@ export function WeightChart({ birthDate, entries }: WeightChartProps) {
                 latestPoint={latestPoint}
                 linePath={path}
                 series={series}
+                selectedPoint={selectedPoint}
+                onPointSelect={setSelectedPoint}
               />
             </div>
             <WeightChartLegend />
@@ -139,7 +144,29 @@ type WeightChartSvgProps = {
   latestPoint: ReturnType<typeof buildWeightChartSeries>["points"][number] | undefined;
   linePath: string;
   series: ReturnType<typeof buildWeightChartSeries>;
+  selectedPoint: ChartTooltipPoint | null;
+  onPointSelect: (point: ChartTooltipPoint | null) => void;
 };
+
+type ChartTooltipPoint =
+  | {
+      date: string;
+      dateLabel: string;
+      gramsPerDay: number | null;
+      isEstimated: false;
+      weightLabel: string;
+      x: number;
+      y: number;
+    }
+  | {
+      date: string;
+      dateLabel: string;
+      gramsPerDay: number;
+      isEstimated: true;
+      weightLabel: string;
+      x: number;
+      y: number;
+    };
 
 function WeightChartSvg({
   areaPath,
@@ -148,6 +175,8 @@ function WeightChartSvg({
   latestPoint,
   linePath,
   series,
+  selectedPoint,
+  onPointSelect,
 }: WeightChartSvgProps) {
   return (
     <div className={styles.chartCanvas} aria-label="Evolución del peso">
@@ -197,6 +226,21 @@ function WeightChartSvg({
         })}
         {areaPath ? <path className={styles.chartArea} d={areaPath} /> : null}
         {linePath ? <path className={styles.chartLine} d={linePath} /> : null}
+        {series.estimatePoints.map((point) => (
+          <circle
+            aria-label={`Estimación ${point.dateLabel}, ${point.weightLabel}`}
+            className={styles.chartEstimatePoint}
+            cx={point.x}
+            cy={point.y}
+            key={`estimate-${point.date}`}
+            onFocus={() => onPointSelect({ ...point, isEstimated: true })}
+            onMouseEnter={() => onPointSelect({ ...point, isEstimated: true })}
+            onMouseLeave={() => onPointSelect(null)}
+            onPointerDown={() => onPointSelect({ ...point, isEstimated: true })}
+            r="5"
+            tabIndex={0}
+          />
+        ))}
         {series.points.map((point) => {
           const isLatestPoint = latestPoint === point;
 
@@ -207,10 +251,46 @@ function WeightChartSvg({
               cx={point.x}
               cy={point.y}
               key={`${point.date}-${point.weightGrams}`}
+              onFocus={() =>
+                onPointSelect({
+                  date: point.date,
+                  dateLabel: point.dateLabel,
+                  gramsPerDay: null,
+                  isEstimated: false,
+                  weightLabel: point.weightLabel,
+                  x: point.x,
+                  y: point.y,
+                })
+              }
+              onMouseEnter={() =>
+                onPointSelect({
+                  date: point.date,
+                  dateLabel: point.dateLabel,
+                  gramsPerDay: null,
+                  isEstimated: false,
+                  weightLabel: point.weightLabel,
+                  x: point.x,
+                  y: point.y,
+                })
+              }
+              onMouseLeave={() => onPointSelect(null)}
+              onPointerDown={() =>
+                onPointSelect({
+                  date: point.date,
+                  dateLabel: point.dateLabel,
+                  gramsPerDay: null,
+                  isEstimated: false,
+                  weightLabel: point.weightLabel,
+                  x: point.x,
+                  y: point.y,
+                })
+              }
               r={isLatestPoint ? 5 : 3.8}
+              tabIndex={0}
             />
           );
         })}
+        {selectedPoint ? <ChartTooltip point={selectedPoint} /> : null}
         {firstPoint ? (
           <text className={styles.chartDate} x="42" y={series.chartHeight - 6}>
             Nacimiento
@@ -231,10 +311,38 @@ function WeightChartSvg({
   );
 }
 
+function ChartTooltip({ point }: { point: ChartTooltipPoint }) {
+  const tooltipWidth = 126;
+  const tooltipX = Math.min(Math.max(point.x - tooltipWidth / 2, 44), 304 - tooltipWidth);
+  const tooltipY = Math.max(point.y - 58, 4);
+  const dailyRate =
+    point.gramsPerDay === null
+      ? "Peso registrado"
+      : `${formatGramsPerDay(point.gramsPerDay)} g/día`;
+
+  return (
+    <g className={styles.chartTooltip} pointerEvents="none">
+      <rect height="46" rx="8" width={tooltipWidth} x={tooltipX} y={tooltipY} />
+      <text x={tooltipX + 8} y={tooltipY + 16}>
+        {point.dateLabel}
+      </text>
+      <text x={tooltipX + 8} y={tooltipY + 32}>
+        {point.weightLabel} · {dailyRate}
+      </text>
+    </g>
+  );
+}
+
+function formatGramsPerDay(value: number): string {
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toLocaleString("es-ES", { maximumFractionDigits: 1 })}`;
+}
+
 function WeightChartLegend() {
   return (
     <div className={styles.chartLegend} aria-label="Leyenda de la gráfica">
       <span className={styles.chartLegendWeight}>Peso registrado</span>
+      <span className={styles.chartLegendEstimate}>Estimación diaria · toca un punto</span>
       <span>Referencia OMS: P3 P15 P50 P85 P97</span>
     </div>
   );

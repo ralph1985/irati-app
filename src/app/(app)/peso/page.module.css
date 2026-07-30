@@ -185,6 +185,31 @@
   stroke-width: 2.8;
 }
 
+.chartEstimatePoint {
+  fill: #ede9fe;
+  stroke: #8b5cf6;
+  stroke-width: 1.8;
+  cursor: pointer;
+}
+
+.chartEstimatePoint:focus,
+.chartPoint:focus,
+.chartLatestPoint:focus {
+  outline: 2px solid #5b21b6;
+  outline-offset: 2px;
+}
+
+.chartTooltip rect {
+  fill: #33213f;
+  opacity: 0.96;
+}
+
+.chartTooltip text {
+  fill: #fff;
+  font-size: 9px;
+  font-weight: 800;
+}
+
 .chartLatestPoint {
   fill: #7c3aed;
   stroke: #fff;
@@ -214,6 +239,10 @@
 
 .chartLegendWeight {
   color: #5b21b6;
+}
+
+.chartLegendEstimate {
+  color: #6d28d9;
 }
 
 .chartMeta {

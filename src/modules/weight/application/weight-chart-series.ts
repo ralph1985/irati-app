@@ -1,4 +1,5 @@
 import { WeightEntry } from "../domain/weight-entry";
+import { buildWeightDailyEstimates } from "./weight-daily-estimation";
 import {
   buildWhoWeightForAgeReferences,
   calculateAgeInDaysFromBirth,
@@ -28,6 +29,16 @@ export type WeightChartReferenceCurve = {
   points: WeightChartReferencePoint[];
 };
 
+export type WeightChartEstimatePoint = {
+  date: string;
+  dateLabel: string;
+  gramsPerDay: number;
+  weightGrams: number;
+  weightLabel: string;
+  x: number;
+  y: number;
+};
+
 export type WeightChartTick = {
   label: string;
   value: number;
@@ -42,6 +53,7 @@ export type WeightChartSeries = {
   minDisplayWeight: number;
   minWeight: number;
   maxWeight: number;
+  estimatePoints: WeightChartEstimatePoint[];
   referenceCurves: WeightChartReferenceCurve[];
   ticks: WeightChartTick[];
 };
@@ -70,6 +82,7 @@ export function buildWeightChartSeries(
       minDisplayWeight: 0,
       minWeight: 0,
       maxWeight: 0,
+      estimatePoints: [],
       referenceCurves: [],
       ticks: [],
     };
@@ -96,6 +109,7 @@ export function buildWeightChartSeries(
     minDisplayWeight: displayRange.min,
     minWeight,
     maxWeight,
+    estimatePoints: buildEstimatePoints(sortedEntries, birthDate, maxAgeDays, displayRange),
     referenceCurves: buildReferenceCurves(referencePoints, maxAgeDays, displayRange),
     ticks: buildWeightTicks(displayRange.min, displayRange.max),
     points: sortedEntries.map((entry, index) => ({
@@ -109,6 +123,42 @@ export function buildWeightChartSeries(
       y: getWeightY(entry.weightGrams, displayRange.min, displayRange.max),
     })),
   };
+}
+
+function buildEstimatePoints(
+  entries: WeightEntry[],
+  birthDate: string,
+  maxAgeDays: number,
+  displayRange: { min: number; max: number },
+): WeightChartEstimatePoint[] {
+  const estimates = buildWeightDailyEstimates(entries);
+  const points: WeightChartEstimatePoint[] = [];
+
+  for (const estimate of estimates) {
+    const startEntry = entries.find((entry) => entry.measuredOn === estimate.startDate);
+
+    if (!startEntry) {
+      continue;
+    }
+
+    for (let day = 1; day <= estimate.days; day += 1) {
+      const date = addDays(estimate.startDate, day);
+      const weightGrams = startEntry.weightGrams + estimate.gramsPerDay * day;
+      const ageDays = calculateAgeInDaysFromBirth(birthDate, date);
+
+      points.push({
+        date,
+        dateLabel: formatChartDate(date),
+        gramsPerDay: estimate.gramsPerDay,
+        weightGrams,
+        weightLabel: formatWeight(weightGrams),
+        x: getAgeX(ageDays, maxAgeDays),
+        y: getWeightY(weightGrams, displayRange.min, displayRange.max),
+      });
+    }
+  }
+
+  return points;
 }
 
 export function buildWeightChartPath(points: Array<{ x: number; y: number }>): string {
@@ -234,4 +284,10 @@ function formatWeight(weightGrams: number): string {
     maximumFractionDigits: 2,
     minimumFractionDigits: weightGrams % 1000 === 0 ? 0 : 1,
   })} kg`;
+}
+
+function addDays(date: string, days: number): string {
+  const result = new Date(`${date}T00:00:00.000Z`);
+  result.setUTCDate(result.getUTCDate() + days);
+  return result.toISOString().slice(0, 10);
 }

@@ -28,6 +28,8 @@ describe("buildWeightChartSeries", () => {
     expect(series.minWeight).toBe(2520);
     expect(series.maxWeight).toBe(2700);
     expect(series.points.map((point) => point.date)).toEqual(["2026-07-02", "2026-07-04"]);
+    expect(series.estimatePoints.map((point) => point.date)).toEqual(["2026-07-03", "2026-07-04"]);
+    expect(series.estimatePoints[0].weightGrams).toBe(2610);
     expect(series.points[0].x).toBeLessThan(series.points[1].x);
     expect(series.referenceCurves.map((curve) => curve.label)).toEqual([
       "P3",
@@ -44,6 +46,7 @@ describe("buildWeightChartSeries", () => {
 
   it("returns an empty series without entries", () => {
     expect(buildWeightChartSeries([], "2026-07-02").points).toEqual([]);
+    expect(buildWeightChartSeries([], "2026-07-02").estimatePoints).toEqual([]);
   });
 
   it("places one entry by age and keeps a readable display range", () => {
