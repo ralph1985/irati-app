@@ -185,14 +185,6 @@
   stroke-width: 2.8;
 }
 
-.chartEstimatePoint {
-  fill: #ede9fe;
-  stroke: #8b5cf6;
-  stroke-width: 1.8;
-  cursor: pointer;
-}
-
-.chartEstimatePoint:focus,
 .chartPoint:focus,
 .chartLatestPoint:focus {
   outline: 2px solid #5b21b6;

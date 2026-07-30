@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import {
   buildWeightChartAreaPath,
   buildWeightChartPath,
@@ -178,8 +178,28 @@ function WeightChartSvg({
   selectedPoint,
   onPointSelect,
 }: WeightChartSvgProps) {
+  function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - bounds.left) / bounds.width) * series.chartWidth;
+
+    onPointSelect(findNearestTooltipPoint(series, x));
+  }
+
+  function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    handlePointerMove(event);
+  }
+
   return (
-    <div className={styles.chartCanvas} aria-label="Evolución del peso">
+    <div
+      aria-label="Evolución del peso. Desliza por la gráfica para consultar la estimación diaria."
+      className={styles.chartCanvas}
+      onPointerCancel={() => onPointSelect(null)}
+      onPointerDown={handlePointerDown}
+      onPointerLeave={() => onPointSelect(null)}
+      onPointerMove={handlePointerMove}
+      onPointerUp={(event) => event.currentTarget.releasePointerCapture(event.pointerId)}
+    >
       <svg
         viewBox={`0 0 ${series.chartWidth} ${series.chartHeight}`}
         role="img"
@@ -226,21 +246,6 @@ function WeightChartSvg({
         })}
         {areaPath ? <path className={styles.chartArea} d={areaPath} /> : null}
         {linePath ? <path className={styles.chartLine} d={linePath} /> : null}
-        {series.estimatePoints.map((point) => (
-          <circle
-            aria-label={`Estimación ${point.dateLabel}, ${point.weightLabel}`}
-            className={styles.chartEstimatePoint}
-            cx={point.x}
-            cy={point.y}
-            key={`estimate-${point.date}`}
-            onFocus={() => onPointSelect({ ...point, isEstimated: true })}
-            onMouseEnter={() => onPointSelect({ ...point, isEstimated: true })}
-            onMouseLeave={() => onPointSelect(null)}
-            onPointerDown={() => onPointSelect({ ...point, isEstimated: true })}
-            r="5"
-            tabIndex={0}
-          />
-        ))}
         {series.points.map((point) => {
           const isLatestPoint = latestPoint === point;
 
@@ -252,29 +257,6 @@ function WeightChartSvg({
               cy={point.y}
               key={`${point.date}-${point.weightGrams}`}
               onFocus={() =>
-                onPointSelect({
-                  date: point.date,
-                  dateLabel: point.dateLabel,
-                  gramsPerDay: null,
-                  isEstimated: false,
-                  weightLabel: point.weightLabel,
-                  x: point.x,
-                  y: point.y,
-                })
-              }
-              onMouseEnter={() =>
-                onPointSelect({
-                  date: point.date,
-                  dateLabel: point.dateLabel,
-                  gramsPerDay: null,
-                  isEstimated: false,
-                  weightLabel: point.weightLabel,
-                  x: point.x,
-                  y: point.y,
-                })
-              }
-              onMouseLeave={() => onPointSelect(null)}
-              onPointerDown={() =>
                 onPointSelect({
                   date: point.date,
                   dateLabel: point.dateLabel,
@@ -311,6 +293,31 @@ function WeightChartSvg({
   );
 }
 
+function findNearestTooltipPoint(
+  series: ReturnType<typeof buildWeightChartSeries>,
+  x: number,
+): ChartTooltipPoint {
+  const officialDates = new Set(series.points.map((point) => point.date));
+  const candidates: ChartTooltipPoint[] = [
+    ...series.points.map((point) => ({
+      date: point.date,
+      dateLabel: point.dateLabel,
+      gramsPerDay: null,
+      isEstimated: false as const,
+      weightLabel: point.weightLabel,
+      x: point.x,
+      y: point.y,
+    })),
+    ...series.estimatePoints
+      .filter((point) => !officialDates.has(point.date))
+      .map((point) => ({ ...point, isEstimated: true as const })),
+  ];
+
+  return candidates.reduce((nearest, point) =>
+    Math.abs(point.x - x) < Math.abs(nearest.x - x) ? point : nearest,
+  );
+}
+
 function ChartTooltip({ point }: { point: ChartTooltipPoint }) {
   const tooltipWidth = 126;
   const tooltipX = Math.min(Math.max(point.x - tooltipWidth / 2, 44), 304 - tooltipWidth);
@@ -342,7 +349,7 @@ function WeightChartLegend() {
   return (
     <div className={styles.chartLegend} aria-label="Leyenda de la gráfica">
       <span className={styles.chartLegendWeight}>Peso registrado</span>
-      <span className={styles.chartLegendEstimate}>Estimación diaria · toca un punto</span>
+      <span className={styles.chartLegendEstimate}>Estimación diaria · desliza por la gráfica</span>
       <span>Referencia OMS: P3 P15 P50 P85 P97</span>
     </div>
   );

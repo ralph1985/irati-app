@@ -39,6 +39,8 @@ describe("WeightChart", () => {
     expect(html).toContain("Ver grande");
     expect(html).toContain("P15");
     expect(html).toContain("P85");
+    expect(html.match(/<circle/g)).toHaveLength(2);
+    expect(html).toContain("Desliza por la gráfica");
   });
 
   it("renders readable metadata with a single entry", () => {
