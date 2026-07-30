@@ -154,6 +154,7 @@ type ChartTooltipPoint =
       dateLabel: string;
       gramsPerDay: number | null;
       isEstimated: false;
+      placeLabel: string;
       weightLabel: string;
       x: number;
       y: number;
@@ -163,6 +164,7 @@ type ChartTooltipPoint =
       dateLabel: string;
       gramsPerDay: number;
       isEstimated: true;
+      placeLabel?: never;
       weightLabel: string;
       x: number;
       y: number;
@@ -256,17 +258,7 @@ function WeightChartSvg({
               cx={point.x}
               cy={point.y}
               key={`${point.date}-${point.weightGrams}`}
-              onFocus={() =>
-                onPointSelect({
-                  date: point.date,
-                  dateLabel: point.dateLabel,
-                  gramsPerDay: null,
-                  isEstimated: false,
-                  weightLabel: point.weightLabel,
-                  x: point.x,
-                  y: point.y,
-                })
-              }
+              onFocus={() => onPointSelect(buildOfficialTooltipPoint(series, point))}
               r={isLatestPoint ? 5 : 3.8}
               tabIndex={0}
             />
@@ -293,21 +285,30 @@ function WeightChartSvg({
   );
 }
 
+function buildOfficialTooltipPoint(
+  series: ReturnType<typeof buildWeightChartSeries>,
+  point: ReturnType<typeof buildWeightChartSeries>["points"][number],
+): ChartTooltipPoint {
+  return {
+    date: point.date,
+    dateLabel: point.dateLabel,
+    gramsPerDay:
+      series.estimatePoints.find((estimate) => estimate.date === point.date)?.gramsPerDay ?? null,
+    isEstimated: false,
+    placeLabel: getWeightPlaceLabel(point.place),
+    weightLabel: point.weightLabel,
+    x: point.x,
+    y: point.y,
+  };
+}
+
 function findNearestTooltipPoint(
   series: ReturnType<typeof buildWeightChartSeries>,
   x: number,
 ): ChartTooltipPoint {
   const officialDates = new Set(series.points.map((point) => point.date));
   const candidates: ChartTooltipPoint[] = [
-    ...series.points.map((point) => ({
-      date: point.date,
-      dateLabel: point.dateLabel,
-      gramsPerDay: null,
-      isEstimated: false as const,
-      weightLabel: point.weightLabel,
-      x: point.x,
-      y: point.y,
-    })),
+    ...series.points.map((point) => buildOfficialTooltipPoint(series, point)),
     ...series.estimatePoints
       .filter((point) => !officialDates.has(point.date))
       .map((point) => ({ ...point, isEstimated: true as const })),
@@ -320,21 +321,26 @@ function findNearestTooltipPoint(
 
 function ChartTooltip({ point }: { point: ChartTooltipPoint }) {
   const tooltipWidth = 126;
+  const tooltipHeight = 58;
   const tooltipX = Math.min(Math.max(point.x - tooltipWidth / 2, 44), 304 - tooltipWidth);
-  const tooltipY = Math.max(point.y - 58, 4);
+  const tooltipY = Math.max(point.y - tooltipHeight - 4, 4);
+  const pointType = point.isEstimated ? "Peso estimado" : `Registrado · ${point.placeLabel}`;
   const dailyRate =
     point.gramsPerDay === null
-      ? "Peso registrado"
-      : `${formatGramsPerDay(point.gramsPerDay)} g/día`;
+      ? "Sin estimación previa"
+      : `${formatGramsPerDay(point.gramsPerDay)} g/día estimados`;
 
   return (
     <g className={styles.chartTooltip} pointerEvents="none">
-      <rect height="46" rx="8" width={tooltipWidth} x={tooltipX} y={tooltipY} />
+      <rect height={tooltipHeight} rx="8" width={tooltipWidth} x={tooltipX} y={tooltipY} />
       <text x={tooltipX + 8} y={tooltipY + 16}>
         {point.dateLabel}
       </text>
       <text x={tooltipX + 8} y={tooltipY + 32}>
-        {point.weightLabel} · {dailyRate}
+        {point.weightLabel} · {pointType}
+      </text>
+      <text x={tooltipX + 8} y={tooltipY + 48}>
+        {dailyRate}
       </text>
     </g>
   );
