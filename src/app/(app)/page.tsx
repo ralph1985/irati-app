@@ -1,5 +1,5 @@
 import { getBabyProfile } from "@/modules/profile/application/get-baby-profile";
-import { formatBirthDate } from "@/modules/profile/domain/baby-profile";
+import { formatBirthDate, formatBirthTime } from "@/modules/profile/domain/baby-profile";
 import { CachedProfileRepository } from "@/modules/profile/infrastructure/cached-profile-repository";
 import { LiveAge } from "@/modules/profile/ui/live-age";
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
@@ -84,7 +84,9 @@ export default async function Home({ searchParams }: HomeProps) {
       <section className={styles.hero} aria-labelledby="home-title">
         <p className={styles.kicker}>Hoy</p>
         <h1 id="home-title">{profile.name}</h1>
-        <p className={styles.birthDate}>Nacida el {formatBirthDate(profile)}</p>
+        <p className={styles.birthDate}>
+          Nacida el {formatBirthDate(profile)} a las {formatBirthTime(profile)}
+        </p>
         <p className={styles.age}>
           Edad: <LiveAge initialNow={new Date().toISOString()} profile={profile} />
         </p>

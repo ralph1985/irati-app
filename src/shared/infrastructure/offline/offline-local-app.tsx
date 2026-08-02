@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { buildHomeAgenda } from "@/modules/home/application/home-agenda";
 import type { CalendarSnapshot } from "@/modules/calendar/domain/calendar-event";
 import { CalendarView } from "@/modules/calendar/ui/calendar-view";
-import { formatBirthDate } from "@/modules/profile/domain/baby-profile";
+import { formatBirthDate, formatBirthTime } from "@/modules/profile/domain/baby-profile";
 import { LiveAge } from "@/modules/profile/ui/live-age";
 import {
   calculateTravelChecklistProgress,
@@ -226,7 +226,10 @@ function OfflineHomeScreen({ snapshot }: { snapshot: OfflineSnapshot }) {
         <h1 id="home-title">{snapshot.profile?.name}</h1>
         {snapshot.profile ? (
           <>
-            <p className={homeStyles.birthDate}>Nacida el {formatBirthDate(snapshot.profile)}</p>
+            <p className={homeStyles.birthDate}>
+              Nacida el {formatBirthDate(snapshot.profile)} a las{" "}
+              {formatBirthTime(snapshot.profile)}
+            </p>
             <p className={homeStyles.age}>
               Edad: <LiveAge initialNow={new Date().toISOString()} profile={snapshot.profile} />
             </p>

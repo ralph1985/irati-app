@@ -25,6 +25,10 @@ export function formatBirthDate(profile: BabyProfile): string {
   }).format(birthDate);
 }
 
+export function formatBirthTime(profile: BabyProfile): string {
+  return profile.birthTime ?? IRATI_BIRTH_TIME;
+}
+
 export function calculateAgeInDays(profile: BabyProfile, today: Date): number {
   const birthDate = parseUtcDate(profile.birthDate);
   const currentDate = parseUtcDate(today.toISOString().slice(0, 10));

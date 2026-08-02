@@ -1,5 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { calculateAge, calculateAgeInDays, formatAge, iratiProfile } from "./baby-profile";
+import {
+  calculateAge,
+  calculateAgeInDays,
+  formatAge,
+  formatBirthTime,
+  iratiProfile,
+} from "./baby-profile";
+
+describe("formatBirthTime", () => {
+  it("returns the configured birth time", () => {
+    expect(formatBirthTime(iratiProfile)).toBe("22:02");
+  });
+
+  it("keeps the known time for profiles without an explicit value", () => {
+    expect(formatBirthTime({ ...iratiProfile, birthTime: undefined })).toBe("22:02");
+  });
+});
 
 describe("calculateAgeInDays", () => {
   it("calculates Irati age from the configured birth date", () => {
