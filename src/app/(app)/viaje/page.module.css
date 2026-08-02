@@ -124,6 +124,26 @@
   font-size: 13px;
 }
 
+.groupMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.groupAddButton {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid #c4b5fd;
+  border-radius: 9px;
+  background: #f5f3ff;
+  color: #6d28d9;
+  font: inherit;
+  font-size: 19px;
+  font-weight: 800;
+}
+
 .groupTitle::before {
   content: "›";
   display: inline-block;
@@ -186,24 +206,21 @@
   border: 1px solid #c4b5fd;
   border-radius: 50%;
   background: #fff;
-  color: transparent;
-  font-size: 1px;
+  color: #6d28d9;
+  font-size: 16px;
+  font-weight: 900;
 }
 
 .itemCheck button span {
-  display: grid;
-  width: 22px;
-  height: 22px;
-  place-items: center;
-  border-radius: 50%;
-  color: #fff;
-  font-size: 14px;
+  color: inherit;
+  font-size: inherit;
   font-weight: 900;
 }
 
 .itemCheck button[aria-pressed="true"] {
   border-color: #7c3aed;
-  background: #7c3aed;
+  background: #ede9fe;
+  color: #6d28d9;
 }
 
 .itemBody {
@@ -410,14 +427,6 @@
     width: 32px;
     height: 30px;
     border-radius: 12px;
-  }
-
-  .itemCheck button[aria-pressed="true"] {
-    color: #fff;
-  }
-
-  .itemCheck button span {
-    display: none;
   }
 
   .form {

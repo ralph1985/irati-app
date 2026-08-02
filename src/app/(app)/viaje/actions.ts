@@ -119,7 +119,6 @@ export async function deleteTravelChecklistItemAction(formData: FormData) {
   }
 
   invalidateTravelChecklistReads();
-  redirect("/viaje?deleted=1");
 }
 
 export async function resetTravelChecklistAction() {

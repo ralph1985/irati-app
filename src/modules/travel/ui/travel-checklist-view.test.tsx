@@ -46,6 +46,9 @@ describe("TravelChecklistView", () => {
     expect(html).toContain("Talla 1");
     expect(html).toContain("Preparado");
     expect(html).toContain("Añadir a la lista");
+    expect(html).toContain('aria-label="Añadir a Higiene"');
+    expect(html).toContain('aria-pressed="true"');
+    expect(html).toContain(">✓</span>");
   });
 });
 

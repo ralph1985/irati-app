@@ -46,10 +46,15 @@ export function TravelChecklistView({
 }: TravelChecklistViewProps) {
   const [sheetState, setSheetState] = useState<SheetState>({ mode: "closed" });
   const [pendingMutations, setPendingMutations] = useState<PendingTravelMutation[]>([]);
+  const [optimisticDeletedIds, setOptimisticDeletedIds] = useState<Set<string>>(new Set());
   const baseItems = useMemo(() => checklist.groups.flatMap((group) => group.items), [checklist]);
   const visibleChecklist = useMemo(
-    () => buildVisibleTravelChecklist(baseItems, pendingMutations),
-    [baseItems, pendingMutations],
+    () =>
+      buildVisibleTravelChecklist(
+        baseItems.filter((item) => !optimisticDeletedIds.has(item.id)),
+        pendingMutations,
+      ),
+    [baseItems, optimisticDeletedIds, pendingMutations],
   );
   const visibleGroups = visibleChecklist.groups.filter((group) => group.items.length > 0);
 
@@ -216,8 +221,14 @@ export function TravelChecklistView({
                 group={group}
                 key={group.category}
                 openEditSheet={(item) => setSheetState({ item, mode: "edit" })}
+                openCreateSheet={(category) => setSheetState({ category, mode: "create" })}
                 setPackedAction={setPackedAction}
                 pendingMutations={pendingMutations}
+                onDeleteOnline={async (event, item) => {
+                  event.preventDefault();
+                  setOptimisticDeletedIds((current) => new Set(current).add(item.id));
+                  await deleteAction(new FormData(event.currentTarget));
+                }}
               />
             ))}
           </div>
@@ -242,14 +253,18 @@ function TravelChecklistGroupView({
   deleteAction,
   group,
   openEditSheet,
+  openCreateSheet,
   pendingMutations,
   setPackedAction,
+  onDeleteOnline,
 }: {
   deleteAction: (formData: FormData) => void | Promise<void>;
   group: TravelChecklistGroup;
   openEditSheet: (item: TravelChecklistItem) => void;
+  openCreateSheet: (category: TravelChecklistCategory) => void;
   pendingMutations: PendingTravelMutation[];
   setPackedAction: (formData: FormData) => void | Promise<void>;
+  onDeleteOnline: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => void;
 }) {
   async function setPackedOffline(event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) {
     event.preventDefault();
@@ -281,7 +296,22 @@ function TravelChecklistGroupView({
     <details className={styles.group} open={group.progress.pending > 0}>
       <summary className={styles.groupHeader}>
         <span className={styles.groupTitle}>{formatTravelChecklistCategory(group.category)}</span>
-        <span>{formatProgress(group.progress)}</span>
+        <span className={styles.groupMeta}>
+          {formatProgress(group.progress)}
+          <button
+            aria-label={`Añadir a ${formatTravelChecklistCategory(group.category)}`}
+            className={styles.groupAddButton}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              openCreateSheet(group.category);
+            }}
+            title={`Añadir a ${formatTravelChecklistCategory(group.category)}`}
+            type="button"
+          >
+            <span aria-hidden="true">+</span>
+          </button>
+        </span>
       </summary>
 
       <ol className={styles.items}>
@@ -337,7 +367,10 @@ function TravelChecklistGroupView({
 
                   if (!navigator.onLine) {
                     void deleteItemOffline(event, item.id);
+                    return;
                   }
+
+                  onDeleteOnline(event, item);
                 }}
               >
                 <input name="id" type="hidden" value={item.id} />
@@ -363,6 +396,7 @@ type SheetState =
       mode: "closed";
     }
   | {
+      category?: TravelChecklistCategory;
       mode: "create";
     }
   | {
@@ -421,7 +455,9 @@ function TravelChecklistSheet({
                   isPacked: sheetState.item.isPacked,
                   notes: sheetState.item.notes ?? "",
                 }
-              : undefined
+              : sheetState.category
+                ? { category: sheetState.category }
+                : undefined
           }
           onOfflineSubmit={isEdit ? onOfflineUpdate : onOfflineCreate}
           onCancel={closeSheet}
@@ -441,12 +477,12 @@ function TravelChecklistItemForm({
 }: {
   action: (formData: FormData) => void | Promise<void>;
   defaults?: {
-    id: string;
-    label: string;
+    id?: string;
+    label?: string;
     category: TravelChecklistCategory;
-    sortOrder: number;
-    isPacked: boolean;
-    notes: string;
+    sortOrder?: number;
+    isPacked?: boolean;
+    notes?: string;
   };
   onCancel: () => void;
   onOfflineSubmit: (form: HTMLFormElement) => Promise<void>;
@@ -463,8 +499,8 @@ function TravelChecklistItemForm({
         }
       }}
     >
-      {defaults ? <input name="id" type="hidden" value={defaults.id} /> : null}
-      {defaults ? (
+      {defaults?.id ? <input name="id" type="hidden" value={defaults.id} /> : null}
+      {defaults?.id ? (
         <>
           <input name="isPacked" type="hidden" value={defaults.isPacked ? "true" : "false"} />
           <input name="sortOrder" type="hidden" value={defaults.sortOrder} />
