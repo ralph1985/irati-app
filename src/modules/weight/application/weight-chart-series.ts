@@ -6,6 +6,8 @@ import {
   WeightPercentile,
 } from "./who-weight-for-age";
 
+export type WeightChartRange = "current" | "full";
+
 export type WeightChartPoint = {
   ageDays: number;
   date: string;
@@ -70,6 +72,7 @@ const PADDING = {
 export function buildWeightChartSeries(
   entries: WeightEntry[],
   birthDate: string,
+  range: WeightChartRange = "current",
 ): WeightChartSeries {
   const sortedEntries = [...entries].sort((a, b) => a.measuredOn.localeCompare(b.measuredOn));
 
@@ -91,7 +94,8 @@ export function buildWeightChartSeries(
   const entryAges = sortedEntries.map((entry) =>
     calculateAgeInDaysFromBirth(birthDate, entry.measuredOn),
   );
-  const maxAgeDays = Math.max(1, ...entryAges);
+  const latestAgeDays = Math.max(1, ...entryAges);
+  const maxAgeDays = range === "full" ? 120 * (365.25 / 12) : latestAgeDays;
   const referencePoints = buildWhoWeightForAgeReferences(maxAgeDays);
   const weights = sortedEntries.map((entry) => entry.weightGrams);
   const minWeight = Math.min(...weights);

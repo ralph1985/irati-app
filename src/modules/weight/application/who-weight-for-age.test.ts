@@ -25,4 +25,9 @@ describe("WHO weight-for-age references", () => {
     expect(references.some((point) => point.ageDays === 0)).toBe(true);
     expect(references.some((point) => point.ageDays === 18)).toBe(true);
   });
+
+  it("uses the WHO 5-to-10 reference after the first five years", () => {
+    expect(calculateWhoWeightForAgeGrams(60 * (365.25 / 12), "P50")).toBe(18200);
+    expect(calculateWhoWeightForAgeGrams(120 * (365.25 / 12), "P50")).toBe(31858);
+  });
 });

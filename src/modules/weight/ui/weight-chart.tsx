@@ -5,6 +5,7 @@ import {
   buildWeightChartAreaPath,
   buildWeightChartPath,
   buildWeightChartSeries,
+  type WeightChartRange,
 } from "../application/weight-chart-series";
 import { getWeightPlaceLabel } from "../application/weight-filter";
 import { WeightEntry } from "../domain/weight-entry";
@@ -17,9 +18,10 @@ type WeightChartProps = {
 
 export function WeightChart({ birthDate, entries }: WeightChartProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [range, setRange] = useState<WeightChartRange>("current");
   const [selectedPoint, setSelectedPoint] = useState<ChartTooltipPoint | null>(null);
   const expandedChartRef = useRef<HTMLElement>(null);
-  const series = buildWeightChartSeries(entries, birthDate);
+  const series = buildWeightChartSeries(entries, birthDate, range);
   const path = buildWeightChartPath(series.points);
   const areaPath = buildWeightChartAreaPath(series.points);
   const firstPoint = series.points[0];
@@ -57,14 +59,36 @@ export function WeightChart({ birthDate, entries }: WeightChartProps) {
     <div className={styles.chart}>
       <div className={styles.chartHeader}>
         <p>Referencia OMS orientativa. No sustituye una revisión médica.</p>
-        <button
-          aria-label="Ver gráfica de peso a pantalla completa"
-          className={styles.chartExpandButton}
-          onClick={() => setIsExpanded(true)}
-          type="button"
-        >
-          Ver grande
-        </button>
+        <div className={styles.chartHeaderActions}>
+          <div className={styles.chartRangeToggle} aria-label="Rango de edad de la gráfica">
+            <button
+              aria-pressed={range === "current"}
+              className={
+                range === "current" ? styles.chartRangeButtonActive : styles.chartRangeButton
+              }
+              onClick={() => setRange("current")}
+              type="button"
+            >
+              Edad actual
+            </button>
+            <button
+              aria-pressed={range === "full"}
+              className={range === "full" ? styles.chartRangeButtonActive : styles.chartRangeButton}
+              onClick={() => setRange("full")}
+              type="button"
+            >
+              0–10 años
+            </button>
+          </div>
+          <button
+            aria-label="Ver gráfica de peso a pantalla completa"
+            className={styles.chartExpandButton}
+            onClick={() => setIsExpanded(true)}
+            type="button"
+          >
+            Ver grande
+          </button>
+        </div>
       </div>
       <WeightChartSvg
         areaPath={areaPath}

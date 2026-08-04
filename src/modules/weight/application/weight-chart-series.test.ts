@@ -70,4 +70,24 @@ describe("buildWeightChartSeries", () => {
     expect(buildWeightChartPath(series.points)).toBe("");
     expect(buildWeightChartAreaPath(series.points)).toBe("");
   });
+
+  it("can show the complete WHO reference through ten years", () => {
+    const series = buildWeightChartSeries(
+      [
+        {
+          id: "1",
+          measuredOn: "2026-07-02",
+          weightGrams: 2700,
+          place: "hospital",
+        },
+      ],
+      "2026-07-02",
+      "full",
+    );
+
+    expect(series.referenceCurves.every((curve) => curve.points.at(-1)?.ageDays === 3653)).toBe(
+      true,
+    );
+    expect(series.points[0].x).toBe(42);
+  });
 });
