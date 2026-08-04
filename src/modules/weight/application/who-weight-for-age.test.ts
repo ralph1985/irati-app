@@ -10,10 +10,10 @@ describe("WHO weight-for-age references", () => {
     expect(calculateAgeInDaysFromBirth("2026-07-02", "2026-07-20")).toBe(18);
   });
 
-  it("calculates selected girl weight percentiles from LMS parameters", () => {
-    expect(calculateWhoWeightForAgeGrams(0, "P50")).toBe(3232);
-    expect(calculateWhoWeightForAgeGrams(0, "P3")).toBeLessThan(2500);
-    expect(calculateWhoWeightForAgeGrams(0, "P97")).toBe(4166);
+  it("calculates selected girl weight percentiles from the official WHO table", () => {
+    expect(calculateWhoWeightForAgeGrams(0, "P50")).toBe(3200);
+    expect(calculateWhoWeightForAgeGrams(0, "P3")).toBe(2400);
+    expect(calculateWhoWeightForAgeGrams(0, "P97")).toBe(4200);
   });
 
   it("builds all selected percentile curves for the visible age range", () => {
