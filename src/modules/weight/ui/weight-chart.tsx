@@ -77,7 +77,7 @@ export function WeightChart({ birthDate, entries }: WeightChartProps) {
               onClick={() => setRange("full")}
               type="button"
             >
-              0–10 años
+              0–5 años
             </button>
           </div>
           <button

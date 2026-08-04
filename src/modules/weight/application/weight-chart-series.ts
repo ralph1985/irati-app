@@ -95,7 +95,7 @@ export function buildWeightChartSeries(
     calculateAgeInDaysFromBirth(birthDate, entry.measuredOn),
   );
   const latestAgeDays = Math.max(1, ...entryAges);
-  const maxAgeDays = range === "full" ? 120 * (365.25 / 12) : latestAgeDays;
+  const maxAgeDays = range === "full" ? 60 * (365.25 / 12) : latestAgeDays;
   const referencePoints = buildWhoWeightForAgeReferences(maxAgeDays);
   const weights = sortedEntries.map((entry) => entry.weightGrams);
   const minWeight = Math.min(...weights);

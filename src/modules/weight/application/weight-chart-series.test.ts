@@ -71,7 +71,7 @@ describe("buildWeightChartSeries", () => {
     expect(buildWeightChartAreaPath(series.points)).toBe("");
   });
 
-  it("can show the complete WHO reference through ten years", () => {
+  it("can show the complete WHO reference through five years", () => {
     const series = buildWeightChartSeries(
       [
         {
@@ -85,7 +85,7 @@ describe("buildWeightChartSeries", () => {
       "full",
     );
 
-    expect(series.referenceCurves.every((curve) => curve.points.at(-1)?.ageDays === 3653)).toBe(
+    expect(series.referenceCurves.every((curve) => curve.points.at(-1)?.ageDays === 1826)).toBe(
       true,
     );
     expect(series.points[0].x).toBe(42);
