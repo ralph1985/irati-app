@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { BottomSheet } from "../../../shared/ui/bottom-sheet";
+import { ConfirmSubmit } from "../../../shared/ui/confirm-submit";
 import { createWeightEntry, isWeightPlace, WeightEntry } from "../domain/weight-entry";
 import {
   applyOfflineWeightEntry,
@@ -98,14 +99,10 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
                 <EditIcon />
               </button>
 
-              <form
+              <ConfirmSubmit
                 action={deleteAction}
-                onSubmit={(event) => {
-                  if (!confirm("¿Borrar este peso?")) {
-                    event.preventDefault();
-                    return;
-                  }
-
+                message="¿Borrar este peso? Esta acción no se puede deshacer."
+                onConfirmedSubmit={(event) => {
                   if (!navigator.onLine) {
                     void deleteEntryOffline(event, entry.id);
                   }
@@ -119,7 +116,7 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
                 >
                   <TrashIcon />
                 </button>
-              </form>
+              </ConfirmSubmit>
             </div>
           </li>
         ))}

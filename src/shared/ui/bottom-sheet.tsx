@@ -1,6 +1,14 @@
 "use client";
 
-import { CSSProperties, KeyboardEvent, PointerEvent, ReactNode, useRef, useState } from "react";
+import {
+  CSSProperties,
+  KeyboardEvent,
+  PointerEvent,
+  ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 type BottomSheetStyles = Record<string, string>;
 
@@ -20,7 +28,21 @@ export function BottomSheet({
   styles,
 }: BottomSheetProps) {
   const [dragOffset, setDragOffset] = useState(0);
+  const sheetRef = useRef<HTMLElement>(null);
   const dragStartYRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    const previousFocus = document.activeElement as HTMLElement | null;
+
+    document.body.style.overflow = "hidden";
+    sheetRef.current?.focus();
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      previousFocus?.focus();
+    };
+  }, []);
 
   function closeSheet() {
     setDragOffset(0);
@@ -70,11 +92,13 @@ export function BottomSheet({
       <section
         aria-label={ariaLabel}
         aria-labelledby={labelledBy}
-        aria-modal="false"
+        aria-modal="true"
         className={styles.sheet}
         onClick={(event) => event.stopPropagation()}
         onKeyDown={handleSheetKeyDown}
+        ref={sheetRef}
         role="dialog"
+        tabIndex={-1}
         style={
           {
             "--sheet-drag-offset": `${dragOffset}px`,
@@ -82,7 +106,7 @@ export function BottomSheet({
         }
       >
         <div
-          aria-label={ariaLabel}
+          aria-label={`${ariaLabel}. Desliza hacia abajo para cerrar`}
           className={styles.sheetHandle}
           onKeyDown={handleHandleKeyDown}
           onPointerCancel={handleDragEnd}

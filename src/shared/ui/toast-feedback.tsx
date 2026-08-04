@@ -15,52 +15,59 @@ type ToastFeedbackProps = {
 };
 
 const AUTO_HIDE_MS = 3500;
-const EXIT_MS = 220;
-
 export function ToastFeedback({ messages, offset = "default" }: ToastFeedbackProps) {
-  const [hiddenKey, setHiddenKey] = useState<string | null>(null);
-  const [removedKey, setRemovedKey] = useState<string | null>(null);
   const messageKey = messages.map((message) => message.id).join("|");
 
-  useEffect(() => {
-    if (messages.length === 0) {
-      return;
-    }
-
-    const hideTimer = window.setTimeout(() => {
-      setHiddenKey(messageKey);
-    }, AUTO_HIDE_MS);
-    const unmountTimer = window.setTimeout(() => {
-      setRemovedKey(messageKey);
-    }, AUTO_HIDE_MS + EXIT_MS);
-
-    return () => {
-      window.clearTimeout(hideTimer);
-      window.clearTimeout(unmountTimer);
-    };
-  }, [messageKey, messages]);
-
-  if (messages.length === 0 || removedKey === messageKey) {
+  if (messages.length === 0) {
     return null;
   }
 
-  const isVisible = hiddenKey !== messageKey;
+  return <ToastMessageGroup key={messageKey} messages={messages} offset={offset} />;
+}
+
+function ToastMessageGroup({ messages, offset }: ToastFeedbackProps) {
+  const [isDismissed, setIsDismissed] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
+  const hasError = messages.some((message) => message.variant === "error");
+
+  useEffect(() => {
+    if (hasError) {
+      return;
+    }
+
+    const hideTimer = window.setTimeout(() => setIsHidden(true), AUTO_HIDE_MS);
+
+    return () => window.clearTimeout(hideTimer);
+  }, [hasError]);
+
+  if (isDismissed) {
+    return null;
+  }
 
   return (
     <div
       className={styles.viewport}
       data-offset={offset}
-      data-visible={isVisible ? "true" : "false"}
+      data-visible={isHidden ? "false" : "true"}
     >
       {messages.map((message) => (
-        <p
-          className={styles.toast}
-          data-variant={message.variant}
-          key={message.id}
-          role={message.variant === "error" ? "alert" : "status"}
-        >
-          {message.text}
-        </p>
+        <div className={styles.message} key={message.id}>
+          <p
+            className={styles.toast}
+            data-variant={message.variant}
+            role={message.variant === "error" ? "alert" : "status"}
+          >
+            {message.text}
+          </p>
+          <button
+            aria-label="Cerrar mensaje"
+            className={styles.dismiss}
+            onClick={() => setIsDismissed(true)}
+            type="button"
+          >
+            ×
+          </button>
+        </div>
       ))}
     </div>
   );

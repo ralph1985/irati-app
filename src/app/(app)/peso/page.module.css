@@ -352,10 +352,14 @@
 
 .chartFullscreen {
   display: grid;
-  width: min(100%, 900px);
+  width: min(100%, 1080px);
+  height: min(calc(100dvh - 24px), 860px);
   max-height: calc(100dvh - 24px);
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
   margin: auto;
-  overflow: auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   border: 1px solid rgba(124, 58, 237, 0.18);
   border-radius: 18px;
   background: #fff;
@@ -365,10 +369,14 @@
 }
 
 .chartFullscreenHeader {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
+}
+
+.chartFullscreenHeader > div:first-child {
+  min-width: 0;
 }
 
 .chartFullscreenHeader p {
@@ -379,12 +387,42 @@
 }
 
 .chartFullscreenHeader h2 {
+  overflow-wrap: anywhere;
   font-size: 22px;
   line-height: 1.1;
 }
 
+.chartFullscreenCanvas {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
 .chartFullscreenCanvas .chartCanvas svg {
   min-height: min(58dvh, 520px);
+  min-width: 560px;
+}
+
+@media (max-width: 620px) {
+  .chartFullscreen {
+    height: calc(100dvh - 24px);
+  }
+
+  .chartFullscreenHeader {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .chartFullscreenHeader > div:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .chartFullscreenHeader .chartRangeToggle {
+    justify-self: start;
+  }
+
+  .chartFullscreenCanvas .chartCanvas svg {
+    min-width: 480px;
+  }
 }
 
 .history {

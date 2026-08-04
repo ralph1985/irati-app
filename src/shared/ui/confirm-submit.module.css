@@ -1,0 +1,55 @@
+.backdrop {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(46, 23, 72, 0.38);
+}
+
+.dialog {
+  display: grid;
+  width: min(100%, 420px);
+  gap: 14px;
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(46, 23, 72, 0.26);
+  padding: 20px;
+}
+
+.dialog h2 {
+  color: #2e1748;
+  font-size: 20px;
+}
+
+.dialog p {
+  color: #604873;
+  line-height: 1.45;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.actions button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.cancel {
+  background: #f3e8ff;
+  color: #5b21b6;
+}
+
+.confirm {
+  background: #7c3aed;
+  color: #fff;
+}

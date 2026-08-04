@@ -2,6 +2,7 @@
 
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 import { BottomSheet } from "../../../shared/ui/bottom-sheet";
+import { ConfirmSubmit } from "../../../shared/ui/confirm-submit";
 import {
   AppliedVaccineDose,
   assignPlannedVaccineDoseStatuses,
@@ -444,15 +445,11 @@ function AppliedVaccineEditor({
             titleId={titleId}
           />
 
-          <form
+          <ConfirmSubmit
             action={reopenAction}
             className={styles.reopenForm}
-            onSubmit={(event) => {
-              if (!confirm("¿Volver esta vacuna a pendiente?")) {
-                event.preventDefault();
-                return;
-              }
-
+            message="¿Volver esta vacuna a pendiente? Se retirarán sus datos de aplicación."
+            onConfirmedSubmit={(event) => {
               if (!navigator.onLine) {
                 event.preventDefault();
                 void reopenVaccineDoseOffline(event, dose, () => setIsOpen(false));
@@ -463,7 +460,7 @@ function AppliedVaccineEditor({
             <button className={styles.reopenButton} type="submit">
               Volver a pendiente
             </button>
-          </form>
+          </ConfirmSubmit>
         </BottomSheet>
       ) : null}
     </>

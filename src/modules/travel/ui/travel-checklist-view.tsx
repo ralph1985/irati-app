@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { BottomSheet } from "../../../shared/ui/bottom-sheet";
+import { ConfirmSubmit } from "../../../shared/ui/confirm-submit";
 import {
   calculateTravelChecklistProgress,
   createTravelChecklistItem,
@@ -182,14 +183,10 @@ export function TravelChecklistView({
           >
             <span aria-hidden="true">+</span>
           </button>
-          <form
+          <ConfirmSubmit
             action={resetAction}
-            onSubmit={(event) => {
-              if (!confirm("¿Reiniciar la lista de viaje?")) {
-                event.preventDefault();
-                return;
-              }
-
+            message="¿Reiniciar la lista de viaje? Se eliminarán los cambios actuales."
+            onConfirmedSubmit={(event) => {
               if (!navigator.onLine) {
                 void resetChecklistOffline(event);
               }
@@ -203,7 +200,7 @@ export function TravelChecklistView({
             >
               <span aria-hidden="true">↺</span>
             </button>
-          </form>
+          </ConfirmSubmit>
         </div>
       </section>
 
@@ -357,14 +354,10 @@ function TravelChecklistGroupView({
               >
                 <span aria-hidden="true">✎</span>
               </button>
-              <form
+              <ConfirmSubmit
                 action={deleteAction}
-                onSubmit={(event) => {
-                  if (!confirm("¿Borrar este elemento?")) {
-                    event.preventDefault();
-                    return;
-                  }
-
+                message={`¿Borrar “${item.label}”? Esta acción no se puede deshacer.`}
+                onConfirmedSubmit={(event) => {
                   if (!navigator.onLine) {
                     void deleteItemOffline(event, item.id);
                     return;
@@ -382,7 +375,7 @@ function TravelChecklistGroupView({
                 >
                   <span aria-hidden="true">×</span>
                 </button>
-              </form>
+              </ConfirmSubmit>
             </div>
           </li>
         ))}

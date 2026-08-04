@@ -21,6 +21,7 @@ export function WeightChart({ birthDate, entries }: WeightChartProps) {
   const [range, setRange] = useState<WeightChartRange>("current");
   const [selectedPoint, setSelectedPoint] = useState<ChartTooltipPoint | null>(null);
   const expandedChartRef = useRef<HTMLElement>(null);
+  const expandButtonRef = useRef<HTMLButtonElement>(null);
   const series = buildWeightChartSeries(entries, birthDate, range);
   const path = buildWeightChartPath(series.points);
   const areaPath = buildWeightChartAreaPath(series.points);
@@ -29,6 +30,20 @@ export function WeightChart({ birthDate, entries }: WeightChartProps) {
   const closeExpandedChart = useCallback(() => {
     setIsExpanded(false);
   }, []);
+
+  useEffect(() => {
+    if (!isExpanded) {
+      document.body.style.overflow = "";
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isExpanded]);
 
   useEffect(() => {
     if (!isExpanded) {
@@ -45,9 +60,11 @@ export function WeightChart({ birthDate, entries }: WeightChartProps) {
     }
 
     document.addEventListener("keydown", handleKeyDown);
+    const trigger = expandButtonRef.current;
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+      trigger?.focus();
     };
   }, [closeExpandedChart, isExpanded]);
 
@@ -65,6 +82,7 @@ export function WeightChart({ birthDate, entries }: WeightChartProps) {
             aria-label="Ver gráfica de peso a pantalla completa"
             className={styles.chartExpandButton}
             onClick={() => setIsExpanded(true)}
+            ref={expandButtonRef}
             type="button"
           >
             Ver grande
