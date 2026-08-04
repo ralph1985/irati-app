@@ -154,6 +154,17 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Link>
         ))}
       </nav>
+      <footer className={styles.credit}>
+        Diseñada y desarrollada por{" "}
+        <a
+          href="https://conquense.dev"
+          rel="noreferrer"
+          target="_blank"
+          aria-label="Portfolio conquense.dev"
+        >
+          conquense.dev
+        </a>
+      </footer>
     </div>
   );
 }

@@ -109,6 +109,26 @@
   line-height: 1;
 }
 
+.credit {
+  margin: 18px auto 0;
+  color: #806b90;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.credit a {
+  color: #604873;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: rgba(124, 58, 237, 0.28);
+  text-underline-offset: 0.2em;
+}
+
+.credit a:hover {
+  text-decoration-color: currentColor;
+}
+
 @media (min-width: 620px) {
   .page {
     padding-top: 48px;
