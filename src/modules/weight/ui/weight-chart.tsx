@@ -60,38 +60,7 @@ export function WeightChart({ birthDate, entries }: WeightChartProps) {
       <div className={styles.chartHeader}>
         <p>Referencia OMS orientativa. No sustituye una revisión médica.</p>
         <div className={styles.chartHeaderActions}>
-          <div className={styles.chartRangeToggle} aria-label="Rango de edad de la gráfica">
-            <button
-              aria-pressed={range === "current"}
-              className={
-                range === "current" ? styles.chartRangeButtonActive : styles.chartRangeButton
-              }
-              onClick={() => setRange("current")}
-              type="button"
-            >
-              Edad actual
-            </button>
-            <button
-              aria-pressed={range === "twoYears"}
-              className={
-                range === "twoYears" ? styles.chartRangeButtonActive : styles.chartRangeButton
-              }
-              onClick={() => setRange("twoYears")}
-              type="button"
-            >
-              2 años
-            </button>
-            <button
-              aria-pressed={range === "fourYears"}
-              className={
-                range === "fourYears" ? styles.chartRangeButtonActive : styles.chartRangeButton
-              }
-              onClick={() => setRange("fourYears")}
-              type="button"
-            >
-              4 años
-            </button>
-          </div>
+          <WeightChartRangeToggle range={range} onRangeChange={setRange} />
           <button
             aria-label="Ver gráfica de peso a pantalla completa"
             className={styles.chartExpandButton}
@@ -139,6 +108,7 @@ export function WeightChart({ birthDate, entries }: WeightChartProps) {
                 <p>Peso</p>
                 <h2 id="weight-chart-fullscreen-title">Evolución y referencia OMS</h2>
               </div>
+              <WeightChartRangeToggle range={range} onRangeChange={setRange} />
               <button
                 aria-label="Cerrar gráfica a pantalla completa"
                 className={styles.chartCloseButton}
@@ -169,6 +139,43 @@ export function WeightChart({ birthDate, entries }: WeightChartProps) {
           </section>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function WeightChartRangeToggle({
+  range,
+  onRangeChange,
+}: {
+  range: WeightChartRange;
+  onRangeChange: (range: WeightChartRange) => void;
+}) {
+  return (
+    <div className={styles.chartRangeToggle} aria-label="Rango de edad de la gráfica">
+      <button
+        aria-pressed={range === "current"}
+        className={range === "current" ? styles.chartRangeButtonActive : styles.chartRangeButton}
+        onClick={() => onRangeChange("current")}
+        type="button"
+      >
+        Edad actual
+      </button>
+      <button
+        aria-pressed={range === "twoYears"}
+        className={range === "twoYears" ? styles.chartRangeButtonActive : styles.chartRangeButton}
+        onClick={() => onRangeChange("twoYears")}
+        type="button"
+      >
+        2 años
+      </button>
+      <button
+        aria-pressed={range === "fourYears"}
+        className={range === "fourYears" ? styles.chartRangeButtonActive : styles.chartRangeButton}
+        onClick={() => onRangeChange("fourYears")}
+        type="button"
+      >
+        4 años
+      </button>
     </div>
   );
 }
