@@ -236,7 +236,7 @@ Reglas:
 - La grafica usa SVG propio en el MVP, sin libreria externa.
 - La grafica muestra una linea de evolucion con marcas de peso, fechas y ultimo peso destacado.
 - La grafica muestra referencias OMS orientativas de peso para la edad en niñas: P3, P15, P50, P85 y P97.
-- La grafica permite alternar entre el rango de edad actual y el rango completo de 0 a 5 años.
+- La grafica permite alternar entre el rango de edad actual y rangos fijos de 2 y 4 años.
 - La referencia OMS de peso para la edad usada en esta gráfica termina a los 5 años; no se extrapola más allá de ese límite.
 - Las referencias OMS son visuales y no generan diagnosticos ni alertas clinicas automaticas.
 - La grafica permite abrir una vista ampliada a pantalla completa dentro de la app.

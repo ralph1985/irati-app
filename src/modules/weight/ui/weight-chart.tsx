@@ -72,12 +72,24 @@ export function WeightChart({ birthDate, entries }: WeightChartProps) {
               Edad actual
             </button>
             <button
-              aria-pressed={range === "full"}
-              className={range === "full" ? styles.chartRangeButtonActive : styles.chartRangeButton}
-              onClick={() => setRange("full")}
+              aria-pressed={range === "twoYears"}
+              className={
+                range === "twoYears" ? styles.chartRangeButtonActive : styles.chartRangeButton
+              }
+              onClick={() => setRange("twoYears")}
               type="button"
             >
-              0–5 años
+              2 años
+            </button>
+            <button
+              aria-pressed={range === "fourYears"}
+              className={
+                range === "fourYears" ? styles.chartRangeButtonActive : styles.chartRangeButton
+              }
+              onClick={() => setRange("fourYears")}
+              type="button"
+            >
+              4 años
             </button>
           </div>
           <button

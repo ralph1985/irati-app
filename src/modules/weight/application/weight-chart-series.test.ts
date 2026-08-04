@@ -40,7 +40,8 @@ describe("buildWeightChartSeries", () => {
     ]);
     expect(series.ticks).toHaveLength(3);
     expect(buildWeightChartPath(series.points)).toContain("M");
-    expect(buildWeightChartPath(series.points)).toContain("C");
+    expect(buildWeightChartPath(series.points)).toContain("L");
+    expect(buildWeightChartPath(series.points)).not.toContain("C");
     expect(buildWeightChartAreaPath(series.points)).toContain("Z");
   });
 
@@ -71,7 +72,7 @@ describe("buildWeightChartSeries", () => {
     expect(buildWeightChartAreaPath(series.points)).toBe("");
   });
 
-  it("can show the complete WHO reference through five years", () => {
+  it("supports fixed two- and four-year chart ranges", () => {
     const series = buildWeightChartSeries(
       [
         {
@@ -82,12 +83,29 @@ describe("buildWeightChartSeries", () => {
         },
       ],
       "2026-07-02",
-      "full",
+      "twoYears",
     );
 
-    expect(series.referenceCurves.every((curve) => curve.points.at(-1)?.ageDays === 1826)).toBe(
+    expect(series.referenceCurves.every((curve) => curve.points.at(-1)?.ageDays === 731)).toBe(
       true,
     );
     expect(series.points[0].x).toBe(42);
+
+    const fourYearSeries = buildWeightChartSeries(
+      [
+        {
+          id: "1",
+          measuredOn: "2026-07-02",
+          weightGrams: 2700,
+          place: "hospital",
+        },
+      ],
+      "2026-07-02",
+      "fourYears",
+    );
+
+    expect(
+      fourYearSeries.referenceCurves.every((curve) => curve.points.at(-1)?.ageDays === 1461),
+    ).toBe(true);
   });
 });

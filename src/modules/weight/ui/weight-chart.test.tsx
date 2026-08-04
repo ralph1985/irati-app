@@ -38,7 +38,8 @@ describe("WeightChart", () => {
     expect(html).toContain("Referencia OMS");
     expect(html).toContain("Ver grande");
     expect(html).toContain("Edad actual");
-    expect(html).toContain("0–5 años");
+    expect(html).toContain("2 años");
+    expect(html).toContain("4 años");
     expect(html).toContain("P15");
     expect(html).toContain("P85");
     expect(html.match(/<circle/g)).toHaveLength(2);

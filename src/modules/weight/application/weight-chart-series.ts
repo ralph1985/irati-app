@@ -6,7 +6,7 @@ import {
   WeightPercentile,
 } from "./who-weight-for-age";
 
-export type WeightChartRange = "current" | "full";
+export type WeightChartRange = "current" | "twoYears" | "fourYears";
 
 export type WeightChartPoint = {
   ageDays: number;
@@ -95,7 +95,12 @@ export function buildWeightChartSeries(
     calculateAgeInDaysFromBirth(birthDate, entry.measuredOn),
   );
   const latestAgeDays = Math.max(1, ...entryAges);
-  const maxAgeDays = range === "full" ? 60 * (365.25 / 12) : latestAgeDays;
+  const maxAgeDays =
+    range === "twoYears"
+      ? 24 * (365.25 / 12)
+      : range === "fourYears"
+        ? 48 * (365.25 / 12)
+        : latestAgeDays;
   const referencePoints = buildWhoWeightForAgeReferences(maxAgeDays);
   const weights = sortedEntries.map((entry) => entry.weightGrams);
   const minWeight = Math.min(...weights);
@@ -176,18 +181,7 @@ export function buildWeightChartPath(points: Array<{ x: number; y: number }>): s
         return `M ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
       }
 
-      const previousPoint = points[index - 1];
-      const controlDistance = (point.x - previousPoint.x) / 2;
-
-      return [
-        "C",
-        (previousPoint.x + controlDistance).toFixed(1),
-        previousPoint.y.toFixed(1),
-        (point.x - controlDistance).toFixed(1),
-        point.y.toFixed(1),
-        point.x.toFixed(1),
-        point.y.toFixed(1),
-      ].join(" ");
+      return `L ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
     })
     .join(" ");
 }
