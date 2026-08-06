@@ -2,6 +2,7 @@
   "name": "irati-app",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.25.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
@@ -15,26 +16,26 @@
     "backup:supabase:cron:install": "scripts/install-supabase-backup-cron.sh"
   },
   "dependencies": {
-    "@serwist/next": "^9.5.12",
-    "@supabase/supabase-js": "^2.110.7",
-    "dexie": "^4.4.4",
-    "motion": "^12.42.2",
+    "@serwist/next": "9.5.12",
+    "@supabase/supabase-js": "2.110.7",
+    "dexie": "4.4.4",
+    "motion": "12.42.2",
     "next": "16.2.10",
-    "node-ical": "^0.27.1",
+    "node-ical": "0.27.1",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
+    "@types/node": "20.19.43",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.39.5",
     "eslint-config-next": "16.2.10",
-    "fake-indexeddb": "^6.2.5",
-    "prettier": "^3.9.5",
-    "serwist": "^9.5.12",
-    "supabase": "^2.109.1",
-    "typescript": "^5",
-    "vitest": "^4.1.10"
+    "fake-indexeddb": "6.2.5",
+    "prettier": "3.9.5",
+    "serwist": "9.5.12",
+    "supabase": "2.109.1",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
   }
 }
