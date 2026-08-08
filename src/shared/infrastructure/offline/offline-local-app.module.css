@@ -74,9 +74,11 @@
 .nav a {
   display: grid;
   place-items: center;
+  white-space: nowrap;
   color: #6b587c;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 900;
+  letter-spacing: -0.03em;
   text-decoration: none;
 }
 
