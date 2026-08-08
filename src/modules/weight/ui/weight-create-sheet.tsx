@@ -30,6 +30,7 @@ export function WeightCreateSheet({
   styles,
 }: WeightCreateSheetProps) {
   const [isOpen, setIsOpen] = useState(initiallyOpen);
+  const [today] = useState(getTodayDateValue);
   const [offlineError, setOfflineError] = useState<string | null>(null);
 
   function openSheet() {
@@ -120,7 +121,7 @@ export function WeightCreateSheet({
             <div className={styles.sheetFields}>
               <label>
                 Fecha
-                <input name="measuredOn" required type="date" />
+                <input defaultValue={today} name="measuredOn" required type="date" />
               </label>
 
               <label>
@@ -165,4 +166,12 @@ export function WeightCreateSheet({
       ) : null}
     </>
   );
+}
+
+function getTodayDateValue(): string {
+  const today = new Date();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${today.getFullYear()}-${month}-${day}`;
 }

@@ -620,6 +620,7 @@
 
 .sheetFields label {
   display: grid;
+  min-width: 0;
   gap: 7px;
   color: #5b426f;
   font-size: 14px;
@@ -629,6 +630,8 @@
 .sheetFields input,
 .sheetFields select,
 .sheetFields textarea {
+  min-width: 0;
+  max-width: 100%;
   width: 100%;
   min-height: 46px;
   border: 1px solid rgba(124, 58, 237, 0.24);
