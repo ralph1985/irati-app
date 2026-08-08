@@ -12,6 +12,8 @@ type WeightCreateSheetProps = {
   action: (formData: FormData) => void | Promise<void>;
   buttonClassName?: string;
   children?: ReactNode;
+  initiallyOpen?: boolean;
+  onClose?: () => void;
   onOpen?: () => void;
   returnTo?: string;
   styles: Record<string, string>;
@@ -21,11 +23,13 @@ export function WeightCreateSheet({
   action,
   buttonClassName,
   children = "+",
+  initiallyOpen = false,
+  onClose,
   onOpen,
   returnTo,
   styles,
 }: WeightCreateSheetProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(initiallyOpen);
   const [offlineError, setOfflineError] = useState<string | null>(null);
 
   function openSheet() {
@@ -35,6 +39,7 @@ export function WeightCreateSheet({
   function closeSheet() {
     setIsOpen(false);
     setOfflineError(null);
+    onClose?.();
   }
 
   async function submitWeight(event: FormEvent<HTMLFormElement>) {

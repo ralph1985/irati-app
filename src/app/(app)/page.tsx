@@ -26,7 +26,6 @@ import { CachedWeightReadRepository } from "@/modules/weight/infrastructure/cach
 import { ToastFeedback, ToastFeedbackMessage } from "@/shared/ui/toast-feedback";
 import Link from "next/link";
 import { createWeightEntryAction } from "./peso/actions";
-import { markVaccineDoseAppliedAction } from "./vacunas/actions";
 import { HomeQuickActions } from "./_components/home-quick-actions";
 import styles from "./page.module.css";
 
@@ -122,11 +121,7 @@ export default async function Home({ searchParams }: HomeProps) {
         )}
       </section>
 
-      <HomeQuickActions
-        createWeightAction={createWeightEntryAction}
-        markAppliedAction={markVaccineDoseAppliedAction}
-        nextDose={vaccinePlan.nextDose}
-      />
+      <HomeQuickActions createWeightAction={createWeightEntryAction} />
 
       <ReviewSoon agenda={homeAgenda} />
 

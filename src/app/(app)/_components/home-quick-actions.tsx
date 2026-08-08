@@ -2,32 +2,24 @@
 
 import { useState } from "react";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
-import { PlannedVaccineDoseWithStatus } from "@/modules/vaccines/domain/vaccine-calendar";
-import { VaccineApplicationSheet } from "@/modules/vaccines/ui/planned-vaccine-list";
 import { WeightCreateSheet } from "@/modules/weight/ui/weight-create-sheet";
 import styles from "../page.module.css";
 
 type HomeQuickActionsProps = {
   createWeightAction: (formData: FormData) => void | Promise<void>;
-  markAppliedAction: (formData: FormData) => void | Promise<void>;
-  nextDose: PlannedVaccineDoseWithStatus | null;
 };
 
-export function HomeQuickActions({
-  createWeightAction,
-  markAppliedAction,
-  nextDose,
-}: HomeQuickActionsProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+export function HomeQuickActions({ createWeightAction }: HomeQuickActionsProps) {
+  const [openSheet, setOpenSheet] = useState<"menu" | "weight" | null>(null);
 
   return (
     <>
       <section className={styles.quickActions} aria-label="Acciones rápidas">
         <button
-          aria-expanded={isMenuOpen}
+          aria-expanded={openSheet === "menu"}
           aria-haspopup="dialog"
           className={styles.addButton}
-          onClick={() => setIsMenuOpen(true)}
+          onClick={() => setOpenSheet("menu")}
           type="button"
         >
           <span aria-hidden="true">+</span>
@@ -35,11 +27,11 @@ export function HomeQuickActions({
         </button>
       </section>
 
-      {isMenuOpen ? (
+      {openSheet === "menu" ? (
         <BottomSheet
           ariaLabel="Cerrar menú Añadir"
           labelledBy="home-add-title"
-          onClose={() => setIsMenuOpen(false)}
+          onClose={() => setOpenSheet(null)}
           styles={styles}
         >
           <div className={styles.addMenu}>
@@ -49,37 +41,27 @@ export function HomeQuickActions({
             </div>
 
             <div className={styles.addMenuOptions}>
-              <WeightCreateSheet
-                action={createWeightAction}
-                buttonClassName={styles.addMenuButton}
-                onOpen={() => setIsMenuOpen(false)}
-                returnTo="/"
-                styles={styles}
+              <button
+                className={styles.addMenuButton}
+                onClick={() => setOpenSheet("weight")}
+                type="button"
               >
                 <span aria-hidden="true">+</span>
                 Añadir peso
-              </WeightCreateSheet>
-
-              {nextDose ? (
-                <VaccineApplicationSheet
-                  buttonClassName={styles.addMenuButton}
-                  dose={nextDose}
-                  markAppliedAction={markAppliedAction}
-                  onOpen={() => setIsMenuOpen(false)}
-                  returnTo="/"
-                >
-                  <span aria-hidden="true">✓</span>
-                  Registrar vacuna
-                </VaccineApplicationSheet>
-              ) : (
-                <a className={styles.addMenuButton} href="/vacunas">
-                  <span aria-hidden="true">✓</span>
-                  Ver vacunas
-                </a>
-              )}
+              </button>
             </div>
           </div>
         </BottomSheet>
+      ) : null}
+
+      {openSheet === "weight" ? (
+        <WeightCreateSheet
+          action={createWeightAction}
+          initiallyOpen
+          onClose={() => setOpenSheet(null)}
+          returnTo="/"
+          styles={styles}
+        />
       ) : null}
     </>
   );
