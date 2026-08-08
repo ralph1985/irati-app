@@ -25,9 +25,9 @@ import {
 import { CachedWeightReadRepository } from "@/modules/weight/infrastructure/cached-weight-repository";
 import { ToastFeedback, ToastFeedbackMessage } from "@/shared/ui/toast-feedback";
 import Link from "next/link";
-import { createWeightEntryAction } from "./peso/actions";
-import { HomeQuickActions } from "./_components/home-quick-actions";
-import styles from "./page.module.css";
+import { createWeightEntryAction } from "../peso/actions";
+import { HomeQuickActions } from "../_components/home-quick-actions";
+import styles from "../page.module.css";
 
 type HomeProps = {
   searchParams: Promise<{
