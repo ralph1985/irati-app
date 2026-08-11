@@ -12,6 +12,7 @@ import {
   type CalendarEvent,
   type CalendarSnapshot,
 } from "@/modules/calendar/domain/calendar-event";
+import { formatCalendarDayHeading, formatCalendarEventDate } from "./calendar-date-format";
 import styles from "./calendar-view.module.css";
 
 type CalendarViewProps = {
@@ -232,7 +233,7 @@ function Agenda({
     <div className={styles.agenda}>
       {groups.map(([date, dateEvents]) => (
         <section className={styles.day} key={date}>
-          <h2>{formatDayHeading(date)}</h2>
+          <h2>{formatCalendarDayHeading(date)}</h2>
           <ul>
             {dateEvents.map((event) => (
               <li key={event.id}>
@@ -354,13 +355,7 @@ function buildMonthDays(year: number, month: number) {
 }
 
 function formatEventDate(event: CalendarEvent): string {
-  if (event.isAllDay) {
-    return new Intl.DateTimeFormat("es-ES", { dateStyle: "full" }).format(new Date(event.startsAt));
-  }
-
-  return new Intl.DateTimeFormat("es-ES", { dateStyle: "full", timeStyle: "short" }).format(
-    new Date(event.startsAt),
-  );
+  return formatCalendarEventDate(event.startsAt, event.isAllDay);
 }
 
 function formatEventTime(event: CalendarEvent): string {
@@ -370,12 +365,6 @@ function formatEventTime(event: CalendarEvent): string {
 
   return new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit" }).format(
     new Date(event.startsAt),
-  );
-}
-
-function formatDayHeading(date: string): string {
-  return new Intl.DateTimeFormat("es-ES", { dateStyle: "full" }).format(
-    new Date(`${date}T12:00:00`),
   );
 }
 

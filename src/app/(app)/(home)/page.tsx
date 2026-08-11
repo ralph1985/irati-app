@@ -11,6 +11,7 @@ import {
   sortCalendarEvents,
   type CalendarEvent,
 } from "@/modules/calendar/domain/calendar-event";
+import { formatCalendarEventDate } from "@/modules/calendar/ui/calendar-date-format";
 import { buildHomeAgenda, HomeAgenda } from "@/modules/home/application/home-agenda";
 import { listVaccinePlan } from "@/modules/vaccines/application/list-vaccine-plan";
 import { VaccineAlert } from "@/modules/vaccines/application/vaccine-alerts";
@@ -291,7 +292,9 @@ function UpcomingCalendarEvents({
                 <strong>{event.title}</strong>
                 {event.location ? <span>{event.location}</span> : null}
               </div>
-              <time dateTime={event.startsAt}>{formatCalendarEventDate(event)}</time>
+              <time dateTime={event.startsAt}>
+                {formatCalendarEventDate(event.startsAt, event.isAllDay)}
+              </time>
             </li>
           ))}
         </ol>
@@ -300,24 +303,6 @@ function UpcomingCalendarEvents({
       )}
     </section>
   );
-}
-
-function formatCalendarEventDate(event: CalendarEvent): string {
-  if (event.isAllDay) {
-    return new Intl.DateTimeFormat("es-ES", {
-      day: "numeric",
-      month: "short",
-      timeZone: "Europe/Madrid",
-    }).format(new Date(event.startsAt));
-  }
-
-  return new Intl.DateTimeFormat("es-ES", {
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    month: "short",
-    timeZone: "Europe/Madrid",
-  }).format(new Date(event.startsAt));
 }
 
 function formatVaccineSummary(summary: {
