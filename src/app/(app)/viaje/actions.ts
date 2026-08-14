@@ -9,6 +9,7 @@ import { setTravelChecklistItemPacked } from "@/modules/travel/application/set-t
 import { updateTravelChecklistItem } from "@/modules/travel/application/update-travel-checklist-item";
 import {
   isTravelChecklistCategory,
+  TravelChecklistReorder,
   TravelChecklistCategory,
   TravelChecklistItemValidationError,
 } from "@/modules/travel/domain/travel-checklist-item";
@@ -107,6 +108,29 @@ export async function setTravelChecklistItemPackedAction(formData: FormData) {
   redirect("/viaje");
 }
 
+export async function reorderTravelChecklistItemsAction(formData: FormData) {
+  if (!(await hasValidSession())) {
+    redirect("/?error=session");
+  }
+
+  const rawItems = String(formData.get("items") ?? "");
+  const items = parseTravelChecklistReorder(rawItems);
+
+  if (!items) {
+    return;
+  }
+
+  const { error } = await createServerSupabaseClient().rpc("reorder_travel_checklist_items", {
+    p_items: items,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  invalidateTravelChecklistReads();
+}
+
 export async function deleteTravelChecklistItemAction(formData: FormData) {
   if (!(await hasValidSession())) {
     redirect("/?error=session");
@@ -155,4 +179,37 @@ async function getNextSortOrder(
 function invalidateTravelChecklistReads() {
   updateTag(CACHE_TAGS.travelChecklistItems);
   revalidatePath("/viaje");
+}
+
+function parseTravelChecklistReorder(rawItems: string): TravelChecklistReorder[] | null {
+  try {
+    const value: unknown = JSON.parse(rawItems);
+
+    if (!Array.isArray(value) || value.length > 100) {
+      return null;
+    }
+
+    if (
+      !value.every(
+        (item) =>
+          Boolean(item) &&
+          typeof item === "object" &&
+          "id" in item &&
+          typeof item.id === "string" &&
+          "category" in item &&
+          typeof item.category === "string" &&
+          isTravelChecklistCategory(item.category) &&
+          "sortOrder" in item &&
+          Number.isInteger(item.sortOrder) &&
+          item.sortOrder >= 10 &&
+          item.sortOrder <= 1000,
+      )
+    ) {
+      return null;
+    }
+
+    return value as TravelChecklistReorder[];
+  } catch {
+    return null;
+  }
 }

@@ -8,6 +8,7 @@ import {
   createTravelChecklistItemAction,
   deleteTravelChecklistItemAction,
   resetTravelChecklistAction,
+  reorderTravelChecklistItemsAction,
   setTravelChecklistItemPackedAction,
   updateTravelChecklistItemAction,
 } from "./actions";
@@ -74,6 +75,7 @@ export default async function TravelPage({ searchParams }: TravelPageProps) {
         createAction={createTravelChecklistItemAction}
         deleteAction={deleteTravelChecklistItemAction}
         resetAction={resetTravelChecklistAction}
+        reorderAction={reorderTravelChecklistItemsAction}
         setPackedAction={setTravelChecklistItemPackedAction}
         updateAction={updateTravelChecklistItemAction}
       />

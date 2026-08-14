@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, PointerEvent, useEffect, useMemo, useState } from "react";
 import { BottomSheet } from "../../../shared/ui/bottom-sheet";
 import { ConfirmSubmit } from "../../../shared/ui/confirm-submit";
 import {
@@ -14,11 +14,14 @@ import {
   TravelChecklistGroup,
   TravelChecklistItem,
   TravelChecklistProgress,
+  reorderTravelChecklistItems,
+  TravelChecklistReorder,
   updateTravelChecklistItemInput,
 } from "../domain/travel-checklist-item";
 import { TravelChecklist } from "../application/list-travel-checklist";
 import {
   applyOfflineTravelChecklistItem,
+  applyOfflineTravelChecklistReorder,
   deleteOfflineTravelChecklistItem,
   enqueuePendingTravelMutation,
   listPendingTravelMutations,
@@ -35,6 +38,7 @@ type TravelChecklistViewProps = {
   resetAction: () => void | Promise<void>;
   setPackedAction: (formData: FormData) => void | Promise<void>;
   updateAction: (formData: FormData) => void | Promise<void>;
+  reorderAction?: (formData: FormData) => void | Promise<void>;
 };
 
 export function TravelChecklistView({
@@ -44,20 +48,22 @@ export function TravelChecklistView({
   resetAction,
   setPackedAction,
   updateAction,
+  reorderAction = async () => {},
 }: TravelChecklistViewProps) {
   const [sheetState, setSheetState] = useState<SheetState>({ mode: "closed" });
   const [pendingMutations, setPendingMutations] = useState<PendingTravelMutation[]>([]);
   const [optimisticDeletedIds, setOptimisticDeletedIds] = useState<Set<string>>(new Set());
+  const [optimisticReorder, setOptimisticReorder] = useState<TravelChecklistItem[] | null>(null);
+  const [reorderAnnouncement, setReorderAnnouncement] = useState("");
   const baseItems = useMemo(() => checklist.groups.flatMap((group) => group.items), [checklist]);
-  const visibleChecklist = useMemo(
-    () =>
-      buildVisibleTravelChecklist(
-        baseItems.filter((item) => !optimisticDeletedIds.has(item.id)),
-        pendingMutations,
-      ),
-    [baseItems, optimisticDeletedIds, pendingMutations],
-  );
-  const visibleGroups = visibleChecklist.groups.filter((group) => group.items.length > 0);
+  const visibleChecklist = useMemo(() => {
+    const visibleItems = optimisticReorder ?? baseItems;
+    return buildVisibleTravelChecklist(
+      visibleItems.filter((item) => !optimisticDeletedIds.has(item.id)),
+      pendingMutations,
+    );
+  }, [baseItems, optimisticDeletedIds, optimisticReorder, pendingMutations]);
+  const visibleGroups = visibleChecklist.groups;
 
   useEffect(() => {
     let isActive = true;
@@ -67,6 +73,9 @@ export function TravelChecklistView({
 
       if (isActive) {
         setPendingMutations(nextPendingMutations);
+        if (!nextPendingMutations.some((mutation) => mutation.operation === "reorder")) {
+          setOptimisticReorder(null);
+        }
       }
     }
 
@@ -80,6 +89,67 @@ export function TravelChecklistView({
       window.removeEventListener("irati-offline-sync-updated", refreshPendingMutations);
     };
   }, []);
+
+  async function commitReorder(
+    items: TravelChecklistItem[],
+    reorder: TravelChecklistReorder[],
+  ): Promise<void> {
+    setOptimisticReorder(items);
+
+    if (!navigator.onLine) {
+      await applyOfflineTravelChecklistReorder(reorder);
+      await enqueuePendingTravelMutation({
+        id: `travel-reorder-${crypto.randomUUID()}`,
+        operation: "reorder",
+        payload: reorder,
+      });
+      dispatchOfflineTravelEvents();
+      return;
+    }
+
+    const formData = new FormData();
+    formData.set("items", JSON.stringify(reorder));
+
+    try {
+      await reorderAction(formData);
+      setOptimisticReorder(null);
+    } catch {
+      setOptimisticReorder(null);
+    }
+  }
+
+  function moveItem(itemId: string, targetCategory: TravelChecklistCategory, targetIndex: number) {
+    const currentItems = visibleChecklist.groups.flatMap((group) => group.items);
+    const nextItems = reorderTravelChecklistItems(
+      currentItems,
+      itemId,
+      targetCategory,
+      targetIndex,
+    );
+
+    const currentPositions = new Map(
+      currentItems.map((item) => [item.id, `${item.category}:${item.sortOrder}`]),
+    );
+    if (
+      nextItems.every(
+        (item) => currentPositions.get(item.id) === `${item.category}:${item.sortOrder}`,
+      )
+    ) {
+      return;
+    }
+
+    const movedItem = nextItems.find((item) => item.id === itemId);
+    if (movedItem) {
+      setReorderAnnouncement(
+        `${movedItem.label} movido a ${formatTravelChecklistCategory(targetCategory)}, posición ${targetIndex + 1}.`,
+      );
+    }
+
+    void commitReorder(
+      nextItems,
+      nextItems.map(({ id, category, sortOrder }) => ({ id, category, sortOrder })),
+    );
+  }
 
   async function resetChecklistOffline(event: FormEvent<HTMLFormElement>) {
     if (navigator.onLine) {
@@ -209,8 +279,12 @@ export function TravelChecklistView({
           <h2 id="travel-list-title">Checklist</h2>
           <span>{visibleChecklist.progress.pending} pendientes</span>
         </div>
+        <p className={styles.orderHint}>Arrastra desde ⋮⋮ para ordenar o cambiar de sección.</p>
+        <p aria-live="polite" className={styles.srOnly} role="status">
+          {reorderAnnouncement}
+        </p>
 
-        {visibleGroups.length > 0 ? (
+        {visibleGroups.some((group) => group.items.length > 0) ? (
           <div className={styles.groups}>
             {visibleGroups.map((group) => (
               <TravelChecklistGroupView
@@ -226,6 +300,7 @@ export function TravelChecklistView({
                   setOptimisticDeletedIds((current) => new Set(current).add(item.id));
                   await deleteAction(new FormData(event.currentTarget));
                 }}
+                moveItem={moveItem}
               />
             ))}
           </div>
@@ -254,6 +329,7 @@ function TravelChecklistGroupView({
   pendingMutations,
   setPackedAction,
   onDeleteOnline,
+  moveItem,
 }: {
   deleteAction: (formData: FormData) => void | Promise<void>;
   group: TravelChecklistGroup;
@@ -262,7 +338,9 @@ function TravelChecklistGroupView({
   pendingMutations: PendingTravelMutation[];
   setPackedAction: (formData: FormData) => void | Promise<void>;
   onDeleteOnline: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => void;
+  moveItem: (itemId: string, targetCategory: TravelChecklistCategory, targetIndex: number) => void;
 }) {
+  const [draggingId, setDraggingId] = useState<string | null>(null);
   async function setPackedOffline(event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) {
     event.preventDefault();
 
@@ -290,7 +368,11 @@ function TravelChecklistGroupView({
   }
 
   return (
-    <details className={styles.group} open={group.progress.pending > 0}>
+    <details
+      className={styles.group}
+      data-travel-drop-category={group.category}
+      open={group.progress.pending > 0}
+    >
       <summary className={styles.groupHeader}>
         <span className={styles.groupTitle}>{formatTravelChecklistCategory(group.category)}</span>
         <span className={styles.groupMeta}>
@@ -312,10 +394,15 @@ function TravelChecklistGroupView({
       </summary>
 
       <ol className={styles.items}>
+        {group.items.length === 0 ? (
+          <li className={styles.emptyGroupDrop}>Arrastra aquí un elemento.</li>
+        ) : null}
         {group.items.map((item) => (
           <li
             data-packed={item.isPacked}
             data-pending={isPendingTravelItem(pendingMutations, item.id)}
+            data-dragging={draggingId === item.id}
+            data-travel-item-id={item.id}
             key={item.id}
           >
             <form
@@ -343,6 +430,66 @@ function TravelChecklistGroupView({
               <strong>{item.label}</strong>
               {item.notes ? <p>{item.notes}</p> : null}
             </div>
+
+            <button
+              aria-label={`Mover ${item.label}`}
+              className={styles.dragHandle}
+              onKeyDown={(event) => {
+                const itemIndex = group.items.findIndex((entry) => entry.id === item.id);
+
+                if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+                  event.preventDefault();
+                  moveItem(item.id, group.category, itemIndex + (event.key === "ArrowUp" ? -1 : 1));
+                  return;
+                }
+
+                if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+                  const categoryIndex = travelChecklistCategories.indexOf(group.category);
+                  const nextCategory =
+                    travelChecklistCategories[categoryIndex + (event.key === "ArrowLeft" ? -1 : 1)];
+
+                  if (nextCategory) {
+                    event.preventDefault();
+                    moveItem(
+                      item.id,
+                      nextCategory,
+                      Math.min(
+                        itemIndex,
+                        group.items.filter((entry) => entry.category === nextCategory).length,
+                      ),
+                    );
+                  }
+                }
+              }}
+              onPointerCancel={(event) => {
+                if (draggingId === item.id) {
+                  event.currentTarget.releasePointerCapture(event.pointerId);
+                  setDraggingId(null);
+                }
+              }}
+              onPointerDown={(event) => {
+                event.preventDefault();
+                event.currentTarget.setPointerCapture(event.pointerId);
+                setDraggingId(item.id);
+              }}
+              onPointerUp={(event) => {
+                if (draggingId !== item.id) {
+                  return;
+                }
+
+                const target = getTravelDropTarget(event);
+                event.currentTarget.releasePointerCapture(event.pointerId);
+                setDraggingId(null);
+
+                if (target) {
+                  moveItem(item.id, target.category, target.index);
+                }
+              }}
+              title="Arrastrar para ordenar"
+              type="button"
+            >
+              <span aria-hidden="true">⋮⋮</span>
+            </button>
 
             <div className={styles.itemActions}>
               <button
@@ -382,6 +529,34 @@ function TravelChecklistGroupView({
       </ol>
     </details>
   );
+}
+
+function getTravelDropTarget(event: PointerEvent<HTMLButtonElement>): {
+  category: TravelChecklistCategory;
+  index: number;
+} | null {
+  const element = document.elementFromPoint(event.clientX, event.clientY);
+  const group = element?.closest<HTMLElement>("[data-travel-drop-category]");
+  const category = group?.dataset.travelDropCategory;
+
+  if (!category || !isTravelChecklistCategory(category)) {
+    return null;
+  }
+
+  const items = [...(group?.querySelectorAll<HTMLElement>("[data-travel-item-id]") ?? [])];
+  const targetItem = element?.closest<HTMLElement>("[data-travel-item-id]");
+
+  if (!targetItem) {
+    return { category, index: items.length };
+  }
+
+  const targetIndex = items.indexOf(targetItem);
+  const bounds = targetItem.getBoundingClientRect();
+
+  return {
+    category,
+    index: targetIndex + (event.clientY > bounds.top + bounds.height / 2 ? 1 : 0),
+  };
 }
 
 type SheetState =
@@ -587,6 +762,24 @@ function buildVisibleTravelChecklist(
         typeof mutation.payload.isPacked === "boolean"
       ) {
         itemsById.set(item.id, { ...item, isPacked: mutation.payload.isPacked });
+      }
+
+      continue;
+    }
+
+    if (mutation.operation === "reorder") {
+      if (Array.isArray(mutation.payload)) {
+        for (const position of mutation.payload) {
+          const item = itemsById.get(position.id);
+
+          if (item) {
+            itemsById.set(item.id, {
+              ...item,
+              category: position.category,
+              sortOrder: position.sortOrder,
+            });
+          }
+        }
       }
 
       continue;

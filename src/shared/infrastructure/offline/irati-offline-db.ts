@@ -1,7 +1,10 @@
 import Dexie, { type Table } from "dexie";
 import type { BabyProfile } from "@/modules/profile/domain/baby-profile";
 import type { CalendarSnapshot } from "@/modules/calendar/domain/calendar-event";
-import type { TravelChecklistItem } from "@/modules/travel/domain/travel-checklist-item";
+import type {
+  TravelChecklistItem,
+  TravelChecklistReorder,
+} from "@/modules/travel/domain/travel-checklist-item";
 import type { PendingVaccineMutation as PendingVaccineMutationPayload } from "@/modules/vaccines/application/vaccine-offline-conflicts";
 import type {
   AppliedVaccineDose,
@@ -38,13 +41,18 @@ export type PendingWeightMutation = {
   lastError: string | null;
 };
 
-export type PendingTravelMutationOperation = "create" | "update" | "setPacked" | "delete" | "reset";
+export type PendingTravelMutationOperation =
+  "create" | "update" | "setPacked" | "delete" | "reset" | "reorder";
 
 export type PendingTravelMutation = {
   id: string;
   entity: "travel";
   operation: PendingTravelMutationOperation;
-  payload: TravelChecklistItem | { id: string; isPacked?: boolean } | { resetAt: string };
+  payload:
+    | TravelChecklistItem
+    | { id: string; isPacked?: boolean }
+    | { resetAt: string }
+    | TravelChecklistReorder[];
   createdAt: string;
   lastError: string | null;
 };
@@ -262,6 +270,19 @@ export async function listPendingWeightMutations(): Promise<PendingWeightMutatio
 
 export async function applyOfflineTravelChecklistItem(item: TravelChecklistItem): Promise<void> {
   await iratiOfflineDb.travelChecklistItems.put(item);
+}
+
+export async function applyOfflineTravelChecklistReorder(
+  items: TravelChecklistReorder[],
+): Promise<void> {
+  await iratiOfflineDb.transaction("rw", iratiOfflineDb.travelChecklistItems, async () => {
+    for (const item of items) {
+      await iratiOfflineDb.travelChecklistItems.update(item.id, {
+        category: item.category,
+        sortOrder: item.sortOrder,
+      });
+    }
+  });
 }
 
 export async function applyOfflinePlannedVaccineDose(dose: PlannedVaccineDose): Promise<void> {

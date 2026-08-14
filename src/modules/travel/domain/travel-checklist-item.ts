@@ -35,6 +35,12 @@ export type TravelChecklistGroup = {
   progress: TravelChecklistProgress;
 };
 
+export type TravelChecklistReorder = {
+  id: string;
+  category: TravelChecklistCategory;
+  sortOrder: number;
+};
+
 export class TravelChecklistItemValidationError extends Error {
   constructor(readonly issues: string[]) {
     super(issues.join(" "));
@@ -95,15 +101,50 @@ export function sortTravelChecklistItems(items: TravelChecklistItem[]): TravelCh
       );
     }
 
-    if (first.isPacked !== second.isPacked) {
-      return first.isPacked ? 1 : -1;
-    }
-
     if (first.sortOrder !== second.sortOrder) {
       return first.sortOrder - second.sortOrder;
     }
 
     return first.label.localeCompare(second.label, "es");
+  });
+}
+
+export function reorderTravelChecklistItems(
+  items: TravelChecklistItem[],
+  itemId: string,
+  targetCategory: TravelChecklistCategory,
+  targetIndex: number,
+): TravelChecklistItem[] {
+  const movingItem = items.find((item) => item.id === itemId);
+
+  if (!movingItem) {
+    return items;
+  }
+
+  const withoutMovingItem = items.filter((item) => item.id !== itemId);
+  const targetItems = withoutMovingItem.filter((item) => item.category === targetCategory);
+  const boundedIndex = Math.max(0, Math.min(targetIndex, targetItems.length));
+  targetItems.splice(boundedIndex, 0, { ...movingItem, category: targetCategory });
+
+  const targetPositions = new Map(
+    targetItems.map((item, index) => [
+      item.id,
+      { category: targetCategory, sortOrder: (index + 1) * 10 },
+    ]),
+  );
+
+  const otherItems = withoutMovingItem.filter((item) => item.category !== targetCategory);
+  const normalizedOtherItems = travelChecklistCategories.flatMap((category) => {
+    const categoryItems = otherItems.filter((item) => item.category === category);
+    return categoryItems.map((item, index) => ({
+      ...item,
+      sortOrder: (index + 1) * 10,
+    }));
+  });
+
+  return [...normalizedOtherItems, ...targetItems].map((item) => {
+    const position = targetPositions.get(item.id);
+    return position ? { ...item, ...position } : item;
   });
 }
 

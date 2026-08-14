@@ -349,7 +349,9 @@ Reglas:
 - Los items se guardan en Supabase remoto para compartir el estado entre Rafa y Begoña.
 - Los items pueden añadirse, editarse, borrarse y marcarse como preparados desde la app.
 - La lista puede reiniciarse antes de una nueva salida, desmarcando todos los items.
-- Los items se agrupan por categoria y se ordenan por `sort_order`.
+- Los items se agrupan por categoria y se ordenan manualmente por `sort_order`.
+- Los items pueden reordenarse con drag & drop dentro de una categoria o entre categorias.
+- Las categorias vacias siguen visibles como destinos de arrastre.
 - Las categorias iniciales son comida, higiene, cambio, sueño, salud, paseo y documentacion.
 - La lista inicial es una semilla editable, no una lista cerrada.
 
@@ -493,7 +495,9 @@ La pantalla de Viaje debe priorizar:
 - Acciones rapidas para añadir item y reiniciar la lista con botones de icono accesibles.
 - Añadir y editar items mediante bottom sheet, no con formularios inline.
 - Listado compacto para revisar muchos items sin demasiado scroll.
-- El orden se gestiona automaticamente: los nuevos items se añaden al final de la categoria y no se muestra un campo manual de orden.
+- Los nuevos items se añaden al final de la categoria.
+- El orden manual se gestiona desde un asa de arrastre; en teclado se puede mover con las flechas.
+- El estado preparado no cambia de posicion automaticamente al marcar o desmarcar un item.
 - Los formularios de crear y editar item usan el bottom sheet compartido de la app.
 
 ### Calendario

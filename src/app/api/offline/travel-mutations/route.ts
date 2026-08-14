@@ -78,6 +78,22 @@ async function applyTravelMutation(mutation: PendingTravelMutation): Promise<voi
     return;
   }
 
+  if (mutation.operation === "reorder") {
+    if (!isTravelReorderPayload(mutation.payload)) {
+      throw new Error("Invalid reorder payload");
+    }
+
+    const { error } = await supabase.rpc("reorder_travel_checklist_items", {
+      p_items: mutation.payload,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return;
+  }
+
   if (!isTravelItemPayload(mutation.payload)) {
     throw new Error("Invalid travel payload");
   }
@@ -131,11 +147,35 @@ function isPendingTravelMutation(value: unknown): value is PendingTravelMutation
 
   return (
     mutation.entity === "travel" &&
-    ["create", "update", "setPacked", "delete", "reset"].includes(mutation.operation) &&
+    ["create", "update", "setPacked", "delete", "reset", "reorder"].includes(mutation.operation) &&
     typeof mutation.id === "string" &&
     typeof mutation.createdAt === "string" &&
     typeof mutation.payload === "object" &&
     mutation.payload !== null
+  );
+}
+
+function isTravelReorderPayload(
+  value: PendingTravelMutation["payload"],
+): value is Extract<PendingTravelMutation["payload"], Array<unknown>> {
+  return (
+    Array.isArray(value) &&
+    value.length <= 100 &&
+    value.every(
+      (item) =>
+        Boolean(item) &&
+        typeof item === "object" &&
+        "id" in item &&
+        typeof item.id === "string" &&
+        "category" in item &&
+        typeof item.category === "string" &&
+        isTravelChecklistCategory(item.category) &&
+        "sortOrder" in item &&
+        typeof item.sortOrder === "number" &&
+        Number.isInteger(item.sortOrder) &&
+        item.sortOrder >= 10 &&
+        item.sortOrder <= 1000,
+    )
   );
 }
 

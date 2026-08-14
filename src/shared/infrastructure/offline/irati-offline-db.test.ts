@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   applyOfflineWeightEntry,
   applyOfflineTravelChecklistItem,
+  applyOfflineTravelChecklistReorder,
   applyOfflineAppliedVaccineDose,
   applyOfflinePlannedVaccineDose,
   clearOfflineData,
@@ -253,6 +254,37 @@ describe("Irati offline database", () => {
       { id: "travel-mutation-1", operation: "create" },
       { id: "travel-mutation-2", operation: "delete" },
     ]);
+  });
+
+  it("applies a travel reorder atomically to the local snapshot", async () => {
+    await applyOfflineTravelChecklistItem({
+      category: "higiene",
+      id: "travel-1",
+      isPacked: false,
+      label: "Pañales",
+      notes: null,
+      sortOrder: 10,
+    });
+    await applyOfflineTravelChecklistItem({
+      category: "salud",
+      id: "travel-2",
+      isPacked: true,
+      label: "Termómetro",
+      notes: null,
+      sortOrder: 10,
+    });
+
+    await applyOfflineTravelChecklistReorder([
+      { category: "salud", id: "travel-1", sortOrder: 20 },
+      { category: "salud", id: "travel-2", sortOrder: 10 },
+    ]);
+
+    await expect(readOfflineSnapshot()).resolves.toMatchObject({
+      travelChecklistItems: [
+        expect.objectContaining({ category: "salud", id: "travel-2", sortOrder: 10 }),
+        expect.objectContaining({ category: "salud", id: "travel-1", sortOrder: 20 }),
+      ],
+    });
   });
 
   it("queues pending vaccine mutations in creation order", async () => {

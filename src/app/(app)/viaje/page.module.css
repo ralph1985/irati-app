@@ -166,7 +166,7 @@
 
 .items li {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) auto;
+  grid-template-columns: 32px minmax(0, 1fr) 30px auto;
   gap: 5px;
   align-items: center;
   background: #fff;
@@ -175,6 +175,15 @@
 
 .items li + li {
   border-top: 1px solid rgba(96, 72, 115, 0.11);
+}
+
+.emptyGroupDrop {
+  min-height: 38px;
+  color: #8b70a1;
+  font-size: 12px;
+  font-style: italic;
+  padding: 10px;
+  text-align: center;
 }
 
 .items li[data-packed="true"] {
@@ -195,6 +204,49 @@
   font-size: 11px;
   line-height: 1;
   padding: 4px 6px;
+}
+
+.items li[data-dragging="true"] {
+  opacity: 0.45;
+}
+
+.orderHint {
+  margin: -3px 0 0;
+  color: #6b587d;
+  font-size: 12px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.dragHandle {
+  display: grid;
+  width: 28px;
+  height: 30px;
+  place-items: center;
+  touch-action: none;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #8b70a1;
+  cursor: grab;
+  font-size: 16px;
+  letter-spacing: -3px;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.dragHandle:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
 }
 
 .itemCheck button {

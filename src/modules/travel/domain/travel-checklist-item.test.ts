@@ -3,6 +3,7 @@ import {
   calculateTravelChecklistProgress,
   createTravelChecklistItem,
   groupTravelChecklistItems,
+  reorderTravelChecklistItems,
   sortTravelChecklistItems,
   TravelChecklistItem,
   TravelChecklistItemValidationError,
@@ -49,13 +50,29 @@ describe("travel checklist item", () => {
     });
   });
 
-  it("sorts pending items before packed items inside each category", () => {
+  it("keeps the manual order regardless of packed state", () => {
     expect(
       sortTravelChecklistItems([
         item({ id: "packed", label: "B", isPacked: true, sortOrder: 10 }),
         item({ id: "pending", label: "A", isPacked: false, sortOrder: 20 }),
       ]).map((entry) => entry.id),
-    ).toEqual(["pending", "packed"]);
+    ).toEqual(["packed", "pending"]);
+  });
+
+  it("reorders an item within and across categories", () => {
+    const items = [
+      item({ id: "one", category: "higiene", sortOrder: 10 }),
+      item({ id: "two", category: "higiene", sortOrder: 20 }),
+      item({ id: "three", category: "salud", sortOrder: 10 }),
+    ];
+
+    const reordered = reorderTravelChecklistItems(items, "one", "salud", 1);
+
+    expect(reordered).toEqual([
+      expect.objectContaining({ id: "two", category: "higiene", sortOrder: 10 }),
+      expect.objectContaining({ id: "three", category: "salud", sortOrder: 10 }),
+      expect.objectContaining({ id: "one", category: "salud", sortOrder: 20 }),
+    ]);
   });
 
   it("groups items by category", () => {
