@@ -164,6 +164,12 @@
   list-style: none;
 }
 
+.items[data-drop-target="true"] {
+  background: #f5f3ff;
+  outline: 2px dashed #a78bfa;
+  outline-offset: -2px;
+}
+
 .items li {
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr) 30px auto;

@@ -1,6 +1,9 @@
 "use client";
 
-import { FormEvent, PointerEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { DragDropProvider, useDroppable } from "@dnd-kit/react";
+import { useSortable } from "@dnd-kit/react/sortable";
+import { move } from "@dnd-kit/helpers";
 import { BottomSheet } from "../../../shared/ui/bottom-sheet";
 import { ConfirmSubmit } from "../../../shared/ui/confirm-submit";
 import {
@@ -14,7 +17,6 @@ import {
   TravelChecklistGroup,
   TravelChecklistItem,
   TravelChecklistProgress,
-  reorderTravelChecklistItems,
   TravelChecklistReorder,
   updateTravelChecklistItemInput,
 } from "../domain/travel-checklist-item";
@@ -41,6 +43,8 @@ type TravelChecklistViewProps = {
   reorderAction?: (formData: FormData) => void | Promise<void>;
 };
 
+type TravelGroupItems = Record<TravelChecklistCategory, string[]>;
+
 export function TravelChecklistView({
   checklist,
   createAction,
@@ -55,6 +59,8 @@ export function TravelChecklistView({
   const [optimisticDeletedIds, setOptimisticDeletedIds] = useState<Set<string>>(new Set());
   const [optimisticReorder, setOptimisticReorder] = useState<TravelChecklistItem[] | null>(null);
   const [reorderAnnouncement, setReorderAnnouncement] = useState("");
+  const [dragGroupItems, setDragGroupItems] = useState<TravelGroupItems | null>(null);
+  const dragGroupItemsRef = useRef<TravelGroupItems | null>(null);
   const baseItems = useMemo(() => checklist.groups.flatMap((group) => group.items), [checklist]);
   const visibleChecklist = useMemo(() => {
     const visibleItems = optimisticReorder ?? baseItems;
@@ -63,7 +69,11 @@ export function TravelChecklistView({
       pendingMutations,
     );
   }, [baseItems, optimisticDeletedIds, optimisticReorder, pendingMutations]);
-  const visibleGroups = visibleChecklist.groups;
+  const displayedChecklist = useMemo(
+    () => buildDisplayedTravelChecklist(visibleChecklist, dragGroupItems),
+    [dragGroupItems, visibleChecklist],
+  );
+  const visibleGroups = displayedChecklist.groups;
 
   useEffect(() => {
     let isActive = true;
@@ -118,36 +128,61 @@ export function TravelChecklistView({
     }
   }
 
-  function moveItem(itemId: string, targetCategory: TravelChecklistCategory, targetIndex: number) {
-    const currentItems = visibleChecklist.groups.flatMap((group) => group.items);
-    const nextItems = reorderTravelChecklistItems(
-      currentItems,
-      itemId,
-      targetCategory,
-      targetIndex,
-    );
+  function beginDrag() {
+    const next = createTravelGroupItems(visibleChecklist.groups);
+    dragGroupItemsRef.current = next;
+    setDragGroupItems(next);
+  }
 
-    const currentPositions = new Map(
-      currentItems.map((item) => [item.id, `${item.category}:${item.sortOrder}`]),
-    );
-    if (
-      nextItems.every(
-        (item) => currentPositions.get(item.id) === `${item.category}:${item.sortOrder}`,
-      )
-    ) {
+  function handleDragOver(
+    event: Parameters<NonNullable<React.ComponentProps<typeof DragDropProvider>["onDragOver"]>>[0],
+  ) {
+    setDragGroupItems((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const next = move(current, event);
+      dragGroupItemsRef.current = next;
+      return next;
+    });
+  }
+
+  function handleDragEnd(
+    event: Parameters<NonNullable<React.ComponentProps<typeof DragDropProvider>["onDragEnd"]>>[0],
+  ) {
+    const current = dragGroupItemsRef.current;
+    dragGroupItemsRef.current = null;
+    setDragGroupItems(null);
+
+    if (event.canceled || !current || !event.operation.source) {
       return;
     }
 
-    const movedItem = nextItems.find((item) => item.id === itemId);
-    if (movedItem) {
-      setReorderAnnouncement(
-        `${movedItem.label} movido a ${formatTravelChecklistCategory(targetCategory)}, posición ${targetIndex + 1}.`,
-      );
+    const itemsById = new Map(
+      visibleChecklist.groups.flatMap((group) => group.items).map((item) => [item.id, item]),
+    );
+    const reorderedItems = travelChecklistCategories.flatMap((category) =>
+      current[category]
+        .map((id, index) => {
+          const item = itemsById.get(id);
+          return item ? { ...item, category, sortOrder: (index + 1) * 10 } : null;
+        })
+        .filter((item): item is TravelChecklistItem => item !== null),
+    );
+    const movedItem = itemsById.get(String(event.operation.source.id));
+    const movedPosition = reorderedItems.find((item) => item.id === movedItem?.id);
+
+    if (!movedItem || !movedPosition) {
+      return;
     }
 
+    setReorderAnnouncement(
+      `${movedItem.label} movido a ${formatTravelChecklistCategory(movedPosition.category)}, posición ${movedPosition.sortOrder / 10}.`,
+    );
     void commitReorder(
-      nextItems,
-      nextItems.map(({ id, category, sortOrder }) => ({ id, category, sortOrder })),
+      reorderedItems,
+      reorderedItems.map(({ id, category, sortOrder }) => ({ id, category, sortOrder })),
     );
   }
 
@@ -285,25 +320,30 @@ export function TravelChecklistView({
         </p>
 
         {visibleGroups.some((group) => group.items.length > 0) ? (
-          <div className={styles.groups}>
-            {visibleGroups.map((group) => (
-              <TravelChecklistGroupView
-                deleteAction={deleteAction}
-                group={group}
-                key={group.category}
-                openEditSheet={(item) => setSheetState({ item, mode: "edit" })}
-                openCreateSheet={(category) => setSheetState({ category, mode: "create" })}
-                setPackedAction={setPackedAction}
-                pendingMutations={pendingMutations}
-                onDeleteOnline={async (event, item) => {
-                  event.preventDefault();
-                  setOptimisticDeletedIds((current) => new Set(current).add(item.id));
-                  await deleteAction(new FormData(event.currentTarget));
-                }}
-                moveItem={moveItem}
-              />
-            ))}
-          </div>
+          <DragDropProvider
+            onDragEnd={handleDragEnd}
+            onDragOver={handleDragOver}
+            onDragStart={beginDrag}
+          >
+            <div className={styles.groups}>
+              {visibleGroups.map((group) => (
+                <TravelChecklistGroupView
+                  deleteAction={deleteAction}
+                  group={group}
+                  key={group.category}
+                  openEditSheet={(item) => setSheetState({ item, mode: "edit" })}
+                  openCreateSheet={(category) => setSheetState({ category, mode: "create" })}
+                  setPackedAction={setPackedAction}
+                  pendingMutations={pendingMutations}
+                  onDeleteOnline={async (event, item) => {
+                    event.preventDefault();
+                    setOptimisticDeletedIds((current) => new Set(current).add(item.id));
+                    await deleteAction(new FormData(event.currentTarget));
+                  }}
+                />
+              ))}
+            </div>
+          </DragDropProvider>
         ) : (
           <p className={styles.empty}>Aún no hay nada en la lista de viaje.</p>
         )}
@@ -329,7 +369,6 @@ function TravelChecklistGroupView({
   pendingMutations,
   setPackedAction,
   onDeleteOnline,
-  moveItem,
 }: {
   deleteAction: (formData: FormData) => void | Promise<void>;
   group: TravelChecklistGroup;
@@ -338,9 +377,7 @@ function TravelChecklistGroupView({
   pendingMutations: PendingTravelMutation[];
   setPackedAction: (formData: FormData) => void | Promise<void>;
   onDeleteOnline: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => void;
-  moveItem: (itemId: string, targetCategory: TravelChecklistCategory, targetIndex: number) => void;
 }) {
-  const [draggingId, setDraggingId] = useState<string | null>(null);
   async function setPackedOffline(event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) {
     event.preventDefault();
 
@@ -393,170 +430,160 @@ function TravelChecklistGroupView({
         </span>
       </summary>
 
-      <ol className={styles.items}>
+      <TravelChecklistDropZone category={group.category}>
         {group.items.length === 0 ? (
           <li className={styles.emptyGroupDrop}>Arrastra aquí un elemento.</li>
         ) : null}
-        {group.items.map((item) => (
-          <li
-            data-packed={item.isPacked}
-            data-pending={isPendingTravelItem(pendingMutations, item.id)}
-            data-dragging={draggingId === item.id}
-            data-travel-item-id={item.id}
+        {group.items.map((item, index) => (
+          <TravelChecklistItemRow
+            deleteAction={deleteAction}
+            item={item}
             key={item.id}
-          >
-            <form
-              action={setPackedAction}
-              className={styles.itemCheck}
-              onSubmit={(event) => {
-                if (!navigator.onLine) {
-                  void setPackedOffline(event, item);
-                }
-              }}
-            >
-              <input name="id" type="hidden" value={item.id} />
-              <input name="isPacked" type="hidden" value={item.isPacked ? "false" : "true"} />
-              <button
-                aria-label={item.isPacked ? "Marcar como pendiente" : "Marcar como preparado"}
-                aria-pressed={item.isPacked}
-                title={item.isPacked ? "Marcar como pendiente" : "Marcar como preparado"}
-                type="submit"
-              >
-                <span aria-hidden="true">{item.isPacked ? "✓" : ""}</span>
-              </button>
-            </form>
-
-            <div className={styles.itemBody}>
-              <strong>{item.label}</strong>
-              {item.notes ? <p>{item.notes}</p> : null}
-            </div>
-
-            <button
-              aria-label={`Mover ${item.label}`}
-              className={styles.dragHandle}
-              onKeyDown={(event) => {
-                const itemIndex = group.items.findIndex((entry) => entry.id === item.id);
-
-                if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-                  event.preventDefault();
-                  moveItem(item.id, group.category, itemIndex + (event.key === "ArrowUp" ? -1 : 1));
-                  return;
-                }
-
-                if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-                  const categoryIndex = travelChecklistCategories.indexOf(group.category);
-                  const nextCategory =
-                    travelChecklistCategories[categoryIndex + (event.key === "ArrowLeft" ? -1 : 1)];
-
-                  if (nextCategory) {
-                    event.preventDefault();
-                    moveItem(
-                      item.id,
-                      nextCategory,
-                      Math.min(
-                        itemIndex,
-                        group.items.filter((entry) => entry.category === nextCategory).length,
-                      ),
-                    );
-                  }
-                }
-              }}
-              onPointerCancel={(event) => {
-                if (draggingId === item.id) {
-                  event.currentTarget.releasePointerCapture(event.pointerId);
-                  setDraggingId(null);
-                }
-              }}
-              onPointerDown={(event) => {
-                event.preventDefault();
-                event.currentTarget.setPointerCapture(event.pointerId);
-                setDraggingId(item.id);
-              }}
-              onPointerUp={(event) => {
-                if (draggingId !== item.id) {
-                  return;
-                }
-
-                const target = getTravelDropTarget(event);
-                event.currentTarget.releasePointerCapture(event.pointerId);
-                setDraggingId(null);
-
-                if (target) {
-                  moveItem(item.id, target.category, target.index);
-                }
-              }}
-              title="Arrastrar para ordenar"
-              type="button"
-            >
-              <span aria-hidden="true">⋮⋮</span>
-            </button>
-
-            <div className={styles.itemActions}>
-              <button
-                aria-label={`Editar ${item.label}`}
-                className={styles.iconButton}
-                onClick={() => openEditSheet(item)}
-                title="Editar"
-                type="button"
-              >
-                <span aria-hidden="true">✎</span>
-              </button>
-              <ConfirmSubmit
-                action={deleteAction}
-                message={`¿Borrar “${item.label}”? Esta acción no se puede deshacer.`}
-                onConfirmedSubmit={(event) => {
-                  if (!navigator.onLine) {
-                    void deleteItemOffline(event, item.id);
-                    return;
-                  }
-
-                  onDeleteOnline(event, item);
-                }}
-              >
-                <input name="id" type="hidden" value={item.id} />
-                <button
-                  aria-label={`Borrar ${item.label}`}
-                  className={styles.dangerIconButton}
-                  title="Borrar"
-                  type="submit"
-                >
-                  <span aria-hidden="true">×</span>
-                </button>
-              </ConfirmSubmit>
-            </div>
-          </li>
+            onDeleteOnline={onDeleteOnline}
+            onEdit={() => openEditSheet(item)}
+            onOfflineDelete={deleteItemOffline}
+            onOfflinePacked={setPackedOffline}
+            packedAction={setPackedAction}
+            pending={isPendingTravelItem(pendingMutations, item.id)}
+            index={index}
+            category={group.category}
+          />
         ))}
-      </ol>
+      </TravelChecklistDropZone>
     </details>
   );
 }
 
-function getTravelDropTarget(event: PointerEvent<HTMLButtonElement>): {
+function TravelChecklistDropZone({
+  category,
+  children,
+}: {
   category: TravelChecklistCategory;
+  children: React.ReactNode;
+}) {
+  const { ref, isDropTarget } = useDroppable({
+    accept: "travel-item",
+    id: category,
+    type: "travel-category",
+  });
+
+  return (
+    <ol className={styles.items} data-drop-target={isDropTarget} ref={ref}>
+      {children}
+    </ol>
+  );
+}
+
+function TravelChecklistItemRow({
+  category,
+  deleteAction,
+  index,
+  item,
+  onDeleteOnline,
+  onEdit,
+  onOfflineDelete,
+  onOfflinePacked,
+  packedAction,
+  pending,
+}: {
+  category: TravelChecklistCategory;
+  deleteAction: (formData: FormData) => void | Promise<void>;
   index: number;
-} | null {
-  const element = document.elementFromPoint(event.clientX, event.clientY);
-  const group = element?.closest<HTMLElement>("[data-travel-drop-category]");
-  const category = group?.dataset.travelDropCategory;
+  item: TravelChecklistItem;
+  onDeleteOnline: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => void;
+  onEdit: () => void;
+  onOfflineDelete: (event: FormEvent<HTMLFormElement>, id: string) => Promise<void>;
+  onOfflinePacked: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => Promise<void>;
+  packedAction: (formData: FormData) => void | Promise<void>;
+  pending: boolean;
+}) {
+  const { handleRef, isDragging, ref } = useSortable({
+    accept: "travel-item",
+    group: category,
+    id: item.id,
+    index,
+    type: "travel-item",
+  });
 
-  if (!category || !isTravelChecklistCategory(category)) {
-    return null;
-  }
+  return (
+    <li
+      data-dragging={isDragging}
+      data-packed={item.isPacked}
+      data-pending={pending}
+      data-travel-item-id={item.id}
+      ref={ref}
+    >
+      <form
+        action={packedAction}
+        className={styles.itemCheck}
+        onSubmit={(event) => {
+          if (!navigator.onLine) {
+            void onOfflinePacked(event, item);
+          }
+        }}
+      >
+        <input name="id" type="hidden" value={item.id} />
+        <input name="isPacked" type="hidden" value={item.isPacked ? "false" : "true"} />
+        <button
+          aria-label={item.isPacked ? "Marcar como pendiente" : "Marcar como preparado"}
+          aria-pressed={item.isPacked}
+          title={item.isPacked ? "Marcar como pendiente" : "Marcar como preparado"}
+          type="submit"
+        >
+          <span aria-hidden="true">{item.isPacked ? "✓" : ""}</span>
+        </button>
+      </form>
 
-  const items = [...(group?.querySelectorAll<HTMLElement>("[data-travel-item-id]") ?? [])];
-  const targetItem = element?.closest<HTMLElement>("[data-travel-item-id]");
+      <div className={styles.itemBody}>
+        <strong>{item.label}</strong>
+        {item.notes ? <p>{item.notes}</p> : null}
+      </div>
 
-  if (!targetItem) {
-    return { category, index: items.length };
-  }
+      <button
+        aria-label={`Mover ${item.label}`}
+        className={styles.dragHandle}
+        ref={handleRef}
+        title="Arrastrar para ordenar"
+        type="button"
+      >
+        <span aria-hidden="true">⋮⋮</span>
+      </button>
 
-  const targetIndex = items.indexOf(targetItem);
-  const bounds = targetItem.getBoundingClientRect();
+      <div className={styles.itemActions}>
+        <button
+          aria-label={`Editar ${item.label}`}
+          className={styles.iconButton}
+          onClick={onEdit}
+          title="Editar"
+          type="button"
+        >
+          <span aria-hidden="true">✎</span>
+        </button>
+        <ConfirmSubmit
+          action={deleteAction}
+          message={`¿Borrar “${item.label}”? Esta acción no se puede deshacer.`}
+          onConfirmedSubmit={(event) => {
+            if (!navigator.onLine) {
+              void onOfflineDelete(event, item.id);
+              return;
+            }
 
-  return {
-    category,
-    index: targetIndex + (event.clientY > bounds.top + bounds.height / 2 ? 1 : 0),
-  };
+            onDeleteOnline(event, item);
+          }}
+        >
+          <input name="id" type="hidden" value={item.id} />
+          <button
+            aria-label={`Borrar ${item.label}`}
+            className={styles.dangerIconButton}
+            title="Borrar"
+            type="submit"
+          >
+            <span aria-hidden="true">×</span>
+          </button>
+        </ConfirmSubmit>
+      </div>
+    </li>
+  );
 }
 
 type SheetState =
@@ -726,6 +753,36 @@ function formatProgress(progress: TravelChecklistProgress): string {
   }
 
   return `${progress.packed} de ${progress.total}`;
+}
+
+function createTravelGroupItems(groups: TravelChecklistGroup[]): TravelGroupItems {
+  return Object.fromEntries(
+    groups.map((group) => [group.category, group.items.map((item) => item.id)]),
+  ) as TravelGroupItems;
+}
+
+function buildDisplayedTravelChecklist(
+  checklist: TravelChecklist,
+  groupItems: TravelGroupItems | null,
+): TravelChecklist {
+  if (!groupItems) {
+    return checklist;
+  }
+
+  const itemsById = new Map(
+    checklist.groups.flatMap((group) => group.items).map((item) => [item.id, item]),
+  );
+  const items = travelChecklistCategories.flatMap((category) =>
+    groupItems[category]
+      .map((id) => itemsById.get(id))
+      .filter((item): item is TravelChecklistItem => item !== undefined)
+      .map((item, index) => ({ ...item, category, sortOrder: (index + 1) * 10 })),
+  );
+
+  return {
+    groups: groupTravelChecklistItems(items),
+    progress: calculateTravelChecklistProgress(items),
+  };
 }
 
 function buildVisibleTravelChecklist(
