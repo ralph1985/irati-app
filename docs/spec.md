@@ -38,7 +38,7 @@ Backups:
 - `pnpm backup:supabase` genera un archivo `irati-supabase-<timestamp>.sql.tar.gz` en `var/backups/supabase/`.
 - El archivo contiene `schema.sql`, `data.sql` y `manifest.txt`.
 - `schema.sql` concatena las migraciones versionadas del repositorio.
-- `data.sql` contiene los datos actuales de `baby_profiles`, `planned_vaccine_doses`, `weight_entries`, `applied_vaccine_doses`, `travel_checklist_items` y `developer_backup_runs`.
+- `data.sql` contiene los datos actuales de `baby_profiles`, `planned_vaccine_doses`, `weight_entries`, `applied_vaccine_doses`, `travel_checklist_categories`, `travel_checklist_items` y `developer_backup_runs`.
 - Los archivos generados y logs viven en `var/` y no se suben a Git.
 - La retencion local por defecto es de 14 dias, configurable con `IRATI_SUPABASE_BACKUP_RETENTION_DAYS`.
 - `pnpm backup:supabase:cron:install` instala un cron cada 6 horas por defecto.
@@ -352,7 +352,7 @@ Reglas:
 - Los items se agrupan por categoria y se ordenan manualmente por `sort_order`.
 - Los items pueden reordenarse con drag & drop dentro de una categoria o entre categorias.
 - Las categorias vacias siguen visibles como destinos de arrastre.
-- Las categorias iniciales son comida, higiene, cambio, sueño, salud, paseo y documentacion.
+- Las categorías se gestionan en `travel_checklist_categories`; sus slugs estables son comida, higiene, cambio, sueño, salud, paseo y documentacion.
 - La lista inicial es una semilla editable, no una lista cerrada.
 
 Un item de viaje contiene:

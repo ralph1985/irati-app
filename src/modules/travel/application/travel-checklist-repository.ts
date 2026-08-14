@@ -1,6 +1,11 @@
-import { NewTravelChecklistItem, TravelChecklistItem } from "../domain/travel-checklist-item";
+import {
+  NewTravelChecklistItem,
+  TravelChecklistCategoryDefinition,
+  TravelChecklistItem,
+} from "../domain/travel-checklist-item";
 
 export type TravelChecklistRepository = {
+  listTravelChecklistCategories(): Promise<TravelChecklistCategoryDefinition[]>;
   listTravelChecklistItems(): Promise<TravelChecklistItem[]>;
   createTravelChecklistItem(item: NewTravelChecklistItem): Promise<TravelChecklistItem>;
   updateTravelChecklistItem(id: string, item: NewTravelChecklistItem): Promise<TravelChecklistItem>;

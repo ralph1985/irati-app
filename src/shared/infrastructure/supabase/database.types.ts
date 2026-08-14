@@ -3,6 +3,30 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
+      travel_checklist_categories: {
+        Row: {
+          slug: string;
+          label: string;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          slug: string;
+          label: string;
+          sort_order: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          slug?: string;
+          label?: string;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       baby_profiles: {
         Row: {
           id: string;
@@ -186,7 +210,7 @@ export type Database = {
         Row: {
           id: string;
           label: string;
-          category: "comida" | "higiene" | "cambio" | "sueno" | "salud" | "paseo" | "documentacion";
+          category: string;
           sort_order: number;
           is_packed: boolean;
           notes: string | null;
@@ -196,7 +220,7 @@ export type Database = {
         Insert: {
           id?: string;
           label: string;
-          category: "comida" | "higiene" | "cambio" | "sueno" | "salud" | "paseo" | "documentacion";
+          category: string;
           sort_order?: number;
           is_packed?: boolean;
           notes?: string | null;
@@ -206,8 +230,7 @@ export type Database = {
         Update: {
           id?: string;
           label?: string;
-          category?:
-            "comida" | "higiene" | "cambio" | "sueno" | "salud" | "paseo" | "documentacion";
+          category?: string;
           sort_order?: number;
           is_packed?: boolean;
           notes?: string | null;

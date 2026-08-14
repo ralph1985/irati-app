@@ -1,14 +1,10 @@
-export const travelChecklistCategories = [
-  "comida",
-  "higiene",
-  "cambio",
-  "sueno",
-  "salud",
-  "paseo",
-  "documentacion",
-] as const;
+export type TravelChecklistCategory = string;
 
-export type TravelChecklistCategory = (typeof travelChecklistCategories)[number];
+export type TravelChecklistCategoryDefinition = {
+  slug: TravelChecklistCategory;
+  label: string;
+  sortOrder: number;
+};
 
 export type TravelChecklistItem = {
   id: string;
@@ -30,7 +26,7 @@ export type TravelChecklistProgress = {
 };
 
 export type TravelChecklistGroup = {
-  category: TravelChecklistCategory;
+  category: TravelChecklistCategoryDefinition;
   items: TravelChecklistItem[];
   progress: TravelChecklistProgress;
 };
@@ -78,10 +74,14 @@ export function calculateTravelChecklistProgress(
   };
 }
 
-export function groupTravelChecklistItems(items: TravelChecklistItem[]): TravelChecklistGroup[] {
-  return travelChecklistCategories.map((category) => {
+export function groupTravelChecklistItems(
+  items: TravelChecklistItem[],
+  categories: TravelChecklistCategoryDefinition[],
+): TravelChecklistGroup[] {
+  return categories.map((category) => {
     const categoryItems = sortTravelChecklistItems(
-      items.filter((item) => item.category === category),
+      items.filter((item) => item.category === category.slug),
+      categories,
     );
 
     return {
@@ -92,12 +92,15 @@ export function groupTravelChecklistItems(items: TravelChecklistItem[]): TravelC
   });
 }
 
-export function sortTravelChecklistItems(items: TravelChecklistItem[]): TravelChecklistItem[] {
+export function sortTravelChecklistItems(
+  items: TravelChecklistItem[],
+  categories: TravelChecklistCategoryDefinition[],
+): TravelChecklistItem[] {
   return [...items].sort((first, second) => {
     if (first.category !== second.category) {
       return (
-        travelChecklistCategories.indexOf(first.category) -
-        travelChecklistCategories.indexOf(second.category)
+        getCategorySortOrder(first.category, categories) -
+        getCategorySortOrder(second.category, categories)
       );
     }
 
@@ -114,6 +117,7 @@ export function reorderTravelChecklistItems(
   itemId: string,
   targetCategory: TravelChecklistCategory,
   targetIndex: number,
+  categories: TravelChecklistCategoryDefinition[],
 ): TravelChecklistItem[] {
   const movingItem = items.find((item) => item.id === itemId);
 
@@ -134,8 +138,8 @@ export function reorderTravelChecklistItems(
   );
 
   const otherItems = withoutMovingItem.filter((item) => item.category !== targetCategory);
-  const normalizedOtherItems = travelChecklistCategories.flatMap((category) => {
-    const categoryItems = otherItems.filter((item) => item.category === category);
+  const normalizedOtherItems = categories.flatMap((category) => {
+    const categoryItems = otherItems.filter((item) => item.category === category.slug);
     return categoryItems.map((item, index) => ({
       ...item,
       sortOrder: (index + 1) * 10,
@@ -149,26 +153,21 @@ export function reorderTravelChecklistItems(
 }
 
 export function isTravelChecklistCategory(value: string): value is TravelChecklistCategory {
-  return travelChecklistCategories.includes(value as TravelChecklistCategory);
+  return value.trim().length > 0;
 }
 
-export function formatTravelChecklistCategory(category: TravelChecklistCategory): string {
-  switch (category) {
-    case "comida":
-      return "Comida";
-    case "higiene":
-      return "Higiene";
-    case "cambio":
-      return "Cambio";
-    case "sueno":
-      return "Sueño";
-    case "salud":
-      return "Salud";
-    case "paseo":
-      return "Paseo";
-    case "documentacion":
-      return "Documentacion";
-  }
+export function formatTravelChecklistCategory(category: TravelChecklistCategoryDefinition): string {
+  return category.label;
+}
+
+function getCategorySortOrder(
+  category: TravelChecklistCategory,
+  categories: TravelChecklistCategoryDefinition[],
+): number {
+  return (
+    categories.find((candidate) => candidate.slug === category)?.sortOrder ??
+    Number.MAX_SAFE_INTEGER
+  );
 }
 
 function normalizeTravelChecklistItem(input: NewTravelChecklistItem): NewTravelChecklistItem {

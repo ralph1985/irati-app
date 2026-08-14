@@ -11,6 +11,7 @@ describe("TravelChecklistView", () => {
       renderToStaticMarkup(
         <TravelChecklistView
           checklist={{
+            categories: [],
             groups: [],
             progress: {
               packed: 0,
@@ -54,6 +55,10 @@ describe("TravelChecklistView", () => {
 });
 
 const checklist: TravelChecklist = {
+  categories: [
+    { label: "Comida", slug: "comida", sortOrder: 0 },
+    { label: "Higiene", slug: "higiene", sortOrder: 1 },
+  ],
   progress: {
     packed: 1,
     pending: 1,
@@ -61,7 +66,7 @@ const checklist: TravelChecklist = {
   },
   groups: [
     {
-      category: "higiene",
+      category: { label: "Higiene", slug: "higiene", sortOrder: 1 },
       progress: {
         packed: 1,
         pending: 1,

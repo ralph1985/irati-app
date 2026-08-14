@@ -432,13 +432,15 @@ function OfflineVaccinesScreen({
 
 function OfflineTravelScreen({ snapshot }: { snapshot: OfflineSnapshot }) {
   const checklist = useMemo(() => {
-    const groups = groupTravelChecklistItems(snapshot.travelChecklistItems);
+    const categories = snapshot.travelChecklistCategories ?? [];
+    const groups = groupTravelChecklistItems(snapshot.travelChecklistItems, categories);
 
     return {
+      categories,
       groups,
       progress: calculateTravelChecklistProgress(snapshot.travelChecklistItems),
     };
-  }, [snapshot.travelChecklistItems]);
+  }, [snapshot.travelChecklistCategories, snapshot.travelChecklistItems]);
 
   return (
     <main className={travelStyles.main}>

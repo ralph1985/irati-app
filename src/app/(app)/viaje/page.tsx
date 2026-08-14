@@ -91,6 +91,7 @@ async function getTravelChecklist() {
   } catch {
     return {
       checklist: {
+        categories: [],
         groups: [],
         progress: {
           packed: 0,

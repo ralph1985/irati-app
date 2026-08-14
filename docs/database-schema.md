@@ -129,28 +129,44 @@ Indice:
 
 La tabla no contiene datos familiares funcionales, solo salud de backup. La app la lee desde servidor con `SUPABASE_SERVICE_ROLE_KEY`.
 
+## `travel_checklist_categories`
+
+Categorías configurables de la checklist de viaje. El slug se conserva como identificador estable para no romper los datos offline ni las mutaciones pendientes.
+
+Migración: `supabase/migrations/20260814150000_create_travel_checklist_categories.sql`.
+
+| Campo        | Tipo          | Regla                              |
+| ------------ | ------------- | ---------------------------------- |
+| `slug`       | `text`        | Primary key, identificador estable |
+| `label`      | `text`        | Nombre visible                     |
+| `sort_order` | `integer`     | Orden visible, único y no negativo |
+| `created_at` | `timestamptz` | `now()`                            |
+| `updated_at` | `timestamptz` | `now()`                            |
+
+Categorías actuales: Alimentación, Pañal e higiene, Ropa y cambio, Sueño y descanso, Salud y medicación, Paseo y juego y Documentación.
+
 ## `travel_checklist_items`
 
 Checklist reutilizable para preparar salidas y viajes de Irati.
 
-Migracion: `supabase/migrations/20260718160000_create_travel_checklist_items.sql`.
+Migraciones: `supabase/migrations/20260718160000_create_travel_checklist_items.sql` y `supabase/migrations/20260814150000_create_travel_checklist_categories.sql`.
 
-| Campo        | Tipo          | Regla                                                                      |
-| ------------ | ------------- | -------------------------------------------------------------------------- |
-| `id`         | `uuid`        | Primary key                                                                |
-| `label`      | `text`        | Obligatorio                                                                |
-| `category`   | `text`        | `comida`, `higiene`, `cambio`, `sueno`, `salud`, `paseo` o `documentacion` |
-| `sort_order` | `integer`     | Orden dentro de la categoria                                               |
-| `is_packed`  | `boolean`     | `false` por defecto                                                        |
-| `notes`      | `text`        | Opcional                                                                   |
-| `created_at` | `timestamptz` | `now()`                                                                    |
-| `updated_at` | `timestamptz` | `now()`                                                                    |
+| Campo        | Tipo          | Regla                                            |
+| ------------ | ------------- | ------------------------------------------------ |
+| `id`         | `uuid`        | Primary key                                      |
+| `label`      | `text`        | Obligatorio                                      |
+| `category`   | `text`        | Foreign key a `travel_checklist_categories.slug` |
+| `sort_order` | `integer`     | Orden dentro de la categoria                     |
+| `is_packed`  | `boolean`     | `false` por defecto                              |
+| `notes`      | `text`        | Opcional                                         |
+| `created_at` | `timestamptz` | `now()`                                          |
+| `updated_at` | `timestamptz` | `now()`                                          |
 
 Indices:
 
 - `travel_checklist_items_category_order_idx`
 - `travel_checklist_items_is_packed_idx`
 
-Seed inicial:
+Datos iniciales:
 
-- La migracion crea una lista inicial editable para comida, higiene, cambio, sueño, salud, paseo y documentacion.
+- La migración base crea los primeros ítems y `20260814150000_create_travel_checklist_categories.sql` crea las categorías configurables y actualiza los nombres aprobados de la lista actual.

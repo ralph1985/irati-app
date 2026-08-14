@@ -6,7 +6,10 @@ import { resetTravelChecklist } from "./reset-travel-checklist";
 import { setTravelChecklistItemPacked } from "./set-travel-checklist-item-packed";
 import { TravelChecklistRepository } from "./travel-checklist-repository";
 import { updateTravelChecklistItem } from "./update-travel-checklist-item";
-import { TravelChecklistItem } from "../domain/travel-checklist-item";
+import {
+  TravelChecklistCategoryDefinition,
+  TravelChecklistItem,
+} from "../domain/travel-checklist-item";
 
 describe("travel checklist use cases", () => {
   it("lists grouped items with progress", async () => {
@@ -58,6 +61,10 @@ class FakeTravelChecklistRepository implements TravelChecklistRepository {
     this.items = items;
   }
 
+  async listTravelChecklistCategories(): Promise<TravelChecklistCategoryDefinition[]> {
+    return categories;
+  }
+
   async listTravelChecklistItems() {
     return this.items;
   }
@@ -101,6 +108,16 @@ class FakeTravelChecklistRepository implements TravelChecklistRepository {
     this.items = this.items.map((item) => ({ ...item, isPacked: false }));
   }
 }
+
+const categories: TravelChecklistCategoryDefinition[] = [
+  "comida",
+  "higiene",
+  "cambio",
+  "sueno",
+  "salud",
+  "paseo",
+  "documentacion",
+].map((slug, index) => ({ label: slug, slug, sortOrder: index }));
 
 function item(overrides: Partial<TravelChecklistItem>): TravelChecklistItem {
   return {

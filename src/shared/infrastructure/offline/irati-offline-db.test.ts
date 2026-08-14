@@ -34,6 +34,7 @@ describe("Irati offline database", () => {
       appliedVaccineDoses: [],
       plannedVaccineDoses: [],
       profile: null,
+      travelChecklistCategories: [],
       travelChecklistItems: [],
       weightEntries: [],
     });
@@ -41,7 +42,7 @@ describe("Irati offline database", () => {
       lastError: null,
       lastSuccessfulSyncAt: null,
       offlineAccessGranted: false,
-      schemaVersion: 4,
+      schemaVersion: 5,
     });
   });
 
@@ -108,7 +109,7 @@ describe("Irati offline database", () => {
     await expect(readSyncMetadata()).resolves.toMatchObject({
       lastSuccessfulSyncAt: "2026-07-23T10:00:00.000Z",
       offlineAccessGranted: true,
-      schemaVersion: 4,
+      schemaVersion: 5,
     });
   });
 
@@ -130,6 +131,7 @@ describe("Irati offline database", () => {
       appliedVaccineDoses: [],
       plannedVaccineDoses: [],
       profile: null,
+      travelChecklistCategories: [],
       travelChecklistItems: [],
       weightEntries: [],
     });

@@ -60,6 +60,12 @@ const tableDefinitions = [
     conflictColumns: ["id"],
   },
   {
+    name: "travel_checklist_categories",
+    order: "sort_order.asc",
+    columns: ["slug", "label", "sort_order", "created_at", "updated_at"],
+    conflictColumns: ["slug"],
+  },
+  {
     name: "travel_checklist_items",
     order: "category.asc,sort_order.asc,created_at.asc",
     columns: [
@@ -204,6 +210,7 @@ function buildDataSql(rowsByTable) {
     "",
     "delete from public.applied_vaccine_doses;",
     "delete from public.travel_checklist_items;",
+    "delete from public.travel_checklist_categories;",
     "delete from public.weight_entries;",
     "delete from public.planned_vaccine_doses;",
     "delete from public.baby_profiles;",

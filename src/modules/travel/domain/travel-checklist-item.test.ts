@@ -5,6 +5,7 @@ import {
   groupTravelChecklistItems,
   reorderTravelChecklistItems,
   sortTravelChecklistItems,
+  TravelChecklistCategoryDefinition,
   TravelChecklistItem,
   TravelChecklistItemValidationError,
 } from "./travel-checklist-item";
@@ -52,10 +53,13 @@ describe("travel checklist item", () => {
 
   it("keeps the manual order regardless of packed state", () => {
     expect(
-      sortTravelChecklistItems([
-        item({ id: "packed", label: "B", isPacked: true, sortOrder: 10 }),
-        item({ id: "pending", label: "A", isPacked: false, sortOrder: 20 }),
-      ]).map((entry) => entry.id),
+      sortTravelChecklistItems(
+        [
+          item({ id: "packed", label: "B", isPacked: true, sortOrder: 10 }),
+          item({ id: "pending", label: "A", isPacked: false, sortOrder: 20 }),
+        ],
+        categories,
+      ).map((entry) => entry.id),
     ).toEqual(["packed", "pending"]);
   });
 
@@ -66,7 +70,7 @@ describe("travel checklist item", () => {
       item({ id: "three", category: "salud", sortOrder: 10 }),
     ];
 
-    const reordered = reorderTravelChecklistItems(items, "one", "salud", 1);
+    const reordered = reorderTravelChecklistItems(items, "one", "salud", 1, categories);
 
     expect(reordered).toEqual([
       expect.objectContaining({ id: "two", category: "higiene", sortOrder: 10 }),
@@ -76,17 +80,20 @@ describe("travel checklist item", () => {
   });
 
   it("groups items by category", () => {
-    const groups = groupTravelChecklistItems([
-      item({ id: "food", category: "comida", isPacked: true }),
-      item({ id: "walk", category: "paseo", isPacked: false }),
-    ]);
+    const groups = groupTravelChecklistItems(
+      [
+        item({ id: "food", category: "comida", isPacked: true }),
+        item({ id: "walk", category: "paseo", isPacked: false }),
+      ],
+      categories,
+    );
 
-    expect(groups.find((group) => group.category === "comida")?.progress).toEqual({
+    expect(groups.find((group) => group.category.slug === "comida")?.progress).toEqual({
       packed: 1,
       pending: 0,
       total: 1,
     });
-    expect(groups.find((group) => group.category === "paseo")?.items[0]?.id).toBe("walk");
+    expect(groups.find((group) => group.category.slug === "paseo")?.items[0]?.id).toBe("walk");
   });
 });
 
@@ -101,3 +108,13 @@ function item(overrides: Partial<TravelChecklistItem>): TravelChecklistItem {
     ...overrides,
   };
 }
+
+const categories: TravelChecklistCategoryDefinition[] = [
+  "comida",
+  "higiene",
+  "cambio",
+  "sueno",
+  "salud",
+  "paseo",
+  "documentacion",
+].map((slug, index) => ({ label: slug, slug, sortOrder: index }));

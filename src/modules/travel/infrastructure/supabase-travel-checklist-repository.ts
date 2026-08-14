@@ -1,10 +1,31 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "@/shared/infrastructure/supabase/database.types";
 import { TravelChecklistRepository } from "../application/travel-checklist-repository";
-import { NewTravelChecklistItem, TravelChecklistItem } from "../domain/travel-checklist-item";
+import {
+  NewTravelChecklistItem,
+  TravelChecklistCategoryDefinition,
+  TravelChecklistItem,
+} from "../domain/travel-checklist-item";
 
 export class SupabaseTravelChecklistRepository implements TravelChecklistRepository {
   constructor(private readonly supabase: SupabaseClient<Database>) {}
+
+  async listTravelChecklistCategories(): Promise<TravelChecklistCategoryDefinition[]> {
+    const { data, error } = await this.supabase
+      .from("travel_checklist_categories")
+      .select("slug,label,sort_order")
+      .order("sort_order", { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    return data.map((row) => ({
+      label: row.label,
+      slug: row.slug,
+      sortOrder: row.sort_order,
+    }));
+  }
 
   async listTravelChecklistItems(): Promise<TravelChecklistItem[]> {
     const { data, error } = await this.supabase

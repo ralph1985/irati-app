@@ -67,6 +67,7 @@ export async function updateTravelChecklistItemAction(formData: FormData) {
 
   try {
     const currentItems = await repository.listTravelChecklistItems();
+    const categories = await repository.listTravelChecklistCategories();
     const currentItem = currentItems.find((item) => item.id === String(formData.get("id") ?? ""));
     const targetItems = currentItems.filter(
       (item) => item.category === category && item.id !== currentItem?.id,
@@ -76,7 +77,7 @@ export async function updateTravelChecklistItemAction(formData: FormData) {
       ? Math.max(0, Math.min(requestedPosition - 1, targetItems.length))
       : targetItems.length;
     const reorderedItems = currentItem
-      ? reorderTravelChecklistItems(currentItems, currentItem.id, category, targetIndex)
+      ? reorderTravelChecklistItems(currentItems, currentItem.id, category, targetIndex, categories)
       : currentItems;
     const reorderedItem = reorderedItems.find((item) => item.id === currentItem?.id);
 

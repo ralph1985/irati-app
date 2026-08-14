@@ -25,12 +25,14 @@ export async function GET() {
       weightEntries,
       plannedVaccineDoses,
       appliedVaccineDoses,
+      travelChecklistCategories,
       travelChecklistItems,
     ] = await Promise.all([
       getBabyProfile(profileRepository),
       weightRepository.listWeightEntries(),
       vaccineRepository.listPlannedVaccineDoses(),
       vaccineRepository.listAppliedVaccineDoses(),
+      travelRepository.listTravelChecklistCategories(),
       travelRepository.listTravelChecklistItems(),
     ]);
     const snapshot: OfflineSnapshot = {
@@ -38,6 +40,7 @@ export async function GET() {
       plannedVaccineDoses,
       profile,
       travelChecklistItems,
+      travelChecklistCategories,
       weightEntries,
     };
 

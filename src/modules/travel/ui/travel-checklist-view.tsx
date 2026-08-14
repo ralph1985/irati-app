@@ -12,7 +12,7 @@ import {
   formatTravelChecklistCategory,
   groupTravelChecklistItems,
   isTravelChecklistCategory,
-  travelChecklistCategories,
+  TravelChecklistCategoryDefinition,
   TravelChecklistCategory,
   TravelChecklistGroup,
   TravelChecklistItem,
@@ -44,7 +44,7 @@ type TravelChecklistViewProps = {
   reorderAction?: (formData: FormData) => void | Promise<void>;
 };
 
-type TravelGroupItems = Record<TravelChecklistCategory, string[]>;
+type TravelGroupItems = Record<string, string[]>;
 
 export function TravelChecklistView({
   checklist,
@@ -68,8 +68,9 @@ export function TravelChecklistView({
     return buildVisibleTravelChecklist(
       visibleItems.filter((item) => !optimisticDeletedIds.has(item.id)),
       pendingMutations,
+      checklist.categories,
     );
-  }, [baseItems, optimisticDeletedIds, optimisticReorder, pendingMutations]);
+  }, [baseItems, checklist.categories, optimisticDeletedIds, optimisticReorder, pendingMutations]);
   const displayedChecklist = useMemo(
     () => buildDisplayedTravelChecklist(visibleChecklist, dragGroupItems),
     [dragGroupItems, visibleChecklist],
@@ -163,11 +164,11 @@ export function TravelChecklistView({
     const itemsById = new Map(
       visibleChecklist.groups.flatMap((group) => group.items).map((item) => [item.id, item]),
     );
-    const reorderedItems = travelChecklistCategories.flatMap((category) =>
-      current[category]
+    const reorderedItems = checklist.categories.flatMap((category) =>
+      (current[category.slug] ?? [])
         .map((id, index) => {
           const item = itemsById.get(id);
-          return item ? { ...item, category, sortOrder: (index + 1) * 10 } : null;
+          return item ? { ...item, category: category.slug, sortOrder: (index + 1) * 10 } : null;
         })
         .filter((item): item is TravelChecklistItem => item !== null),
     );
@@ -179,7 +180,13 @@ export function TravelChecklistView({
     }
 
     setReorderAnnouncement(
-      `${movedItem.label} movido a ${formatTravelChecklistCategory(movedPosition.category)}, posición ${movedPosition.sortOrder / 10}.`,
+      `${movedItem.label} movido a ${formatTravelChecklistCategory(
+        checklist.categories.find((category) => category.slug === movedPosition.category) ?? {
+          label: movedPosition.category,
+          slug: movedPosition.category,
+          sortOrder: 0,
+        },
+      )}, posición ${movedPosition.sortOrder / 10}.`,
     );
     void commitReorder(
       reorderedItems,
@@ -252,6 +259,7 @@ export function TravelChecklistView({
       id,
       category,
       Math.max(0, position - 1),
+      checklist.categories,
     );
     const reorderedItem = reorderedItems.find((item) => item.id === id);
     const item: TravelChecklistItem = {
@@ -358,7 +366,7 @@ export function TravelChecklistView({
                 <TravelChecklistGroupView
                   deleteAction={deleteAction}
                   group={group}
-                  key={group.category}
+                  key={group.category.slug}
                   openEditSheet={(item) => setSheetState({ item, mode: "edit" })}
                   openCreateSheet={(category) => setSheetState({ category, mode: "create" })}
                   setPackedAction={setPackedAction}
@@ -378,6 +386,7 @@ export function TravelChecklistView({
       </section>
 
       <TravelChecklistSheet
+        categories={checklist.categories}
         createAction={createAction}
         items={visibleChecklist.groups.flatMap((group) => group.items)}
         onClose={() => setSheetState({ mode: "closed" })}
@@ -436,7 +445,7 @@ function TravelChecklistGroupView({
   return (
     <details
       className={styles.group}
-      data-travel-drop-category={group.category}
+      data-travel-drop-category={group.category.slug}
       open={group.progress.pending > 0}
     >
       <summary className={styles.groupHeader}>
@@ -449,7 +458,7 @@ function TravelChecklistGroupView({
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
-              openCreateSheet(group.category);
+              openCreateSheet(group.category.slug);
             }}
             title={`Añadir a ${formatTravelChecklistCategory(group.category)}`}
             type="button"
@@ -459,7 +468,7 @@ function TravelChecklistGroupView({
         </span>
       </summary>
 
-      <TravelChecklistDropZone category={group.category}>
+      <TravelChecklistDropZone category={group.category.slug}>
         {group.items.length === 0 ? (
           <li className={styles.emptyGroupDrop}>Arrastra aquí un elemento.</li>
         ) : null}
@@ -475,7 +484,7 @@ function TravelChecklistGroupView({
             packedAction={setPackedAction}
             pending={isPendingTravelItem(pendingMutations, item.id)}
             index={index}
-            category={group.category}
+            category={group.category.slug}
           />
         ))}
       </TravelChecklistDropZone>
@@ -629,6 +638,7 @@ type SheetState =
     };
 
 function TravelChecklistSheet({
+  categories,
   createAction,
   items,
   onClose,
@@ -637,6 +647,7 @@ function TravelChecklistSheet({
   sheetState,
   updateAction,
 }: {
+  categories: TravelChecklistCategoryDefinition[];
   createAction: (formData: FormData) => void | Promise<void>;
   items: TravelChecklistItem[];
   onClose: () => void;
@@ -688,6 +699,7 @@ function TravelChecklistSheet({
           }
           onOfflineSubmit={isEdit ? onOfflineUpdate : onOfflineCreate}
           items={items}
+          categories={categories}
           onCancel={closeSheet}
           submitLabel={isEdit ? "Guardar cambios" : "Añadir"}
         />
@@ -698,6 +710,7 @@ function TravelChecklistSheet({
 
 function TravelChecklistItemForm({
   action,
+  categories,
   defaults,
   items,
   onCancel,
@@ -705,6 +718,7 @@ function TravelChecklistItemForm({
   submitLabel,
 }: {
   action: (formData: FormData) => void | Promise<void>;
+  categories: TravelChecklistCategoryDefinition[];
   items: TravelChecklistItem[];
   defaults?: {
     id?: string;
@@ -767,8 +781,8 @@ function TravelChecklistItemForm({
           required
           value={category}
         >
-          {travelChecklistCategories.map((category) => (
-            <option key={category} value={category}>
+          {categories.map((category) => (
+            <option key={category.slug} value={category.slug}>
               {formatTravelChecklistCategory(category)}
             </option>
           ))}
@@ -841,7 +855,7 @@ function getTravelItemPosition(items: TravelChecklistItem[], item: TravelCheckli
 
 function createTravelGroupItems(groups: TravelChecklistGroup[]): TravelGroupItems {
   return Object.fromEntries(
-    groups.map((group) => [group.category, group.items.map((item) => item.id)]),
+    groups.map((group) => [group.category.slug, group.items.map((item) => item.id)]),
   ) as TravelGroupItems;
 }
 
@@ -856,15 +870,20 @@ function buildDisplayedTravelChecklist(
   const itemsById = new Map(
     checklist.groups.flatMap((group) => group.items).map((item) => [item.id, item]),
   );
-  const items = travelChecklistCategories.flatMap((category) =>
-    groupItems[category]
+  const items = checklist.categories.flatMap((category) =>
+    (groupItems[category.slug] ?? [])
       .map((id) => itemsById.get(id))
       .filter((item): item is TravelChecklistItem => item !== undefined)
-      .map((item, index) => ({ ...item, category, sortOrder: (index + 1) * 10 })),
+      .map((item, index) => ({
+        ...item,
+        category: category.slug,
+        sortOrder: (index + 1) * 10,
+      })),
   );
 
   return {
-    groups: groupTravelChecklistItems(items),
+    categories: checklist.categories,
+    groups: groupTravelChecklistItems(items, checklist.categories),
     progress: calculateTravelChecklistProgress(items),
   };
 }
@@ -872,6 +891,7 @@ function buildDisplayedTravelChecklist(
 function buildVisibleTravelChecklist(
   baseItems: TravelChecklistItem[],
   pendingMutations: PendingTravelMutation[],
+  categories: TravelChecklistCategoryDefinition[],
 ): TravelChecklist {
   const itemsById = new Map(baseItems.map((item) => [item.id, item]));
 
@@ -934,7 +954,8 @@ function buildVisibleTravelChecklist(
   const items = [...itemsById.values()];
 
   return {
-    groups: groupTravelChecklistItems(items),
+    categories,
+    groups: groupTravelChecklistItems(items, categories),
     progress: calculateTravelChecklistProgress(items),
   };
 }
