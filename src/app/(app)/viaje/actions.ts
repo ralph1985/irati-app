@@ -9,7 +9,9 @@ import { setTravelChecklistItemPacked } from "@/modules/travel/application/set-t
 import { updateTravelChecklistItem } from "@/modules/travel/application/update-travel-checklist-item";
 import {
   isTravelChecklistCategory,
+  reorderTravelChecklistItems,
   TravelChecklistReorder,
+  TravelChecklistItem,
   TravelChecklistCategory,
   TravelChecklistItemValidationError,
 } from "@/modules/travel/domain/travel-checklist-item";
@@ -62,21 +64,32 @@ export async function updateTravelChecklistItemAction(formData: FormData) {
   }
 
   const repository = newRepository();
-  const currentSortOrder = Number(formData.get("sortOrder") ?? 0);
-  const previousCategory = String(formData.get("previousCategory") ?? "");
-  const sortOrder =
-    previousCategory === category && Number.isInteger(currentSortOrder)
-      ? currentSortOrder
-      : await getNextSortOrder(repository, category);
 
   try {
+    const currentItems = await repository.listTravelChecklistItems();
+    const currentItem = currentItems.find((item) => item.id === String(formData.get("id") ?? ""));
+    const targetItems = currentItems.filter(
+      (item) => item.category === category && item.id !== currentItem?.id,
+    );
+    const requestedPosition = Number(formData.get("position") ?? 0);
+    const targetIndex = Number.isInteger(requestedPosition)
+      ? Math.max(0, Math.min(requestedPosition - 1, targetItems.length))
+      : targetItems.length;
+    const reorderedItems = currentItem
+      ? reorderTravelChecklistItems(currentItems, currentItem.id, category, targetIndex)
+      : currentItems;
+    const reorderedItem = reorderedItems.find((item) => item.id === currentItem?.id);
+
     await updateTravelChecklistItem(repository, String(formData.get("id") ?? ""), {
       label: String(formData.get("label") ?? ""),
       category,
-      sortOrder,
+      sortOrder: reorderedItem?.sortOrder ?? targetIndex * 10 + 10,
       isPacked: formData.get("isPacked") === "true",
       notes: String(formData.get("notes") ?? ""),
     });
+    if (reorderedItems.length > 0) {
+      await persistTravelChecklistReorder(reorderedItems);
+    }
   } catch (error) {
     if (error instanceof TravelChecklistItemValidationError) {
       redirect("/viaje?error=validation");
@@ -129,6 +142,16 @@ export async function reorderTravelChecklistItemsAction(formData: FormData) {
   }
 
   invalidateTravelChecklistReads();
+}
+
+async function persistTravelChecklistReorder(items: TravelChecklistItem[]) {
+  const { error } = await createServerSupabaseClient().rpc("reorder_travel_checklist_items", {
+    p_items: items.map(({ id, category, sortOrder }) => ({ id, category, sortOrder })),
+  });
+
+  if (error) {
+    throw error;
+  }
 }
 
 export async function deleteTravelChecklistItemAction(formData: FormData) {

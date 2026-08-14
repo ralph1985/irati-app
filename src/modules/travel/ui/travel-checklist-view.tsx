@@ -17,6 +17,7 @@ import {
   TravelChecklistGroup,
   TravelChecklistItem,
   TravelChecklistProgress,
+  reorderTravelChecklistItems,
   TravelChecklistReorder,
   updateTravelChecklistItemInput,
 } from "../domain/travel-checklist-item";
@@ -239,11 +240,20 @@ export function TravelChecklistView({
     const formData = new FormData(form);
     const category = String(formData.get("category") ?? "");
     const id = String(formData.get("id") ?? "");
+    const position = Number(formData.get("position") ?? 1);
 
     if (!id || !isTravelChecklistCategory(category)) {
       return;
     }
 
+    const currentItems = visibleChecklist.groups.flatMap((group) => group.items);
+    const reorderedItems = reorderTravelChecklistItems(
+      currentItems,
+      id,
+      category,
+      Math.max(0, position - 1),
+    );
+    const reorderedItem = reorderedItems.find((item) => item.id === id);
     const item: TravelChecklistItem = {
       id,
       ...updateTravelChecklistItemInput({
@@ -251,7 +261,7 @@ export function TravelChecklistView({
         isPacked: formData.get("isPacked") === "true",
         label: String(formData.get("label") ?? ""),
         notes: String(formData.get("notes") ?? ""),
-        sortOrder: Number(formData.get("sortOrder") ?? 0),
+        sortOrder: reorderedItem?.sortOrder ?? Number(formData.get("sortOrder") ?? 0),
       }),
       isPacked: formData.get("isPacked") === "true",
     };
@@ -262,6 +272,24 @@ export function TravelChecklistView({
       operation: "update",
       payload: item,
     });
+    if (reorderedItems.length > 0) {
+      await applyOfflineTravelChecklistReorder(
+        reorderedItems.map(({ id: itemId, category: itemCategory, sortOrder }) => ({
+          id: itemId,
+          category: itemCategory,
+          sortOrder,
+        })),
+      );
+      await enqueuePendingTravelMutation({
+        id: `travel-reorder-${item.id}-${crypto.randomUUID()}`,
+        operation: "reorder",
+        payload: reorderedItems.map(({ id: itemId, category: itemCategory, sortOrder }) => ({
+          id: itemId,
+          category: itemCategory,
+          sortOrder,
+        })),
+      });
+    }
     setSheetState({ mode: "closed" });
     dispatchOfflineTravelEvents();
   }
@@ -351,6 +379,7 @@ export function TravelChecklistView({
 
       <TravelChecklistSheet
         createAction={createAction}
+        items={visibleChecklist.groups.flatMap((group) => group.items)}
         onClose={() => setSheetState({ mode: "closed" })}
         onOfflineCreate={createItemOffline}
         onOfflineUpdate={updateItemOffline}
@@ -601,6 +630,7 @@ type SheetState =
 
 function TravelChecklistSheet({
   createAction,
+  items,
   onClose,
   onOfflineCreate,
   onOfflineUpdate,
@@ -608,6 +638,7 @@ function TravelChecklistSheet({
   updateAction,
 }: {
   createAction: (formData: FormData) => void | Promise<void>;
+  items: TravelChecklistItem[];
   onClose: () => void;
   onOfflineCreate: (form: HTMLFormElement) => Promise<void>;
   onOfflineUpdate: (form: HTMLFormElement) => Promise<void>;
@@ -646,6 +677,7 @@ function TravelChecklistSheet({
                   id: sheetState.item.id,
                   label: sheetState.item.label,
                   category: sheetState.item.category,
+                  position: getTravelItemPosition(items, sheetState.item),
                   sortOrder: sheetState.item.sortOrder,
                   isPacked: sheetState.item.isPacked,
                   notes: sheetState.item.notes ?? "",
@@ -655,6 +687,7 @@ function TravelChecklistSheet({
                 : undefined
           }
           onOfflineSubmit={isEdit ? onOfflineUpdate : onOfflineCreate}
+          items={items}
           onCancel={closeSheet}
           submitLabel={isEdit ? "Guardar cambios" : "Añadir"}
         />
@@ -666,15 +699,18 @@ function TravelChecklistSheet({
 function TravelChecklistItemForm({
   action,
   defaults,
+  items,
   onCancel,
   onOfflineSubmit,
   submitLabel,
 }: {
   action: (formData: FormData) => void | Promise<void>;
+  items: TravelChecklistItem[];
   defaults?: {
     id?: string;
     label?: string;
     category: TravelChecklistCategory;
+    position?: number;
     sortOrder?: number;
     isPacked?: boolean;
     notes?: string;
@@ -683,6 +719,12 @@ function TravelChecklistItemForm({
   onOfflineSubmit: (form: HTMLFormElement) => Promise<void>;
   submitLabel: string;
 }) {
+  const [category, setCategory] = useState<TravelChecklistCategory>(defaults?.category ?? "cambio");
+  const [position, setPosition] = useState(defaults?.position ?? 1);
+  const availablePositions =
+    items.filter((item) => item.category === category && item.id !== defaults?.id).length +
+    (defaults?.id ? 1 : 0);
+
   return (
     <form
       action={action}
@@ -700,6 +742,7 @@ function TravelChecklistItemForm({
           <input name="isPacked" type="hidden" value={defaults.isPacked ? "true" : "false"} />
           <input name="sortOrder" type="hidden" value={defaults.sortOrder} />
           <input name="previousCategory" type="hidden" value={defaults.category} />
+          <input name="position" type="hidden" value={position} />
         </>
       ) : null}
 
@@ -710,7 +753,20 @@ function TravelChecklistItemForm({
 
       <label>
         Categoría
-        <select name="category" required defaultValue={defaults?.category ?? "cambio"}>
+        <select
+          name="category"
+          onChange={(event) => {
+            const nextCategory = event.target.value as TravelChecklistCategory;
+            setCategory(nextCategory);
+            setPosition(
+              nextCategory === defaults?.category
+                ? (defaults?.position ?? 1)
+                : items.filter((item) => item.category === nextCategory).length + 1,
+            );
+          }}
+          required
+          value={category}
+        >
           {travelChecklistCategories.map((category) => (
             <option key={category} value={category}>
               {formatTravelChecklistCategory(category)}
@@ -718,6 +774,25 @@ function TravelChecklistItemForm({
           ))}
         </select>
       </label>
+
+      {defaults?.id ? (
+        <label>
+          Posición
+          <select
+            name="positionSelect"
+            onChange={(event) => setPosition(Number(event.target.value))}
+            value={Math.min(position, Math.max(availablePositions, 1))}
+          >
+            {Array.from({ length: Math.max(availablePositions, 1) }, (_, index) => index + 1).map(
+              (option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ),
+            )}
+          </select>
+        </label>
+      ) : null}
 
       <label className={styles.full}>
         Notas
@@ -753,6 +828,15 @@ function formatProgress(progress: TravelChecklistProgress): string {
   }
 
   return `${progress.packed} de ${progress.total}`;
+}
+
+function getTravelItemPosition(items: TravelChecklistItem[], item: TravelChecklistItem): number {
+  return (
+    items
+      .filter((candidate) => candidate.category === item.category)
+      .sort((first, second) => first.sortOrder - second.sortOrder)
+      .findIndex((candidate) => candidate.id === item.id) + 1
+  );
 }
 
 function createTravelGroupItems(groups: TravelChecklistGroup[]): TravelGroupItems {
