@@ -94,6 +94,12 @@ export function TravelChecklistView({
   );
   const visibleGroups = displayedChecklist.groups;
 
+  function handleDeleteOnline(event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) {
+    event.preventDefault();
+    setOptimisticDeletedIds((current) => new Set(current).add(item.id));
+    void deleteAction(new FormData(event.currentTarget));
+  }
+
   useEffect(() => {
     let isActive = true;
 
@@ -410,11 +416,7 @@ export function TravelChecklistView({
                   openCreateSheet={(category) => setSheetState({ category, mode: "create" })}
                   setPackedAction={setPackedAction}
                   pendingMutations={pendingMutations}
-                  onDeleteOnline={async (event, item) => {
-                    event.preventDefault();
-                    setOptimisticDeletedIds((current) => new Set(current).add(item.id));
-                    await deleteAction(new FormData(event.currentTarget));
-                  }}
+                  onDeleteOnline={handleDeleteOnline}
                 />
               ))}
             </div>
@@ -427,6 +429,7 @@ export function TravelChecklistView({
               checklist.locations ?? [],
             )}
             onEdit={(item) => setSheetState({ item, mode: "edit" })}
+            onDeleteOnline={handleDeleteOnline}
             pendingMutations={pendingMutations}
             setPackedAction={setPackedAction}
           />
@@ -479,32 +482,6 @@ function TravelChecklistGroupView({
   setPackedAction: (formData: FormData) => void | Promise<void>;
   onDeleteOnline: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => void;
 }) {
-  async function setPackedOffline(event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) {
-    event.preventDefault();
-
-    const nextPacked = !item.isPacked;
-
-    await setOfflineTravelChecklistItemPacked(item.id, nextPacked);
-    await enqueuePendingTravelMutation({
-      id: `travel-packed-${item.id}-${crypto.randomUUID()}`,
-      operation: "setPacked",
-      payload: { id: item.id, isPacked: nextPacked },
-    });
-    dispatchOfflineTravelEvents();
-  }
-
-  async function deleteItemOffline(event: FormEvent<HTMLFormElement>, id: string) {
-    event.preventDefault();
-
-    await deleteOfflineTravelChecklistItem(id);
-    await enqueuePendingTravelMutation({
-      id: `travel-delete-${id}-${crypto.randomUUID()}`,
-      operation: "delete",
-      payload: { id },
-    });
-    dispatchOfflineTravelEvents();
-  }
-
   return (
     <details
       className={styles.group}
@@ -542,8 +519,8 @@ function TravelChecklistGroupView({
             key={item.id}
             onDeleteOnline={onDeleteOnline}
             onEdit={() => openEditSheet(item)}
-            onOfflineDelete={deleteItemOffline}
-            onOfflinePacked={setPackedOffline}
+            onOfflineDelete={deleteTravelItemOffline}
+            onOfflinePacked={setTravelItemPackedOffline}
             packedAction={setPackedAction}
             pending={isPendingTravelItem(pendingMutations, item.id)}
             index={index}
@@ -614,6 +591,54 @@ function TravelChecklistItemRow({
       data-travel-item-id={item.id}
       ref={ref}
     >
+      <TravelChecklistItemContent
+        deleteAction={deleteAction}
+        dragHandle={
+          <button
+            aria-label={`Mover ${item.label}`}
+            className={styles.dragHandle}
+            ref={handleRef}
+            title="Arrastrar para ordenar"
+            type="button"
+          >
+            <span aria-hidden="true">⋮⋮</span>
+          </button>
+        }
+        item={item}
+        onDeleteOnline={onDeleteOnline}
+        onEdit={onEdit}
+        onOfflineDelete={onOfflineDelete}
+        onOfflinePacked={onOfflinePacked}
+        packedAction={packedAction}
+        pending={pending}
+      />
+    </li>
+  );
+}
+
+function TravelChecklistItemContent({
+  deleteAction,
+  dragHandle,
+  item,
+  onDeleteOnline,
+  onEdit,
+  onOfflineDelete,
+  onOfflinePacked,
+  packedAction,
+  pending,
+}: {
+  deleteAction: (formData: FormData) => void | Promise<void>;
+  dragHandle?: React.ReactNode;
+  item: TravelChecklistItem;
+  onDeleteOnline: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => void;
+  onEdit: () => void;
+  onOfflineDelete: (event: FormEvent<HTMLFormElement>, id: string) => Promise<void>;
+  onOfflinePacked: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => Promise<void>;
+  packedAction: (formData: FormData) => void | Promise<void>;
+  pending: boolean;
+}) {
+  return (
+    <>
       <form
         action={packedAction}
         className={styles.itemCheck}
@@ -634,23 +659,12 @@ function TravelChecklistItemRow({
           <span aria-hidden="true">{item.isPacked ? "✓" : ""}</span>
         </button>
       </form>
-
       <div className={styles.itemBody}>
         <strong>{item.label}</strong>
         {item.notes ? <p>{item.notes}</p> : null}
       </div>
-
-      <button
-        aria-label={`Mover ${item.label}`}
-        className={styles.dragHandle}
-        ref={handleRef}
-        title="Arrastrar para ordenar"
-        type="button"
-      >
-        <span aria-hidden="true">⋮⋮</span>
-      </button>
-
-      <div className={styles.itemActions}>
+      {dragHandle ?? <span aria-hidden="true" className={styles.dragSpacer} />}
+      <div className={styles.itemActions} data-pending={pending}>
         <button
           aria-label={`Editar ${item.label}`}
           className={styles.iconButton}
@@ -668,7 +682,6 @@ function TravelChecklistItemRow({
               void onOfflineDelete(event, item.id);
               return;
             }
-
             onDeleteOnline(event, item);
           }}
         >
@@ -683,7 +696,7 @@ function TravelChecklistItemRow({
           </button>
         </ConfirmSubmit>
       </div>
-    </li>
+    </>
   );
 }
 
@@ -926,14 +939,49 @@ function formatProgress(progress: TravelChecklistProgress): string {
   return `${progress.packed} de ${progress.total}`;
 }
 
+async function setTravelItemPackedOffline(
+  event: FormEvent<HTMLFormElement>,
+  item: TravelChecklistItem,
+): Promise<void> {
+  event.preventDefault();
+  const nextPacked = !item.isPacked;
+
+  await setOfflineTravelChecklistItemPacked(item.id, nextPacked);
+  await enqueuePendingTravelMutation({
+    id: `travel-packed-${item.id}-${crypto.randomUUID()}`,
+    operation: "setPacked",
+    payload: { id: item.id, isPacked: nextPacked },
+  });
+  dispatchOfflineTravelEvents();
+}
+
+async function deleteTravelItemOffline(
+  event: FormEvent<HTMLFormElement>,
+  id: string,
+): Promise<void> {
+  event.preventDefault();
+
+  await deleteOfflineTravelChecklistItem(id);
+  await enqueuePendingTravelMutation({
+    id: `travel-delete-${id}-${crypto.randomUUID()}`,
+    operation: "delete",
+    payload: { id },
+  });
+  dispatchOfflineTravelEvents();
+}
+
 function TravelLocationGroups({
+  deleteAction,
   groups,
+  onDeleteOnline,
   onEdit,
   setPackedAction,
+  pendingMutations,
 }: {
   groups: ReturnType<typeof groupTravelChecklistItemsByLocation>;
-  onEdit: (item: TravelChecklistItem) => void;
   deleteAction: (formData: FormData) => void | Promise<void>;
+  onDeleteOnline: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => void;
+  onEdit: (item: TravelChecklistItem) => void;
   pendingMutations: PendingTravelMutation[];
   setPackedAction: (formData: FormData) => void | Promise<void>;
 }) {
@@ -950,46 +998,16 @@ function TravelLocationGroups({
           <ol className={styles.items}>
             {group.items.map((item) => (
               <li data-packed={item.isPacked} key={item.id}>
-                <form
-                  action={setPackedAction}
-                  className={styles.itemCheck}
-                  onSubmit={(event) => {
-                    if (!navigator.onLine) {
-                      event.preventDefault();
-                      const nextPacked = !item.isPacked;
-                      void setOfflineTravelChecklistItemPacked(item.id, nextPacked)
-                        .then(() =>
-                          enqueuePendingTravelMutation({
-                            id: `travel-packed-${item.id}-${crypto.randomUUID()}`,
-                            operation: "setPacked",
-                            payload: { id: item.id, isPacked: nextPacked },
-                          }),
-                        )
-                        .then(dispatchOfflineTravelEvents);
-                    }
-                  }}
-                >
-                  <input name="id" type="hidden" value={item.id} />
-                  <input name="isPacked" type="hidden" value={item.isPacked ? "false" : "true"} />
-                  <button
-                    aria-label={item.isPacked ? "Marcar como pendiente" : "Marcar como preparado"}
-                    type="submit"
-                  >
-                    <span aria-hidden="true">{item.isPacked ? "✓" : ""}</span>
-                  </button>
-                </form>
-                <div className={styles.itemBody}>
-                  <strong>{item.label}</strong>
-                  {item.notes ? <p>{item.notes}</p> : null}
-                </div>
-                <button
-                  aria-label={`Editar ${item.label}`}
-                  className={styles.iconButton}
-                  onClick={() => onEdit(item)}
-                  type="button"
-                >
-                  ✎
-                </button>
+                <TravelChecklistItemContent
+                  deleteAction={deleteAction}
+                  item={item}
+                  onDeleteOnline={onDeleteOnline}
+                  onEdit={() => onEdit(item)}
+                  onOfflineDelete={deleteTravelItemOffline}
+                  onOfflinePacked={setTravelItemPackedOffline}
+                  packedAction={setPackedAction}
+                  pending={isPendingTravelItem(pendingMutations, item.id)}
+                />
               </li>
             ))}
           </ol>

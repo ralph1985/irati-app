@@ -335,6 +335,12 @@
   outline-offset: 2px;
 }
 
+.dragSpacer {
+  display: block;
+  width: 28px;
+  height: 30px;
+}
+
 .itemCheck button {
   display: grid;
   width: 30px;
