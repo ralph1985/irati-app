@@ -433,14 +433,21 @@ function OfflineVaccinesScreen({
 function OfflineTravelScreen({ snapshot }: { snapshot: OfflineSnapshot }) {
   const checklist = useMemo(() => {
     const categories = snapshot.travelChecklistCategories ?? [];
+    const locations = snapshot.travelStorageLocations ?? [];
     const groups = groupTravelChecklistItems(snapshot.travelChecklistItems, categories);
 
     return {
       categories,
+      locations,
       groups,
+      locationGroups: [],
       progress: calculateTravelChecklistProgress(snapshot.travelChecklistItems),
     };
-  }, [snapshot.travelChecklistCategories, snapshot.travelChecklistItems]);
+  }, [
+    snapshot.travelChecklistCategories,
+    snapshot.travelChecklistItems,
+    snapshot.travelStorageLocations,
+  ]);
 
   return (
     <main className={travelStyles.main}>
@@ -456,6 +463,7 @@ function OfflineTravelScreen({ snapshot }: { snapshot: OfflineSnapshot }) {
         resetAction={noopAction}
         setPackedAction={noopAction}
         updateAction={noopAction}
+        showOrganizationPanel={false}
       />
     </main>
   );

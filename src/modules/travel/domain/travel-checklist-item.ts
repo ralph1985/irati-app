@@ -6,6 +6,13 @@ export type TravelChecklistCategoryDefinition = {
   sortOrder: number;
 };
 
+export type TravelStorageLocation = {
+  id: string;
+  label: string;
+  parentId: string | null;
+  sortOrder: number;
+};
+
 export type TravelChecklistItem = {
   id: string;
   label: string;
@@ -13,10 +20,15 @@ export type TravelChecklistItem = {
   sortOrder: number;
   isPacked: boolean;
   notes?: string | null;
+  storageLocationId?: string | null;
 };
 
-export type NewTravelChecklistItem = Omit<TravelChecklistItem, "id" | "isPacked"> & {
+export type NewTravelChecklistItem = Omit<
+  TravelChecklistItem,
+  "id" | "isPacked" | "storageLocationId"
+> & {
   isPacked?: boolean;
+  storageLocationId?: string | null;
 };
 
 export type TravelChecklistProgress = {
@@ -29,6 +41,11 @@ export type TravelChecklistGroup = {
   category: TravelChecklistCategoryDefinition;
   items: TravelChecklistItem[];
   progress: TravelChecklistProgress;
+};
+
+export type TravelStorageLocationGroup = {
+  location: TravelStorageLocation | null;
+  items: TravelChecklistItem[];
 };
 
 export type TravelChecklistReorder = {
@@ -90,6 +107,24 @@ export function groupTravelChecklistItems(
       progress: calculateTravelChecklistProgress(categoryItems),
     };
   });
+}
+
+export function groupTravelChecklistItemsByLocation(
+  items: TravelChecklistItem[],
+  locations: TravelStorageLocation[],
+): TravelStorageLocationGroup[] {
+  const groups = locations.map((location) => ({ location, items: [] as TravelChecklistItem[] }));
+  const unassigned: TravelStorageLocationGroup = { location: null, items: [] };
+  const groupsById = new Map(groups.map((group) => [group.location.id, group]));
+
+  for (const item of items) {
+    const group = item.storageLocationId ? groupsById.get(item.storageLocationId) : undefined;
+    (group ?? unassigned).items.push(item);
+  }
+
+  return [...groups.filter((group) => group.items.length > 0), unassigned].filter(
+    (group) => group.items.length > 0,
+  );
 }
 
 export function sortTravelChecklistItems(
@@ -177,7 +212,29 @@ function normalizeTravelChecklistItem(input: NewTravelChecklistItem): NewTravelC
     sortOrder: input.sortOrder,
     isPacked: input.isPacked ?? false,
     notes: input.notes?.trim() || null,
+    storageLocationId: input.storageLocationId ?? null,
   };
+}
+
+export function normalizeTravelStorageLocationLabel(label: string): string {
+  return label.trim();
+}
+
+export function validateTravelStorageLocationLabel(label: string): string[] {
+  return label.trim().length === 0 || label.trim().length > 80
+    ? ["La ubicación debe tener entre 1 y 80 caracteres."]
+    : [];
+}
+
+export function createTravelCategorySlug(label: string): string {
+  return label
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 40);
 }
 
 function validateTravelChecklistItem(input: NewTravelChecklistItem): string[] {

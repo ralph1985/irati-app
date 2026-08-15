@@ -27,6 +27,7 @@ export async function GET() {
       appliedVaccineDoses,
       travelChecklistCategories,
       travelChecklistItems,
+      travelStorageLocations,
     ] = await Promise.all([
       getBabyProfile(profileRepository),
       weightRepository.listWeightEntries(),
@@ -34,6 +35,7 @@ export async function GET() {
       vaccineRepository.listAppliedVaccineDoses(),
       travelRepository.listTravelChecklistCategories(),
       travelRepository.listTravelChecklistItems(),
+      travelRepository.listTravelStorageLocations(),
     ]);
     const snapshot: OfflineSnapshot = {
       appliedVaccineDoses,
@@ -41,6 +43,7 @@ export async function GET() {
       profile,
       travelChecklistItems,
       travelChecklistCategories,
+      travelStorageLocations,
       weightEntries,
     };
 

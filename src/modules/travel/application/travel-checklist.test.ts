@@ -9,6 +9,7 @@ import { updateTravelChecklistItem } from "./update-travel-checklist-item";
 import {
   TravelChecklistCategoryDefinition,
   TravelChecklistItem,
+  TravelStorageLocation,
 } from "../domain/travel-checklist-item";
 
 describe("travel checklist use cases", () => {
@@ -56,6 +57,7 @@ describe("travel checklist use cases", () => {
 
 class FakeTravelChecklistRepository implements TravelChecklistRepository {
   private items: TravelChecklistItem[];
+  private locations: TravelStorageLocation[] = [];
 
   constructor(items: TravelChecklistItem[] = []) {
     this.items = items;
@@ -68,6 +70,23 @@ class FakeTravelChecklistRepository implements TravelChecklistRepository {
   async listTravelChecklistItems() {
     return this.items;
   }
+
+  async listTravelStorageLocations() {
+    return this.locations;
+  }
+
+  async createTravelChecklistCategory() {
+    return categories[0];
+  }
+  async updateTravelChecklistCategory() {}
+  async deleteTravelChecklistCategory() {}
+  async createTravelStorageLocation(location: Omit<TravelStorageLocation, "id">) {
+    const created = { id: `location-${this.locations.length + 1}`, ...location };
+    this.locations.push(created);
+    return created;
+  }
+  async updateTravelStorageLocation() {}
+  async deleteTravelStorageLocation() {}
 
   async createTravelChecklistItem(entry: Omit<TravelChecklistItem, "id">) {
     const item = {
@@ -127,6 +146,7 @@ function item(overrides: Partial<TravelChecklistItem>): TravelChecklistItem {
     sortOrder: 10,
     isPacked: false,
     notes: null,
+    storageLocationId: null,
     ...overrides,
   };
 }

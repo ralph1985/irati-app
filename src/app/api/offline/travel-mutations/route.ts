@@ -111,6 +111,7 @@ async function applyTravelMutation(mutation: PendingTravelMutation): Promise<voi
       label: item.label,
       notes: item.notes ?? null,
       sort_order: item.sortOrder,
+      storage_location_id: item.storageLocationId ?? null,
       updated_at: new Date().toISOString(),
     });
 
@@ -125,10 +126,10 @@ async function applyTravelMutation(mutation: PendingTravelMutation): Promise<voi
     .from("travel_checklist_items")
     .update({
       category: item.category,
-      is_packed: item.isPacked ?? false,
       label: item.label,
       notes: item.notes ?? null,
       sort_order: item.sortOrder,
+      storage_location_id: item.storageLocationId ?? null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", mutation.payload.id);
@@ -181,7 +182,7 @@ function isTravelReorderPayload(
 
 function isTravelItemPayload(
   value: PendingTravelMutation["payload"],
-): value is Extract<PendingTravelMutation["payload"], { label: string }> {
+): value is import("@/modules/travel/domain/travel-checklist-item").TravelChecklistItem {
   return (
     "label" in value &&
     "category" in value &&

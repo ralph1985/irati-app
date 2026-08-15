@@ -11,12 +11,14 @@ import {
   createTravelChecklistItem,
   formatTravelChecklistCategory,
   groupTravelChecklistItems,
+  groupTravelChecklistItemsByLocation,
   isTravelChecklistCategory,
   TravelChecklistCategoryDefinition,
   TravelChecklistCategory,
   TravelChecklistGroup,
   TravelChecklistItem,
   TravelChecklistProgress,
+  TravelStorageLocation,
   reorderTravelChecklistItems,
   TravelChecklistReorder,
   updateTravelChecklistItemInput,
@@ -42,6 +44,13 @@ type TravelChecklistViewProps = {
   setPackedAction: (formData: FormData) => void | Promise<void>;
   updateAction: (formData: FormData) => void | Promise<void>;
   reorderAction?: (formData: FormData) => void | Promise<void>;
+  createCategoryAction?: (formData: FormData) => void | Promise<void>;
+  updateCategoryAction?: (formData: FormData) => void | Promise<void>;
+  deleteCategoryAction?: (formData: FormData) => void | Promise<void>;
+  createLocationAction?: (formData: FormData) => void | Promise<void>;
+  updateLocationAction?: (formData: FormData) => void | Promise<void>;
+  deleteLocationAction?: (formData: FormData) => void | Promise<void>;
+  showOrganizationPanel?: boolean;
 };
 
 type TravelGroupItems = Record<string, string[]>;
@@ -54,7 +63,15 @@ export function TravelChecklistView({
   setPackedAction,
   updateAction,
   reorderAction = async () => {},
+  createCategoryAction = async () => {},
+  updateCategoryAction = async () => {},
+  deleteCategoryAction = async () => {},
+  createLocationAction = async () => {},
+  updateLocationAction = async () => {},
+  deleteLocationAction = async () => {},
+  showOrganizationPanel = true,
 }: TravelChecklistViewProps) {
+  const [viewMode, setViewMode] = useState<"prepare" | "location">("prepare");
   const [sheetState, setSheetState] = useState<SheetState>({ mode: "closed" });
   const [pendingMutations, setPendingMutations] = useState<PendingTravelMutation[]>([]);
   const [optimisticDeletedIds, setOptimisticDeletedIds] = useState<Set<string>>(new Set());
@@ -223,6 +240,7 @@ export function TravelChecklistView({
         category,
         label: String(formData.get("label") ?? ""),
         notes: String(formData.get("notes") ?? ""),
+        storageLocationId: String(formData.get("storageLocationId") ?? "") || null,
         sortOrder: getNextOfflineSortOrder(
           visibleChecklist.groups.flatMap((group) => group.items),
           category,
@@ -269,6 +287,7 @@ export function TravelChecklistView({
         isPacked: formData.get("isPacked") === "true",
         label: String(formData.get("label") ?? ""),
         notes: String(formData.get("notes") ?? ""),
+        storageLocationId: String(formData.get("storageLocationId") ?? "") || null,
         sortOrder: reorderedItem?.sortOrder ?? Number(formData.get("sortOrder") ?? 0),
       }),
       isPacked: formData.get("isPacked") === "true",
@@ -315,6 +334,22 @@ export function TravelChecklistView({
           value={visibleChecklist.progress.packed}
         />
         <div className={styles.actions}>
+          <div className={styles.modeSwitch} aria-label="Modo de organización" role="group">
+            <button
+              aria-pressed={viewMode === "prepare"}
+              onClick={() => setViewMode("prepare")}
+              type="button"
+            >
+              Preparar
+            </button>
+            <button
+              aria-pressed={viewMode === "location"}
+              onClick={() => setViewMode("location")}
+              type="button"
+            >
+              Dónde está
+            </button>
+          </div>
           <button
             aria-label="Añadir a la lista"
             className={styles.iconCommandButton}
@@ -350,12 +385,16 @@ export function TravelChecklistView({
           <h2 id="travel-list-title">Checklist</h2>
           <span>{visibleChecklist.progress.pending} pendientes</span>
         </div>
-        <p className={styles.orderHint}>Arrastra desde ⋮⋮ para ordenar o cambiar de sección.</p>
+        <p className={styles.orderHint}>
+          {viewMode === "prepare"
+            ? "Arrastra desde ⋮⋮ para ordenar o cambiar de sección."
+            : "La misma lista, agrupada por bolso y compartimento."}
+        </p>
         <p aria-live="polite" className={styles.srOnly} role="status">
           {reorderAnnouncement}
         </p>
 
-        {visibleGroups.some((group) => group.items.length > 0) ? (
+        {viewMode === "prepare" && visibleGroups.some((group) => group.items.length > 0) ? (
           <DragDropProvider
             onDragEnd={handleDragEnd}
             onDragOver={handleDragOver}
@@ -380,6 +419,17 @@ export function TravelChecklistView({
               ))}
             </div>
           </DragDropProvider>
+        ) : viewMode === "location" ? (
+          <TravelLocationGroups
+            deleteAction={deleteAction}
+            groups={groupTravelChecklistItemsByLocation(
+              visibleChecklist.groups.flatMap((group) => group.items),
+              checklist.locations ?? [],
+            )}
+            onEdit={(item) => setSheetState({ item, mode: "edit" })}
+            pendingMutations={pendingMutations}
+            setPackedAction={setPackedAction}
+          />
         ) : (
           <p className={styles.empty}>Aún no hay nada en la lista de viaje.</p>
         )}
@@ -394,7 +444,20 @@ export function TravelChecklistView({
         onOfflineUpdate={updateItemOffline}
         sheetState={sheetState}
         updateAction={updateAction}
+        locations={checklist.locations ?? []}
       />
+      {showOrganizationPanel ? (
+        <TravelOrganizationPanel
+          categories={checklist.categories}
+          locations={checklist.locations ?? []}
+          createCategoryAction={createCategoryAction}
+          updateCategoryAction={updateCategoryAction}
+          deleteCategoryAction={deleteCategoryAction}
+          createLocationAction={createLocationAction}
+          updateLocationAction={updateLocationAction}
+          deleteLocationAction={deleteLocationAction}
+        />
+      ) : null}
     </>
   );
 }
@@ -646,6 +709,7 @@ function TravelChecklistSheet({
   onOfflineUpdate,
   sheetState,
   updateAction,
+  locations,
 }: {
   categories: TravelChecklistCategoryDefinition[];
   createAction: (formData: FormData) => void | Promise<void>;
@@ -655,6 +719,7 @@ function TravelChecklistSheet({
   onOfflineUpdate: (form: HTMLFormElement) => Promise<void>;
   sheetState: SheetState;
   updateAction: (formData: FormData) => void | Promise<void>;
+  locations: TravelStorageLocation[];
 }) {
   if (sheetState.mode === "closed") {
     return null;
@@ -692,6 +757,7 @@ function TravelChecklistSheet({
                   sortOrder: sheetState.item.sortOrder,
                   isPacked: sheetState.item.isPacked,
                   notes: sheetState.item.notes ?? "",
+                  storageLocationId: sheetState.item.storageLocationId ?? null,
                 }
               : sheetState.category
                 ? { category: sheetState.category }
@@ -700,6 +766,7 @@ function TravelChecklistSheet({
           onOfflineSubmit={isEdit ? onOfflineUpdate : onOfflineCreate}
           items={items}
           categories={categories}
+          locations={locations}
           onCancel={closeSheet}
           submitLabel={isEdit ? "Guardar cambios" : "Añadir"}
         />
@@ -711,6 +778,7 @@ function TravelChecklistSheet({
 function TravelChecklistItemForm({
   action,
   categories,
+  locations,
   defaults,
   items,
   onCancel,
@@ -719,6 +787,7 @@ function TravelChecklistItemForm({
 }: {
   action: (formData: FormData) => void | Promise<void>;
   categories: TravelChecklistCategoryDefinition[];
+  locations: TravelStorageLocation[];
   items: TravelChecklistItem[];
   defaults?: {
     id?: string;
@@ -728,6 +797,7 @@ function TravelChecklistItemForm({
     sortOrder?: number;
     isPacked?: boolean;
     notes?: string;
+    storageLocationId?: string | null;
   };
   onCancel: () => void;
   onOfflineSubmit: (form: HTMLFormElement) => Promise<void>;
@@ -809,6 +879,18 @@ function TravelChecklistItemForm({
       ) : null}
 
       <label className={styles.full}>
+        Ubicación
+        <select name="storageLocationId" defaultValue={defaults?.storageLocationId ?? ""}>
+          <option value="">Sin ubicación</option>
+          {locations.map((location) => (
+            <option key={location.id} value={location.id}>
+              {location.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className={styles.full}>
         Notas
         <textarea name="notes" rows={3} defaultValue={defaults?.notes ?? ""} />
       </label>
@@ -842,6 +924,224 @@ function formatProgress(progress: TravelChecklistProgress): string {
   }
 
   return `${progress.packed} de ${progress.total}`;
+}
+
+function TravelLocationGroups({
+  groups,
+  onEdit,
+  setPackedAction,
+}: {
+  groups: ReturnType<typeof groupTravelChecklistItemsByLocation>;
+  onEdit: (item: TravelChecklistItem) => void;
+  deleteAction: (formData: FormData) => void | Promise<void>;
+  pendingMutations: PendingTravelMutation[];
+  setPackedAction: (formData: FormData) => void | Promise<void>;
+}) {
+  if (groups.length === 0) return <p className={styles.empty}>Aún no hay ubicaciones asignadas.</p>;
+
+  return (
+    <div className={styles.groups}>
+      {groups.map((group) => (
+        <details className={styles.group} key={group.location?.id ?? "unassigned"} open>
+          <summary className={styles.groupHeader}>
+            <span className={styles.groupTitle}>{group.location?.label ?? "Sin ubicación"}</span>
+            <span>{group.items.length}</span>
+          </summary>
+          <ol className={styles.items}>
+            {group.items.map((item) => (
+              <li data-packed={item.isPacked} key={item.id}>
+                <form
+                  action={setPackedAction}
+                  className={styles.itemCheck}
+                  onSubmit={(event) => {
+                    if (!navigator.onLine) {
+                      event.preventDefault();
+                      const nextPacked = !item.isPacked;
+                      void setOfflineTravelChecklistItemPacked(item.id, nextPacked)
+                        .then(() =>
+                          enqueuePendingTravelMutation({
+                            id: `travel-packed-${item.id}-${crypto.randomUUID()}`,
+                            operation: "setPacked",
+                            payload: { id: item.id, isPacked: nextPacked },
+                          }),
+                        )
+                        .then(dispatchOfflineTravelEvents);
+                    }
+                  }}
+                >
+                  <input name="id" type="hidden" value={item.id} />
+                  <input name="isPacked" type="hidden" value={item.isPacked ? "false" : "true"} />
+                  <button
+                    aria-label={item.isPacked ? "Marcar como pendiente" : "Marcar como preparado"}
+                    type="submit"
+                  >
+                    <span aria-hidden="true">{item.isPacked ? "✓" : ""}</span>
+                  </button>
+                </form>
+                <div className={styles.itemBody}>
+                  <strong>{item.label}</strong>
+                  {item.notes ? <p>{item.notes}</p> : null}
+                </div>
+                <button
+                  aria-label={`Editar ${item.label}`}
+                  className={styles.iconButton}
+                  onClick={() => onEdit(item)}
+                  type="button"
+                >
+                  ✎
+                </button>
+              </li>
+            ))}
+          </ol>
+        </details>
+      ))}
+    </div>
+  );
+}
+
+function TravelOrganizationPanel({
+  categories,
+  locations,
+  createCategoryAction,
+  updateCategoryAction,
+  deleteCategoryAction,
+  createLocationAction,
+  updateLocationAction,
+  deleteLocationAction,
+}: {
+  categories: TravelChecklistCategoryDefinition[];
+  locations: TravelStorageLocation[];
+  createCategoryAction: (formData: FormData) => void | Promise<void>;
+  updateCategoryAction: (formData: FormData) => void | Promise<void>;
+  deleteCategoryAction: (formData: FormData) => void | Promise<void>;
+  createLocationAction: (formData: FormData) => void | Promise<void>;
+  updateLocationAction: (formData: FormData) => void | Promise<void>;
+  deleteLocationAction: (formData: FormData) => void | Promise<void>;
+}) {
+  return (
+    <details className={styles.panel}>
+      <summary className={styles.sectionTitle}>
+        <h2>Organizar la lista</h2>
+        <span>Editar categorías y ubicaciones</span>
+      </summary>
+      <div className={styles.organizationGrid}>
+        <section aria-labelledby="travel-categories-title">
+          <h3 id="travel-categories-title">Categorías de preparación</h3>
+          {categories.map((category) => (
+            <form
+              action={updateCategoryAction}
+              className={styles.organizationRow}
+              key={category.slug}
+            >
+              <input name="slug" type="hidden" value={category.slug} />
+              <input
+                aria-label={`Nombre de ${category.label}`}
+                maxLength={80}
+                name="label"
+                required
+                defaultValue={category.label}
+              />
+              <input
+                aria-label={`Orden de ${category.label}`}
+                min="0"
+                name="sortOrder"
+                type="number"
+                defaultValue={category.sortOrder}
+              />
+              <button title="Guardar categoría" type="submit">
+                ✓
+              </button>
+              <ConfirmSubmit
+                action={deleteCategoryAction}
+                message={`¿Borrar la categoría “${category.label}”? Primero debe estar vacía.`}
+              >
+                <input name="slug" type="hidden" value={category.slug} />
+                <button className={styles.dangerIconButton} title="Borrar categoría" type="submit">
+                  ×
+                </button>
+              </ConfirmSubmit>
+            </form>
+          ))}
+          <form action={createCategoryAction} className={styles.inlineCreate}>
+            <input maxLength={80} name="label" placeholder="Nueva categoría" required />
+            <button type="submit">Añadir</button>
+          </form>
+        </section>
+        <section aria-labelledby="travel-locations-title">
+          <h3 id="travel-locations-title">Dónde está guardado</h3>
+          {locations.map((location) => (
+            <form
+              action={updateLocationAction}
+              className={styles.organizationRow}
+              key={location.id}
+            >
+              <input name="id" type="hidden" value={location.id} />
+              <input
+                aria-label={`Nombre de ${location.label}`}
+                maxLength={80}
+                name="label"
+                required
+                defaultValue={location.label}
+              />
+              <select
+                aria-label={`Contenedor de ${location.label}`}
+                name="parentId"
+                defaultValue={location.parentId ?? ""}
+              >
+                <option value="">Principal</option>
+                {locations
+                  .filter((candidate) => candidate.id !== location.id)
+                  .map((candidate) => (
+                    <option key={candidate.id} value={candidate.id}>
+                      {candidate.label}
+                    </option>
+                  ))}
+              </select>
+              <input
+                aria-label={`Orden de ${location.label}`}
+                min="0"
+                name="sortOrder"
+                type="number"
+                defaultValue={location.sortOrder}
+              />
+              <button title="Guardar ubicación" type="submit">
+                ✓
+              </button>
+              <ConfirmSubmit
+                action={deleteLocationAction}
+                message={`¿Borrar “${location.label}”? Primero debe estar vacía.`}
+              >
+                <input name="id" type="hidden" value={location.id} />
+                <button className={styles.dangerIconButton} title="Borrar ubicación" type="submit">
+                  ×
+                </button>
+              </ConfirmSubmit>
+            </form>
+          ))}
+          <form action={createLocationAction} className={styles.inlineCreate}>
+            <input
+              maxLength={80}
+              name="label"
+              placeholder="Bolso, bolsa o compartimento"
+              required
+            />
+            <select name="parentId">
+              <option value="">Principal</option>
+              {locations
+                .filter((location) => !location.parentId)
+                .map((location) => (
+                  <option key={location.id} value={location.id}>
+                    {location.label}
+                  </option>
+                ))}
+            </select>
+            <input min="0" name="sortOrder" type="number" defaultValue="10" />
+            <button type="submit">Añadir</button>
+          </form>
+        </section>
+      </div>
+    </details>
+  );
 }
 
 function getTravelItemPosition(items: TravelChecklistItem[], item: TravelChecklistItem): number {
@@ -946,7 +1246,11 @@ function buildVisibleTravelChecklist(
       continue;
     }
 
-    if ("label" in mutation.payload) {
+    if (
+      "label" in mutation.payload &&
+      "category" in mutation.payload &&
+      "isPacked" in mutation.payload
+    ) {
       itemsById.set(mutation.payload.id, mutation.payload);
     }
   }

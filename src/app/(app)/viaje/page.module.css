@@ -79,6 +79,86 @@
   gap: 8px;
 }
 
+.modeSwitch {
+  display: flex;
+  flex: 1;
+  gap: 4px;
+  border-radius: 10px;
+  background: #f5f3ff;
+  padding: 3px;
+}
+
+.modeSwitch button {
+  flex: 1;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #6b587d;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 7px 8px;
+}
+
+.modeSwitch button[aria-pressed="true"] {
+  background: #fff;
+  color: #5b21b6;
+  box-shadow: 0 2px 8px rgba(76, 29, 149, 0.12);
+}
+
+.organizationGrid {
+  display: grid;
+  gap: 18px;
+}
+
+.organizationGrid h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.organizationRow,
+.inlineCreate {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px auto auto;
+  gap: 5px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.organizationRow input,
+.organizationRow select,
+.inlineCreate input,
+.inlineCreate select {
+  min-width: 0;
+  border: 1px solid #ddd6fe;
+  border-radius: 8px;
+  padding: 7px;
+  font: inherit;
+  font-size: 13px;
+}
+
+.organizationRow button,
+.inlineCreate button {
+  border: 0;
+  border-radius: 8px;
+  background: #ede9fe;
+  color: #5b21b6;
+  font: inherit;
+  font-weight: 800;
+  padding: 7px 9px;
+}
+
+.inlineCreate {
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-top: 10px;
+}
+
+@media (min-width: 700px) {
+  .organizationGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .actions form {
   display: contents;
 }

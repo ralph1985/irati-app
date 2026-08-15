@@ -36,13 +36,14 @@ describe("Irati offline database", () => {
       profile: null,
       travelChecklistCategories: [],
       travelChecklistItems: [],
+      travelStorageLocations: [],
       weightEntries: [],
     });
     await expect(readSyncMetadata()).resolves.toMatchObject({
       lastError: null,
       lastSuccessfulSyncAt: null,
       offlineAccessGranted: false,
-      schemaVersion: 5,
+      schemaVersion: 6,
     });
   });
 
@@ -86,6 +87,7 @@ describe("Irati offline database", () => {
             sortOrder: 10,
           },
         ],
+        travelStorageLocations: [],
         weightEntries: [
           {
             id: "weight-1",
@@ -109,7 +111,7 @@ describe("Irati offline database", () => {
     await expect(readSyncMetadata()).resolves.toMatchObject({
       lastSuccessfulSyncAt: "2026-07-23T10:00:00.000Z",
       offlineAccessGranted: true,
-      schemaVersion: 5,
+      schemaVersion: 6,
     });
   });
 
@@ -120,6 +122,7 @@ describe("Irati offline database", () => {
         plannedVaccineDoses: [],
         profile: { birthDate: "2026-07-02", cipa: null, name: "Irati" },
         travelChecklistItems: [],
+        travelStorageLocations: [],
         weightEntries: [],
       },
       "2026-07-23T10:00:00.000Z",
@@ -133,6 +136,7 @@ describe("Irati offline database", () => {
       profile: null,
       travelChecklistCategories: [],
       travelChecklistItems: [],
+      travelStorageLocations: [],
       weightEntries: [],
     });
     await expect(readSyncMetadata()).resolves.toMatchObject({

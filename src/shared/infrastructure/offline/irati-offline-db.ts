@@ -5,6 +5,7 @@ import type {
   TravelChecklistItem,
   TravelChecklistCategoryDefinition,
   TravelChecklistReorder,
+  TravelStorageLocation,
 } from "@/modules/travel/domain/travel-checklist-item";
 import type { PendingVaccineMutation as PendingVaccineMutationPayload } from "@/modules/vaccines/application/vaccine-offline-conflicts";
 import type {
@@ -20,6 +21,7 @@ export type OfflineSnapshot = {
   appliedVaccineDoses: AppliedVaccineDose[];
   travelChecklistItems: TravelChecklistItem[];
   travelChecklistCategories?: TravelChecklistCategoryDefinition[];
+  travelStorageLocations?: TravelStorageLocation[];
 };
 
 export type SyncMetadata = {
@@ -44,7 +46,18 @@ export type PendingWeightMutation = {
 };
 
 export type PendingTravelMutationOperation =
-  "create" | "update" | "setPacked" | "delete" | "reset" | "reorder";
+  | "create"
+  | "update"
+  | "setPacked"
+  | "delete"
+  | "reset"
+  | "reorder"
+  | "createCategory"
+  | "updateCategory"
+  | "deleteCategory"
+  | "createLocation"
+  | "updateLocation"
+  | "deleteLocation";
 
 export type PendingTravelMutation = {
   id: string;
@@ -54,7 +67,10 @@ export type PendingTravelMutation = {
     | TravelChecklistItem
     | { id: string; isPacked?: boolean }
     | { resetAt: string }
-    | TravelChecklistReorder[];
+    | TravelChecklistReorder[]
+    | TravelStorageLocation
+    | { id: string; label: string; sortOrder: number; parentId: string | null }
+    | { slug: string; label: string; sortOrder: number };
   createdAt: string;
   lastError: string | null;
 };
@@ -73,7 +89,7 @@ type StoredBabyProfile = BabyProfile & {
   id: "irati";
 };
 
-const currentSchemaVersion = 5;
+const currentSchemaVersion = 6;
 const profileId = "irati";
 const metadataId = "main";
 
@@ -84,6 +100,7 @@ class IratiOfflineDatabase extends Dexie {
   appliedVaccineDoses!: Table<AppliedVaccineDose, string>;
   travelChecklistItems!: Table<TravelChecklistItem, string>;
   travelChecklistCategories!: Table<TravelChecklistCategoryDefinition, string>;
+  travelStorageLocations!: Table<TravelStorageLocation, string>;
   syncMetadata!: Table<SyncMetadata, string>;
   pendingMutations!: Table<PendingMutation, string>;
   calendarSnapshots!: Table<StoredCalendarSnapshot, string>;
@@ -99,6 +116,7 @@ class IratiOfflineDatabase extends Dexie {
       syncMetadata: "id",
       travelChecklistItems: "id, category, sortOrder, isPacked",
       travelChecklistCategories: "slug, sortOrder",
+      travelStorageLocations: "id, parentId, sortOrder",
       weightEntries: "id, measuredOn",
       calendarSnapshots: "id, fetchedAt",
     });
@@ -134,6 +152,7 @@ export async function replaceOfflineSnapshot(
       iratiOfflineDb.appliedVaccineDoses,
       iratiOfflineDb.travelChecklistItems,
       iratiOfflineDb.travelChecklistCategories,
+      iratiOfflineDb.travelStorageLocations,
       iratiOfflineDb.syncMetadata,
       iratiOfflineDb.pendingMutations,
     ],
@@ -144,6 +163,7 @@ export async function replaceOfflineSnapshot(
       await iratiOfflineDb.appliedVaccineDoses.clear();
       await iratiOfflineDb.travelChecklistItems.clear();
       await iratiOfflineDb.travelChecklistCategories.clear();
+      await iratiOfflineDb.travelStorageLocations.clear();
       if (snapshot.profile) {
         await iratiOfflineDb.babyProfiles.put({
           ...snapshot.profile,
@@ -158,6 +178,7 @@ export async function replaceOfflineSnapshot(
       await iratiOfflineDb.travelChecklistCategories.bulkPut(
         snapshot.travelChecklistCategories ?? [],
       );
+      await iratiOfflineDb.travelStorageLocations.bulkPut(snapshot.travelStorageLocations ?? []);
       await iratiOfflineDb.syncMetadata.put({
         id: metadataId,
         lastError: null,
@@ -177,6 +198,7 @@ export async function readOfflineSnapshot(): Promise<OfflineSnapshot> {
     appliedVaccineDoses,
     travelChecklistItems,
     travelChecklistCategories,
+    travelStorageLocations,
   ] = await Promise.all([
     iratiOfflineDb.babyProfiles.get(profileId),
     iratiOfflineDb.weightEntries.orderBy("measuredOn").toArray(),
@@ -184,6 +206,7 @@ export async function readOfflineSnapshot(): Promise<OfflineSnapshot> {
     iratiOfflineDb.appliedVaccineDoses.orderBy("appliedOn").toArray(),
     iratiOfflineDb.travelChecklistItems.orderBy("sortOrder").toArray(),
     iratiOfflineDb.travelChecklistCategories.orderBy("sortOrder").toArray(),
+    iratiOfflineDb.travelStorageLocations.orderBy("sortOrder").toArray(),
   ]);
 
   return {
@@ -199,6 +222,7 @@ export async function readOfflineSnapshot(): Promise<OfflineSnapshot> {
       : null,
     travelChecklistItems,
     travelChecklistCategories,
+    travelStorageLocations,
     weightEntries,
   };
 }
@@ -287,6 +311,26 @@ export async function listPendingWeightMutations(): Promise<PendingWeightMutatio
 
 export async function applyOfflineTravelChecklistItem(item: TravelChecklistItem): Promise<void> {
   await iratiOfflineDb.travelChecklistItems.put(item);
+}
+
+export async function applyOfflineTravelStorageLocation(
+  location: TravelStorageLocation,
+): Promise<void> {
+  await iratiOfflineDb.travelStorageLocations.put(location);
+}
+
+export async function applyOfflineTravelCategory(
+  category: TravelChecklistCategoryDefinition,
+): Promise<void> {
+  await iratiOfflineDb.travelChecklistCategories.put(category);
+}
+
+export async function deleteOfflineTravelStorageLocation(id: string): Promise<void> {
+  await iratiOfflineDb.travelStorageLocations.delete(id);
+}
+
+export async function deleteOfflineTravelCategory(slug: string): Promise<void> {
+  await iratiOfflineDb.travelChecklistCategories.delete(slug);
 }
 
 export async function applyOfflineTravelChecklistReorder(
@@ -380,6 +424,7 @@ export async function clearOfflineData(): Promise<void> {
       iratiOfflineDb.appliedVaccineDoses,
       iratiOfflineDb.travelChecklistItems,
       iratiOfflineDb.travelChecklistCategories,
+      iratiOfflineDb.travelStorageLocations,
       iratiOfflineDb.calendarSnapshots,
       iratiOfflineDb.syncMetadata,
       iratiOfflineDb.pendingMutations,
@@ -391,6 +436,7 @@ export async function clearOfflineData(): Promise<void> {
       await iratiOfflineDb.appliedVaccineDoses.clear();
       await iratiOfflineDb.travelChecklistItems.clear();
       await iratiOfflineDb.travelChecklistCategories.clear();
+      await iratiOfflineDb.travelStorageLocations.clear();
       await iratiOfflineDb.calendarSnapshots.clear();
       await iratiOfflineDb.syncMetadata.clear();
       await iratiOfflineDb.pendingMutations.clear();

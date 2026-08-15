@@ -39,6 +39,7 @@ export async function createTravelChecklistItemAction(formData: FormData) {
       category,
       sortOrder: await getNextSortOrder(repository, category),
       notes: String(formData.get("notes") ?? ""),
+      storageLocationId: String(formData.get("storageLocationId") ?? "") || null,
     });
   } catch (error) {
     if (error instanceof TravelChecklistItemValidationError) {
@@ -87,6 +88,7 @@ export async function updateTravelChecklistItemAction(formData: FormData) {
       sortOrder: reorderedItem?.sortOrder ?? targetIndex * 10 + 10,
       isPacked: formData.get("isPacked") === "true",
       notes: String(formData.get("notes") ?? ""),
+      storageLocationId: String(formData.get("storageLocationId") ?? "") || null,
     });
     if (reorderedItems.length > 0) {
       await persistTravelChecklistReorder(reorderedItems);
@@ -182,6 +184,84 @@ export async function resetTravelChecklistAction() {
 
   invalidateTravelChecklistReads();
   redirect("/viaje?reset=1");
+}
+
+export async function createTravelChecklistCategoryAction(formData: FormData) {
+  if (!(await hasValidSession())) redirect("/?error=session");
+  try {
+    await newRepository().createTravelChecklistCategory(String(formData.get("label") ?? ""));
+  } catch {
+    redirect("/viaje?error=save");
+  }
+  invalidateTravelChecklistReads();
+  redirect("/viaje?updated=1");
+}
+
+export async function updateTravelChecklistCategoryAction(formData: FormData) {
+  if (!(await hasValidSession())) redirect("/?error=session");
+  try {
+    await newRepository().updateTravelChecklistCategory(
+      String(formData.get("slug") ?? ""),
+      String(formData.get("label") ?? ""),
+      Number(formData.get("sortOrder") ?? 0),
+    );
+  } catch {
+    redirect("/viaje?error=save");
+  }
+  invalidateTravelChecklistReads();
+  redirect("/viaje?updated=1");
+}
+
+export async function deleteTravelChecklistCategoryAction(formData: FormData) {
+  if (!(await hasValidSession())) redirect("/?error=session");
+  try {
+    await newRepository().deleteTravelChecklistCategory(String(formData.get("slug") ?? ""));
+  } catch {
+    redirect("/viaje?error=delete");
+  }
+  invalidateTravelChecklistReads();
+  redirect("/viaje?updated=1");
+}
+
+export async function createTravelStorageLocationAction(formData: FormData) {
+  if (!(await hasValidSession())) redirect("/?error=session");
+  try {
+    await newRepository().createTravelStorageLocation({
+      label: String(formData.get("label") ?? "").trim(),
+      parentId: String(formData.get("parentId") ?? "") || null,
+      sortOrder: Number(formData.get("sortOrder") ?? 10),
+    });
+  } catch {
+    redirect("/viaje?error=save");
+  }
+  invalidateTravelChecklistReads();
+  redirect("/viaje?updated=1");
+}
+
+export async function updateTravelStorageLocationAction(formData: FormData) {
+  if (!(await hasValidSession())) redirect("/?error=session");
+  try {
+    await newRepository().updateTravelStorageLocation(String(formData.get("id") ?? ""), {
+      label: String(formData.get("label") ?? "").trim(),
+      parentId: String(formData.get("parentId") ?? "") || null,
+      sortOrder: Number(formData.get("sortOrder") ?? 10),
+    });
+  } catch {
+    redirect("/viaje?error=save");
+  }
+  invalidateTravelChecklistReads();
+  redirect("/viaje?updated=1");
+}
+
+export async function deleteTravelStorageLocationAction(formData: FormData) {
+  if (!(await hasValidSession())) redirect("/?error=session");
+  try {
+    await newRepository().deleteTravelStorageLocation(String(formData.get("id") ?? ""));
+  } catch {
+    redirect("/viaje?error=delete");
+  }
+  invalidateTravelChecklistReads();
+  redirect("/viaje?updated=1");
 }
 
 function newRepository() {

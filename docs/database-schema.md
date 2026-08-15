@@ -143,24 +143,38 @@ Migración: `supabase/migrations/20260814150000_create_travel_checklist_categori
 | `created_at` | `timestamptz` | `now()`                            |
 | `updated_at` | `timestamptz` | `now()`                            |
 
+## `travel_storage_locations`
+
+Ubicaciones reutilizables para organizar fisicamente la checklist de viaje.
+
+| Campo        | Tipo      | Regla                                           |
+| ------------ | --------- | ----------------------------------------------- |
+| `id`         | `uuid`    | Primary key                                     |
+| `label`      | `text`    | Nombre visible, 1-80 caracteres                 |
+| `parent_id`  | `uuid`    | Compartimento opcional dentro de otra ubicacion |
+| `sort_order` | `integer` | Orden visible, no negativo                      |
+
+`travel_checklist_items.storage_location_id` es nullable para conservar intactos los elementos existentes y dejar los no organizados en `Sin ubicación`.
+
 Categorías actuales: Alimentación, Pañal e higiene, Ropa y cambio, Sueño y descanso, Salud y medicación, Paseo y juego y Documentación.
 
 ## `travel_checklist_items`
 
 Checklist reutilizable para preparar salidas y viajes de Irati.
 
-Migraciones: `supabase/migrations/20260718160000_create_travel_checklist_items.sql` y `supabase/migrations/20260814150000_create_travel_checklist_categories.sql`.
+Migraciones: `supabase/migrations/20260718160000_create_travel_checklist_items.sql`, `supabase/migrations/20260814150000_create_travel_checklist_categories.sql` y `supabase/migrations/20260815170000_add_travel_storage_locations.sql`.
 
-| Campo        | Tipo          | Regla                                            |
-| ------------ | ------------- | ------------------------------------------------ |
-| `id`         | `uuid`        | Primary key                                      |
-| `label`      | `text`        | Obligatorio                                      |
-| `category`   | `text`        | Foreign key a `travel_checklist_categories.slug` |
-| `sort_order` | `integer`     | Orden dentro de la categoria                     |
-| `is_packed`  | `boolean`     | `false` por defecto                              |
-| `notes`      | `text`        | Opcional                                         |
-| `created_at` | `timestamptz` | `now()`                                          |
-| `updated_at` | `timestamptz` | `now()`                                          |
+| Campo                 | Tipo          | Regla                                            |
+| --------------------- | ------------- | ------------------------------------------------ |
+| `id`                  | `uuid`        | Primary key                                      |
+| `label`               | `text`        | Obligatorio                                      |
+| `category`            | `text`        | Foreign key a `travel_checklist_categories.slug` |
+| `sort_order`          | `integer`     | Orden dentro de la categoria                     |
+| `is_packed`           | `boolean`     | `false` por defecto                              |
+| `notes`               | `text`        | Opcional                                         |
+| `storage_location_id` | `uuid`        | Ubicación física opcional                        |
+| `created_at`          | `timestamptz` | `now()`                                          |
+| `updated_at`          | `timestamptz` | `now()`                                          |
 
 Indices:
 

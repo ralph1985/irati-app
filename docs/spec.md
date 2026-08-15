@@ -354,6 +354,9 @@ Reglas:
 - Las categorias vacias siguen visibles como destinos de arrastre.
 - Las categorías se gestionan en `travel_checklist_categories`; sus slugs estables son comida, higiene, cambio, sueño, salud, paseo y documentacion.
 - La lista inicial es una semilla editable, no una lista cerrada.
+- La checklist puede consultarse por categoria de preparacion o por ubicacion fisica.
+- Las ubicaciones son reutilizables y editables, con contenedores y compartimentos.
+- Las categorias y ubicaciones no pueden eliminarse mientras contengan elementos o dependencias.
 
 Un item de viaje contiene:
 
@@ -362,6 +365,7 @@ Un item de viaje contiene:
 - Orden.
 - Estado preparado.
 - Notas opcionales.
+- Ubicacion fisica opcional.
 
 Criterios de aceptacion:
 
@@ -371,6 +375,8 @@ Criterios de aceptacion:
 - Puedo añadir, editar y borrar items.
 - Puedo reiniciar la lista antes de una nueva salida.
 - Rafa y Begoña ven el mismo estado si usan la app desde dispositivos distintos con conexion.
+- Puedo cambiar entre la vista de preparacion y la vista por ubicacion sin perder el estado preparado.
+- Puedo crear, renombrar, ordenar y borrar categorias y ubicaciones vacias.
 
 ## Pantallas iniciales
 

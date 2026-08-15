@@ -27,6 +27,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      travel_storage_locations: {
+        Row: {
+          id: string;
+          label: string;
+          parent_id: string | null;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          label: string;
+          parent_id?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          label?: string;
+          parent_id?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       baby_profiles: {
         Row: {
           id: string;
@@ -214,6 +241,7 @@ export type Database = {
           sort_order: number;
           is_packed: boolean;
           notes: string | null;
+          storage_location_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -224,6 +252,7 @@ export type Database = {
           sort_order?: number;
           is_packed?: boolean;
           notes?: string | null;
+          storage_location_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -234,6 +263,7 @@ export type Database = {
           sort_order?: number;
           is_packed?: boolean;
           notes?: string | null;
+          storage_location_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };

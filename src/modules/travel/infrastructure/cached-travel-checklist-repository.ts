@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/ser
 import {
   TravelChecklistCategoryDefinition,
   TravelChecklistItem,
+  TravelStorageLocation,
 } from "../domain/travel-checklist-item";
 import { SupabaseTravelChecklistRepository } from "./supabase-travel-checklist-repository";
 
@@ -29,6 +30,15 @@ const listCachedTravelChecklistCategories = unstable_cache(
   },
 );
 
+const listCachedTravelStorageLocations = unstable_cache(
+  async (): Promise<TravelStorageLocation[]> =>
+    new SupabaseTravelChecklistRepository(
+      createServerSupabaseClient(),
+    ).listTravelStorageLocations(),
+  ["irati", "travel-storage-locations"],
+  { revalidate: false, tags: [CACHE_TAGS.travelChecklistItems] },
+);
+
 export class CachedTravelChecklistReadRepository {
   async listTravelChecklistCategories(): Promise<TravelChecklistCategoryDefinition[]> {
     return listCachedTravelChecklistCategories();
@@ -36,5 +46,9 @@ export class CachedTravelChecklistReadRepository {
 
   async listTravelChecklistItems(): Promise<TravelChecklistItem[]> {
     return listCachedTravelChecklistItems();
+  }
+
+  async listTravelStorageLocations(): Promise<TravelStorageLocation[]> {
+    return listCachedTravelStorageLocations();
   }
 }

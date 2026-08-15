@@ -11,6 +11,12 @@ import {
   reorderTravelChecklistItemsAction,
   setTravelChecklistItemPackedAction,
   updateTravelChecklistItemAction,
+  createTravelChecklistCategoryAction,
+  updateTravelChecklistCategoryAction,
+  deleteTravelChecklistCategoryAction,
+  createTravelStorageLocationAction,
+  updateTravelStorageLocationAction,
+  deleteTravelStorageLocationAction,
 } from "./actions";
 import styles from "./page.module.css";
 
@@ -78,6 +84,12 @@ export default async function TravelPage({ searchParams }: TravelPageProps) {
         reorderAction={reorderTravelChecklistItemsAction}
         setPackedAction={setTravelChecklistItemPackedAction}
         updateAction={updateTravelChecklistItemAction}
+        createCategoryAction={createTravelChecklistCategoryAction}
+        updateCategoryAction={updateTravelChecklistCategoryAction}
+        deleteCategoryAction={deleteTravelChecklistCategoryAction}
+        createLocationAction={createTravelStorageLocationAction}
+        updateLocationAction={updateTravelStorageLocationAction}
+        deleteLocationAction={deleteTravelStorageLocationAction}
       />
     </main>
   );
@@ -92,7 +104,9 @@ async function getTravelChecklist() {
     return {
       checklist: {
         categories: [],
+        locations: [],
         groups: [],
+        locationGroups: [],
         progress: {
           packed: 0,
           pending: 0,

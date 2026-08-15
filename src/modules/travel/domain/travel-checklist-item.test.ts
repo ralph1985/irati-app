@@ -3,6 +3,7 @@ import {
   calculateTravelChecklistProgress,
   createTravelChecklistItem,
   groupTravelChecklistItems,
+  groupTravelChecklistItemsByLocation,
   reorderTravelChecklistItems,
   sortTravelChecklistItems,
   TravelChecklistCategoryDefinition,
@@ -25,6 +26,7 @@ describe("travel checklist item", () => {
       sortOrder: 10,
       isPacked: false,
       notes: "Talla 1",
+      storageLocationId: null,
     });
   });
 
@@ -94,6 +96,22 @@ describe("travel checklist item", () => {
       total: 1,
     });
     expect(groups.find((group) => group.category.slug === "paseo")?.items[0]?.id).toBe("walk");
+  });
+
+  it("groups items by physical location without changing packed state", () => {
+    const groups = groupTravelChecklistItemsByLocation(
+      [
+        item({ id: "packed", isPacked: true, storageLocationId: "bag" }),
+        item({ id: "unassigned", storageLocationId: null }),
+      ],
+      [{ id: "bag", label: "Bolso verde", parentId: null, sortOrder: 10 }],
+    );
+
+    expect(groups[0]).toMatchObject({
+      location: { label: "Bolso verde" },
+      items: [{ id: "packed", isPacked: true }],
+    });
+    expect(groups[1]).toMatchObject({ location: null, items: [{ id: "unassigned" }] });
   });
 });
 
