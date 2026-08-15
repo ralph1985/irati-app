@@ -27,6 +27,7 @@ import { TravelChecklist } from "../application/list-travel-checklist";
 import {
   applyOfflineTravelChecklistItem,
   applyOfflineTravelChecklistReorder,
+  applyOfflineTravelStorageReorder,
   deleteOfflineTravelChecklistItem,
   enqueuePendingTravelMutation,
   listPendingTravelMutations,
@@ -44,6 +45,7 @@ type TravelChecklistViewProps = {
   setPackedAction: (formData: FormData) => void | Promise<void>;
   updateAction: (formData: FormData) => void | Promise<void>;
   reorderAction?: (formData: FormData) => void | Promise<void>;
+  reorderStorageAction?: (formData: FormData) => void | Promise<void>;
   createCategoryAction?: (formData: FormData) => void | Promise<void>;
   updateCategoryAction?: (formData: FormData) => void | Promise<void>;
   deleteCategoryAction?: (formData: FormData) => void | Promise<void>;
@@ -63,6 +65,7 @@ export function TravelChecklistView({
   setPackedAction,
   updateAction,
   reorderAction = async () => {},
+  reorderStorageAction = async () => {},
   createCategoryAction = async () => {},
   updateCategoryAction = async () => {},
   deleteCategoryAction = async () => {},
@@ -241,12 +244,16 @@ export function TravelChecklistView({
       return;
     }
 
+    const storageLocationId = String(formData.get("storageLocationId") ?? "") || null;
+    const currentItems = visibleChecklist.groups.flatMap((group) => group.items);
+
     const item: TravelChecklistItem = {
       ...createTravelChecklistItem({
         category,
         label: String(formData.get("label") ?? ""),
         notes: String(formData.get("notes") ?? ""),
-        storageLocationId: String(formData.get("storageLocationId") ?? "") || null,
+        storageLocationId,
+        storageSortOrder: getNextOfflineStorageSortOrder(currentItems, storageLocationId),
         sortOrder: getNextOfflineSortOrder(
           visibleChecklist.groups.flatMap((group) => group.items),
           category,
@@ -278,6 +285,8 @@ export function TravelChecklistView({
     }
 
     const currentItems = visibleChecklist.groups.flatMap((group) => group.items);
+    const currentItem = currentItems.find((item) => item.id === id);
+    const storageLocationId = String(formData.get("storageLocationId") ?? "") || null;
     const reorderedItems = reorderTravelChecklistItems(
       currentItems,
       id,
@@ -293,7 +302,11 @@ export function TravelChecklistView({
         isPacked: formData.get("isPacked") === "true",
         label: String(formData.get("label") ?? ""),
         notes: String(formData.get("notes") ?? ""),
-        storageLocationId: String(formData.get("storageLocationId") ?? "") || null,
+        storageLocationId,
+        storageSortOrder:
+          currentItem?.storageLocationId === storageLocationId
+            ? (currentItem.storageSortOrder ?? null)
+            : getNextOfflineStorageSortOrder(currentItems, storageLocationId),
         sortOrder: reorderedItem?.sortOrder ?? Number(formData.get("sortOrder") ?? 0),
       }),
       isPacked: formData.get("isPacked") === "true",
@@ -325,6 +338,19 @@ export function TravelChecklistView({
     }
     setSheetState({ mode: "closed" });
     dispatchOfflineTravelEvents();
+  }
+
+  function getNextOfflineStorageSortOrder(
+    items: TravelChecklistItem[],
+    storageLocationId: string | null,
+  ): number | null {
+    if (!storageLocationId) return null;
+
+    return (
+      items
+        .filter((item) => item.storageLocationId === storageLocationId)
+        .reduce((max, item) => Math.max(max, item.storageSortOrder ?? 0), 0) + 10
+    );
   }
 
   return (
@@ -431,6 +457,7 @@ export function TravelChecklistView({
             onEdit={(item) => setSheetState({ item, mode: "edit" })}
             onDeleteOnline={handleDeleteOnline}
             pendingMutations={pendingMutations}
+            reorderAction={reorderStorageAction}
             setPackedAction={setPackedAction}
           />
         ) : (
@@ -977,43 +1004,212 @@ function TravelLocationGroups({
   onEdit,
   setPackedAction,
   pendingMutations,
+  reorderAction,
 }: {
   groups: ReturnType<typeof groupTravelChecklistItemsByLocation>;
   deleteAction: (formData: FormData) => void | Promise<void>;
   onDeleteOnline: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => void;
   onEdit: (item: TravelChecklistItem) => void;
   pendingMutations: PendingTravelMutation[];
+  reorderAction: (formData: FormData) => void | Promise<void>;
   setPackedAction: (formData: FormData) => void | Promise<void>;
 }) {
+  const [dragGroups, setDragGroups] = useState<LocationGroupItems | null>(null);
+  const dragGroupsRef = useRef<LocationGroupItems | null>(null);
+
   if (groups.length === 0) return <p className={styles.empty}>Aún no hay ubicaciones asignadas.</p>;
 
+  const displayedGroups = dragGroups ? buildDisplayedLocationGroups(groups, dragGroups) : groups;
+
+  function beginLocationDrag() {
+    const next = createLocationGroupItems(groups);
+    dragGroupsRef.current = next;
+    setDragGroups(next);
+  }
+
+  function handleLocationDragOver(
+    event: Parameters<NonNullable<React.ComponentProps<typeof DragDropProvider>["onDragOver"]>>[0],
+  ) {
+    setDragGroups((current) => {
+      if (!current) return current;
+      const next = move(current, event);
+      dragGroupsRef.current = next;
+      return next;
+    });
+  }
+
+  async function handleLocationDragEnd(
+    event: Parameters<NonNullable<React.ComponentProps<typeof DragDropProvider>["onDragEnd"]>>[0],
+  ) {
+    const current = dragGroupsRef.current;
+    dragGroupsRef.current = null;
+    setDragGroups(null);
+
+    if (event.canceled || !current || !event.operation.source) return;
+
+    const reorder = Object.entries(current).flatMap(([locationKey, itemIds]) => {
+      const storageLocationId = locationKey === UNASSIGNED_LOCATION_KEY ? null : locationKey;
+      return itemIds.map((id, index) => ({
+        id,
+        storageLocationId,
+        storageSortOrder: (index + 1) * 10,
+      }));
+    });
+
+    if (reorder.length === 0) return;
+
+    if (!navigator.onLine) {
+      await applyOfflineTravelStorageReorder(reorder);
+      await enqueuePendingTravelMutation({
+        id: `travel-storage-reorder-${crypto.randomUUID()}`,
+        operation: "reorderStorage",
+        payload: reorder,
+      });
+      dispatchOfflineTravelEvents();
+      return;
+    }
+
+    const formData = new FormData();
+    formData.set("items", JSON.stringify(reorder));
+    await reorderAction(formData);
+  }
+
   return (
-    <div className={styles.groups}>
-      {groups.map((group) => (
-        <details className={styles.group} key={group.location?.id ?? "unassigned"} open>
-          <summary className={styles.groupHeader}>
-            <span className={styles.groupTitle}>{group.location?.label ?? "Sin ubicación"}</span>
-            <span>{group.items.length}</span>
-          </summary>
-          <ol className={styles.items}>
-            {group.items.map((item) => (
-              <li data-packed={item.isPacked} key={item.id}>
-                <TravelChecklistItemContent
-                  deleteAction={deleteAction}
-                  item={item}
-                  onDeleteOnline={onDeleteOnline}
-                  onEdit={() => onEdit(item)}
-                  onOfflineDelete={deleteTravelItemOffline}
-                  onOfflinePacked={setTravelItemPackedOffline}
-                  packedAction={setPackedAction}
-                  pending={isPendingTravelItem(pendingMutations, item.id)}
-                />
-              </li>
-            ))}
-          </ol>
-        </details>
-      ))}
-    </div>
+    <DragDropProvider
+      onDragEnd={handleLocationDragEnd}
+      onDragOver={handleLocationDragOver}
+      onDragStart={beginLocationDrag}
+    >
+      <div className={styles.groups}>
+        {displayedGroups.map((group) => {
+          const locationKey = group.location?.id ?? UNASSIGNED_LOCATION_KEY;
+          return (
+            <details className={styles.group} key={locationKey} open>
+              <summary className={styles.groupHeader}>
+                <span className={styles.groupTitle}>
+                  {group.location?.label ?? "Sin ubicación"}
+                </span>
+                <span>{group.items.length}</span>
+              </summary>
+              <TravelLocationDropZone locationKey={locationKey}>
+                {group.items.map((item, index) => (
+                  <TravelStorageItemRow
+                    category={locationKey}
+                    deleteAction={deleteAction}
+                    index={index}
+                    item={item}
+                    key={item.id}
+                    onDeleteOnline={onDeleteOnline}
+                    onEdit={() => onEdit(item)}
+                    onOfflineDelete={deleteTravelItemOffline}
+                    onOfflinePacked={setTravelItemPackedOffline}
+                    packedAction={setPackedAction}
+                    pending={isPendingTravelItem(pendingMutations, item.id)}
+                  />
+                ))}
+              </TravelLocationDropZone>
+            </details>
+          );
+        })}
+      </div>
+    </DragDropProvider>
+  );
+}
+
+const UNASSIGNED_LOCATION_KEY = "unassigned";
+type LocationGroupItems = Record<string, string[]>;
+
+function createLocationGroupItems(
+  groups: ReturnType<typeof groupTravelChecklistItemsByLocation>,
+): LocationGroupItems {
+  return Object.fromEntries(
+    groups.map((group) => [
+      group.location?.id ?? UNASSIGNED_LOCATION_KEY,
+      group.items.map((item) => item.id),
+    ]),
+  );
+}
+
+function buildDisplayedLocationGroups(
+  groups: ReturnType<typeof groupTravelChecklistItemsByLocation>,
+  groupItems: LocationGroupItems,
+): ReturnType<typeof groupTravelChecklistItemsByLocation> {
+  const itemsById = new Map(groups.flatMap((group) => group.items).map((item) => [item.id, item]));
+  return groups.map((group) => {
+    const locationKey = group.location?.id ?? UNASSIGNED_LOCATION_KEY;
+    return {
+      ...group,
+      items: (groupItems[locationKey] ?? [])
+        .map((id) => itemsById.get(id))
+        .filter((item): item is TravelChecklistItem => item !== undefined),
+    };
+  });
+}
+
+function TravelLocationDropZone({
+  children,
+  locationKey,
+}: {
+  children: React.ReactNode;
+  locationKey: string;
+}) {
+  const { ref, isDropTarget } = useDroppable({
+    accept: "travel-item",
+    id: locationKey,
+    type: "travel-location",
+  });
+
+  return (
+    <ol className={styles.items} data-drop-target={isDropTarget} ref={ref}>
+      {children}
+    </ol>
+  );
+}
+
+function TravelStorageItemRow({
+  category,
+  deleteAction,
+  index,
+  item,
+  onDeleteOnline,
+  onEdit,
+  onOfflineDelete,
+  onOfflinePacked,
+  packedAction,
+  pending,
+}: React.ComponentProps<typeof TravelChecklistItemRow>) {
+  const { handleRef, isDragging, ref } = useSortable({
+    accept: "travel-item",
+    group: category,
+    id: item.id,
+    index,
+    type: "travel-item",
+  });
+
+  return (
+    <li data-dragging={isDragging} data-packed={item.isPacked} data-pending={pending} ref={ref}>
+      <TravelChecklistItemContent
+        deleteAction={deleteAction}
+        dragHandle={
+          <button
+            aria-label={`Mover ${item.label}`}
+            className={styles.dragHandle}
+            ref={handleRef}
+            title="Arrastrar para ordenar"
+            type="button"
+          >
+            <span aria-hidden="true">⋮⋮</span>
+          </button>
+        }
+        item={item}
+        onDeleteOnline={onDeleteOnline}
+        onEdit={onEdit}
+        onOfflineDelete={onOfflineDelete}
+        onOfflinePacked={onOfflinePacked}
+        packedAction={packedAction}
+        pending={pending}
+      />
+    </li>
   );
 }
 
@@ -1251,11 +1447,29 @@ function buildVisibleTravelChecklist(
         for (const position of mutation.payload) {
           const item = itemsById.get(position.id);
 
-          if (item) {
+          if (item && "category" in position && "sortOrder" in position) {
             itemsById.set(item.id, {
               ...item,
               category: position.category,
               sortOrder: position.sortOrder,
+            });
+          }
+        }
+      }
+
+      continue;
+    }
+
+    if (mutation.operation === "reorderStorage") {
+      if (Array.isArray(mutation.payload)) {
+        for (const position of mutation.payload) {
+          const item = itemsById.get(position.id);
+
+          if (item && "storageLocationId" in position && "storageSortOrder" in position) {
+            itemsById.set(item.id, {
+              ...item,
+              storageLocationId: position.storageLocationId,
+              storageSortOrder: position.storageSortOrder,
             });
           }
         }

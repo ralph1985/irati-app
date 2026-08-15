@@ -94,6 +94,22 @@ async function applyTravelMutation(mutation: PendingTravelMutation): Promise<voi
     return;
   }
 
+  if (mutation.operation === "reorderStorage") {
+    if (!isTravelStorageReorderPayload(mutation.payload)) {
+      throw new Error("Invalid storage reorder payload");
+    }
+
+    const { error } = await supabase.rpc("reorder_travel_checklist_items_by_location", {
+      p_items: mutation.payload,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return;
+  }
+
   if (!isTravelItemPayload(mutation.payload)) {
     throw new Error("Invalid travel payload");
   }
@@ -112,6 +128,7 @@ async function applyTravelMutation(mutation: PendingTravelMutation): Promise<voi
       notes: item.notes ?? null,
       sort_order: item.sortOrder,
       storage_location_id: item.storageLocationId ?? null,
+      storage_sort_order: item.storageSortOrder ?? null,
       updated_at: new Date().toISOString(),
     });
 
@@ -130,6 +147,9 @@ async function applyTravelMutation(mutation: PendingTravelMutation): Promise<voi
       notes: item.notes ?? null,
       sort_order: item.sortOrder,
       storage_location_id: item.storageLocationId ?? null,
+      ...(typeof item.storageSortOrder === "number" || item.storageSortOrder === null
+        ? { storage_sort_order: item.storageSortOrder }
+        : {}),
       updated_at: new Date().toISOString(),
     })
     .eq("id", mutation.payload.id);
@@ -148,7 +168,9 @@ function isPendingTravelMutation(value: unknown): value is PendingTravelMutation
 
   return (
     mutation.entity === "travel" &&
-    ["create", "update", "setPacked", "delete", "reset", "reorder"].includes(mutation.operation) &&
+    ["create", "update", "setPacked", "delete", "reset", "reorder", "reorderStorage"].includes(
+      mutation.operation,
+    ) &&
     typeof mutation.id === "string" &&
     typeof mutation.createdAt === "string" &&
     typeof mutation.payload === "object" &&
@@ -176,6 +198,30 @@ function isTravelReorderPayload(
         Number.isInteger(item.sortOrder) &&
         item.sortOrder >= 10 &&
         item.sortOrder <= 1000,
+    )
+  );
+}
+
+function isTravelStorageReorderPayload(
+  value: PendingTravelMutation["payload"],
+): value is Extract<PendingTravelMutation["payload"], Array<unknown>> {
+  return (
+    Array.isArray(value) &&
+    value.length <= 100 &&
+    value.every(
+      (item) =>
+        Boolean(item) &&
+        typeof item === "object" &&
+        "id" in item &&
+        typeof item.id === "string" &&
+        "storageLocationId" in item &&
+        (item.storageLocationId === null || typeof item.storageLocationId === "string") &&
+        "storageSortOrder" in item &&
+        (item.storageSortOrder === null ||
+          (typeof item.storageSortOrder === "number" &&
+            Number.isInteger(item.storageSortOrder) &&
+            item.storageSortOrder >= 0 &&
+            item.storageSortOrder <= 10000)),
     )
   );
 }

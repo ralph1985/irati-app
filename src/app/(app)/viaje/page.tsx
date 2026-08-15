@@ -9,6 +9,7 @@ import {
   deleteTravelChecklistItemAction,
   resetTravelChecklistAction,
   reorderTravelChecklistItemsAction,
+  reorderTravelChecklistItemsByLocationAction,
   setTravelChecklistItemPackedAction,
   updateTravelChecklistItemAction,
   createTravelChecklistCategoryAction,
@@ -82,6 +83,7 @@ export default async function TravelPage({ searchParams }: TravelPageProps) {
         deleteAction={deleteTravelChecklistItemAction}
         resetAction={resetTravelChecklistAction}
         reorderAction={reorderTravelChecklistItemsAction}
+        reorderStorageAction={reorderTravelChecklistItemsByLocationAction}
         setPackedAction={setTravelChecklistItemPackedAction}
         updateAction={updateTravelChecklistItemAction}
         createCategoryAction={createTravelChecklistCategoryAction}

@@ -43,7 +43,7 @@ describe("Irati offline database", () => {
       lastError: null,
       lastSuccessfulSyncAt: null,
       offlineAccessGranted: false,
-      schemaVersion: 6,
+      schemaVersion: 7,
     });
   });
 
@@ -111,7 +111,7 @@ describe("Irati offline database", () => {
     await expect(readSyncMetadata()).resolves.toMatchObject({
       lastSuccessfulSyncAt: "2026-07-23T10:00:00.000Z",
       offlineAccessGranted: true,
-      schemaVersion: 6,
+      schemaVersion: 7,
     });
   });
 

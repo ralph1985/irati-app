@@ -162,7 +162,7 @@ Categorías actuales: Alimentación, Pañal e higiene, Ropa y cambio, Sueño y d
 
 Checklist reutilizable para preparar salidas y viajes de Irati.
 
-Migraciones: `supabase/migrations/20260718160000_create_travel_checklist_items.sql`, `supabase/migrations/20260814150000_create_travel_checklist_categories.sql` y `supabase/migrations/20260815170000_add_travel_storage_locations.sql`.
+Migraciones: `supabase/migrations/20260718160000_create_travel_checklist_items.sql`, `supabase/migrations/20260814150000_create_travel_checklist_categories.sql`, `supabase/migrations/20260815170000_add_travel_storage_locations.sql` y `supabase/migrations/20260815190000_add_travel_storage_order.sql`.
 
 | Campo                 | Tipo          | Regla                                            |
 | --------------------- | ------------- | ------------------------------------------------ |
@@ -173,6 +173,7 @@ Migraciones: `supabase/migrations/20260718160000_create_travel_checklist_items.s
 | `is_packed`           | `boolean`     | `false` por defecto                              |
 | `notes`               | `text`        | Opcional                                         |
 | `storage_location_id` | `uuid`        | Ubicación física opcional                        |
+| `storage_sort_order`  | `integer`     | Orden dentro de la ubicación física              |
 | `created_at`          | `timestamptz` | `now()`                                          |
 | `updated_at`          | `timestamptz` | `now()`                                          |
 
@@ -180,6 +181,7 @@ Indices:
 
 - `travel_checklist_items_category_order_idx`
 - `travel_checklist_items_is_packed_idx`
+- `travel_checklist_items_storage_location_order_idx`
 
 Datos iniciales:
 

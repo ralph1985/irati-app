@@ -242,6 +242,7 @@ export type Database = {
           is_packed: boolean;
           notes: string | null;
           storage_location_id: string | null;
+          storage_sort_order: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -253,6 +254,7 @@ export type Database = {
           is_packed?: boolean;
           notes?: string | null;
           storage_location_id?: string | null;
+          storage_sort_order?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -264,6 +266,7 @@ export type Database = {
           is_packed?: boolean;
           notes?: string | null;
           storage_location_id?: string | null;
+          storage_sort_order?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -273,6 +276,10 @@ export type Database = {
     Views: Record<string, never>;
     Functions: {
       reorder_travel_checklist_items: {
+        Args: { p_items: Json };
+        Returns: undefined;
+      };
+      reorder_travel_checklist_items_by_location: {
         Args: { p_items: Json };
         Returns: undefined;
       };

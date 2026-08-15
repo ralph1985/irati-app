@@ -11,6 +11,7 @@ import {
   isTravelChecklistCategory,
   reorderTravelChecklistItems,
   TravelChecklistReorder,
+  TravelStorageReorder,
   TravelChecklistItem,
   TravelChecklistCategory,
   TravelChecklistItemValidationError,
@@ -40,6 +41,10 @@ export async function createTravelChecklistItemAction(formData: FormData) {
       sortOrder: await getNextSortOrder(repository, category),
       notes: String(formData.get("notes") ?? ""),
       storageLocationId: String(formData.get("storageLocationId") ?? "") || null,
+      storageSortOrder: await getNextStorageSortOrder(
+        repository,
+        String(formData.get("storageLocationId") ?? "") || null,
+      ),
     });
   } catch (error) {
     if (error instanceof TravelChecklistItemValidationError) {
@@ -70,6 +75,7 @@ export async function updateTravelChecklistItemAction(formData: FormData) {
     const currentItems = await repository.listTravelChecklistItems();
     const categories = await repository.listTravelChecklistCategories();
     const currentItem = currentItems.find((item) => item.id === String(formData.get("id") ?? ""));
+    const storageLocationId = String(formData.get("storageLocationId") ?? "") || null;
     const targetItems = currentItems.filter(
       (item) => item.category === category && item.id !== currentItem?.id,
     );
@@ -88,7 +94,11 @@ export async function updateTravelChecklistItemAction(formData: FormData) {
       sortOrder: reorderedItem?.sortOrder ?? targetIndex * 10 + 10,
       isPacked: formData.get("isPacked") === "true",
       notes: String(formData.get("notes") ?? ""),
-      storageLocationId: String(formData.get("storageLocationId") ?? "") || null,
+      storageLocationId,
+      storageSortOrder:
+        currentItem?.storageLocationId === storageLocationId
+          ? (currentItem.storageSortOrder ?? null)
+          : await getNextStorageSortOrder(repository, storageLocationId),
     });
     if (reorderedItems.length > 0) {
       await persistTravelChecklistReorder(reorderedItems);
@@ -139,6 +149,29 @@ export async function reorderTravelChecklistItemsAction(formData: FormData) {
   const { error } = await createServerSupabaseClient().rpc("reorder_travel_checklist_items", {
     p_items: items,
   });
+
+  if (error) {
+    throw error;
+  }
+
+  invalidateTravelChecklistReads();
+}
+
+export async function reorderTravelChecklistItemsByLocationAction(formData: FormData) {
+  if (!(await hasValidSession())) {
+    redirect("/?error=session");
+  }
+
+  const items = parseTravelStorageReorder(String(formData.get("items") ?? ""));
+
+  if (!items) {
+    return;
+  }
+
+  const { error } = await createServerSupabaseClient().rpc(
+    "reorder_travel_checklist_items_by_location",
+    { p_items: items },
+  );
 
   if (error) {
     throw error;
@@ -280,6 +313,20 @@ async function getNextSortOrder(
   return lastSortOrder + 10;
 }
 
+async function getNextStorageSortOrder(
+  repository: Pick<SupabaseTravelChecklistRepository, "listTravelChecklistItems">,
+  storageLocationId: string | null,
+): Promise<number | null> {
+  if (!storageLocationId) return null;
+
+  const items = await repository.listTravelChecklistItems();
+  const lastStorageSortOrder = items
+    .filter((item) => item.storageLocationId === storageLocationId)
+    .reduce((maxSortOrder, item) => Math.max(maxSortOrder, item.storageSortOrder ?? 0), 0);
+
+  return lastStorageSortOrder + 10;
+}
+
 function invalidateTravelChecklistReads() {
   updateTag(CACHE_TAGS.travelChecklistItems);
   revalidatePath("/viaje");
@@ -313,6 +360,40 @@ function parseTravelChecklistReorder(rawItems: string): TravelChecklistReorder[]
     }
 
     return value as TravelChecklistReorder[];
+  } catch {
+    return null;
+  }
+}
+
+function parseTravelStorageReorder(rawItems: string): TravelStorageReorder[] | null {
+  try {
+    const value: unknown = JSON.parse(rawItems);
+
+    if (!Array.isArray(value) || value.length > 100) {
+      return null;
+    }
+
+    if (
+      !value.every(
+        (item) =>
+          Boolean(item) &&
+          typeof item === "object" &&
+          "id" in item &&
+          typeof item.id === "string" &&
+          "storageLocationId" in item &&
+          (item.storageLocationId === null || typeof item.storageLocationId === "string") &&
+          "storageSortOrder" in item &&
+          (item.storageSortOrder === null ||
+            (Number.isInteger(item.storageSortOrder) &&
+              typeof item.storageSortOrder === "number" &&
+              item.storageSortOrder >= 0 &&
+              item.storageSortOrder <= 10000)),
+      )
+    ) {
+      return null;
+    }
+
+    return value as TravelStorageReorder[];
   } catch {
     return null;
   }

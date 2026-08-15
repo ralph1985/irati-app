@@ -4,6 +4,7 @@ import {
   createTravelChecklistItem,
   groupTravelChecklistItems,
   groupTravelChecklistItemsByLocation,
+  reorderTravelChecklistItemsByLocation,
   reorderTravelChecklistItems,
   sortTravelChecklistItems,
   TravelChecklistCategoryDefinition,
@@ -27,6 +28,7 @@ describe("travel checklist item", () => {
       isPacked: false,
       notes: "Talla 1",
       storageLocationId: null,
+      storageSortOrder: null,
     });
   });
 
@@ -112,6 +114,23 @@ describe("travel checklist item", () => {
       items: [{ id: "packed", isPacked: true }],
     });
     expect(groups[1]).toMatchObject({ location: null, items: [{ id: "unassigned" }] });
+  });
+
+  it("keeps category order independent from physical location order", () => {
+    const items = [
+      item({ id: "first", sortOrder: 10, storageLocationId: "bag", storageSortOrder: 10 }),
+      item({ id: "second", sortOrder: 20, storageLocationId: "bag", storageSortOrder: 20 }),
+    ];
+
+    const reordered = reorderTravelChecklistItemsByLocation(items, "second", "bag", 0, [
+      { id: "bag", label: "Bolso verde", parentId: null, sortOrder: 10 },
+    ]);
+
+    expect(reordered).toEqual([
+      expect.objectContaining({ id: "first", sortOrder: 10, storageSortOrder: 20 }),
+      expect.objectContaining({ id: "second", sortOrder: 20, storageSortOrder: 10 }),
+    ]);
+    expect(reordered.find((entry) => entry.id === "second")?.isPacked).toBe(false);
   });
 });
 

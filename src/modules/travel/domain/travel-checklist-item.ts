@@ -21,6 +21,7 @@ export type TravelChecklistItem = {
   isPacked: boolean;
   notes?: string | null;
   storageLocationId?: string | null;
+  storageSortOrder?: number | null;
 };
 
 export type NewTravelChecklistItem = Omit<
@@ -29,6 +30,7 @@ export type NewTravelChecklistItem = Omit<
 > & {
   isPacked?: boolean;
   storageLocationId?: string | null;
+  storageSortOrder?: number | null;
 };
 
 export type TravelChecklistProgress = {
@@ -52,6 +54,12 @@ export type TravelChecklistReorder = {
   id: string;
   category: TravelChecklistCategory;
   sortOrder: number;
+};
+
+export type TravelStorageReorder = {
+  id: string;
+  storageLocationId: string | null;
+  storageSortOrder: number | null;
 };
 
 export class TravelChecklistItemValidationError extends Error {
@@ -122,9 +130,68 @@ export function groupTravelChecklistItemsByLocation(
     (group ?? unassigned).items.push(item);
   }
 
+  for (const group of groups) {
+    group.items.sort(compareTravelStorageOrder);
+  }
+  unassigned.items.sort(compareTravelStorageOrder);
+
   return [...groups.filter((group) => group.items.length > 0), unassigned].filter(
     (group) => group.items.length > 0,
   );
+}
+
+export function reorderTravelChecklistItemsByLocation(
+  items: TravelChecklistItem[],
+  itemId: string,
+  targetLocationId: string | null,
+  targetIndex: number,
+  locations: TravelStorageLocation[],
+): TravelChecklistItem[] {
+  const movingItem = items.find((item) => item.id === itemId);
+
+  if (
+    !movingItem ||
+    (targetLocationId !== null && !locations.some((location) => location.id === targetLocationId))
+  ) {
+    return items;
+  }
+
+  const withoutMovingItem = items.filter((item) => item.id !== itemId);
+  const sourceLocationId = movingItem.storageLocationId ?? null;
+  const sourceItems = withoutMovingItem
+    .filter((item) => (item.storageLocationId ?? null) === sourceLocationId)
+    .sort(compareTravelStorageOrder);
+  const targetItems = withoutMovingItem
+    .filter((item) => (item.storageLocationId ?? null) === targetLocationId)
+    .sort(compareTravelStorageOrder);
+  const boundedIndex = Math.max(0, Math.min(targetIndex, targetItems.length));
+  targetItems.splice(boundedIndex, 0, {
+    ...movingItem,
+    storageLocationId: targetLocationId,
+  });
+
+  const targetPositions = new Map(targetItems.map((item, index) => [item.id, (index + 1) * 10]));
+  const sourcePositions = new Map(sourceItems.map((item, index) => [item.id, (index + 1) * 10]));
+  const normalized = withoutMovingItem.map((item) => {
+    const locationId = item.storageLocationId ?? null;
+    const position =
+      locationId === targetLocationId
+        ? targetPositions.get(item.id)
+        : locationId === sourceLocationId
+          ? sourcePositions.get(item.id)
+          : undefined;
+
+    return position === undefined ? item : { ...item, storageSortOrder: position };
+  });
+
+  return [
+    ...normalized,
+    {
+      ...movingItem,
+      storageLocationId: targetLocationId,
+      storageSortOrder: targetPositions.get(movingItem.id) ?? (targetItems.length + 1) * 10,
+    },
+  ];
 }
 
 export function sortTravelChecklistItems(
@@ -213,7 +280,18 @@ function normalizeTravelChecklistItem(input: NewTravelChecklistItem): NewTravelC
     isPacked: input.isPacked ?? false,
     notes: input.notes?.trim() || null,
     storageLocationId: input.storageLocationId ?? null,
+    storageSortOrder: input.storageSortOrder ?? null,
   };
+}
+
+function compareTravelStorageOrder(
+  first: TravelChecklistItem,
+  second: TravelChecklistItem,
+): number {
+  const firstOrder = first.storageSortOrder ?? Number.MAX_SAFE_INTEGER;
+  const secondOrder = second.storageSortOrder ?? Number.MAX_SAFE_INTEGER;
+
+  return firstOrder - secondOrder || first.label.localeCompare(second.label, "es");
 }
 
 export function normalizeTravelStorageLocationLabel(label: string): string {

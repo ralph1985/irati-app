@@ -5,6 +5,7 @@ import type {
   TravelChecklistItem,
   TravelChecklistCategoryDefinition,
   TravelChecklistReorder,
+  TravelStorageReorder,
   TravelStorageLocation,
 } from "@/modules/travel/domain/travel-checklist-item";
 import type { PendingVaccineMutation as PendingVaccineMutationPayload } from "@/modules/vaccines/application/vaccine-offline-conflicts";
@@ -52,6 +53,7 @@ export type PendingTravelMutationOperation =
   | "delete"
   | "reset"
   | "reorder"
+  | "reorderStorage"
   | "createCategory"
   | "updateCategory"
   | "deleteCategory"
@@ -68,6 +70,7 @@ export type PendingTravelMutation = {
     | { id: string; isPacked?: boolean }
     | { resetAt: string }
     | TravelChecklistReorder[]
+    | TravelStorageReorder[]
     | TravelStorageLocation
     | { id: string; label: string; sortOrder: number; parentId: string | null }
     | { slug: string; label: string; sortOrder: number };
@@ -89,7 +92,7 @@ type StoredBabyProfile = BabyProfile & {
   id: "irati";
 };
 
-const currentSchemaVersion = 6;
+const currentSchemaVersion = 7;
 const profileId = "irati";
 const metadataId = "main";
 
@@ -114,7 +117,8 @@ class IratiOfflineDatabase extends Dexie {
       pendingMutations: "id, entity, operation, createdAt",
       plannedVaccineDoses: "id, plannedDate",
       syncMetadata: "id",
-      travelChecklistItems: "id, category, sortOrder, isPacked",
+      travelChecklistItems:
+        "id, category, sortOrder, storageLocationId, storageSortOrder, isPacked",
       travelChecklistCategories: "slug, sortOrder",
       travelStorageLocations: "id, parentId, sortOrder",
       weightEntries: "id, measuredOn",
@@ -341,6 +345,19 @@ export async function applyOfflineTravelChecklistReorder(
       await iratiOfflineDb.travelChecklistItems.update(item.id, {
         category: item.category,
         sortOrder: item.sortOrder,
+      });
+    }
+  });
+}
+
+export async function applyOfflineTravelStorageReorder(
+  items: TravelStorageReorder[],
+): Promise<void> {
+  await iratiOfflineDb.transaction("rw", iratiOfflineDb.travelChecklistItems, async () => {
+    for (const item of items) {
+      await iratiOfflineDb.travelChecklistItems.update(item.id, {
+        storageLocationId: item.storageLocationId,
+        storageSortOrder: item.storageSortOrder,
       });
     }
   });

@@ -351,6 +351,8 @@ Reglas:
 - La lista puede reiniciarse antes de una nueva salida, desmarcando todos los items.
 - Los items se agrupan por categoria y se ordenan manualmente por `sort_order`.
 - Los items pueden reordenarse con drag & drop dentro de una categoria o entre categorias.
+- La vista por categoria y la vista por ubicacion mantienen ordenes independientes: `sort_order` organiza la preparacion y `storage_sort_order` organiza cada ubicacion fisica.
+- Mover un item entre ubicaciones solo cambia su ubicacion y su orden fisico; no cambia su categoria, su orden de preparacion ni su estado preparado.
 - Las categorias vacias siguen visibles como destinos de arrastre.
 - Las categorías se gestionan en `travel_checklist_categories`; sus slugs estables son comida, higiene, cambio, sueño, salud, paseo y documentacion.
 - La lista inicial es una semilla editable, no una lista cerrada.
@@ -503,6 +505,7 @@ La pantalla de Viaje debe priorizar:
 - Listado compacto para revisar muchos items sin demasiado scroll.
 - Los nuevos items se añaden al final de la categoria.
 - El orden manual se gestiona desde un asa de arrastre; en teclado se puede mover con las flechas.
+- En la vista por ubicacion, el asa de arrastre modifica solo el orden de esa ubicacion y permite mover el item entre ubicaciones.
 - El estado preparado no cambia de posicion automaticamente al marcar o desmarcar un item.
 - Los formularios de crear y editar item usan el bottom sheet compartido de la app.
 

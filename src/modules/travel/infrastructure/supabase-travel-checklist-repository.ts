@@ -31,7 +31,7 @@ export class SupabaseTravelChecklistRepository implements TravelChecklistReposit
   async listTravelChecklistItems(): Promise<TravelChecklistItem[]> {
     const { data, error } = await this.supabase
       .from("travel_checklist_items")
-      .select("id,label,category,sort_order,is_packed,notes,storage_location_id")
+      .select("id,label,category,sort_order,is_packed,notes,storage_location_id,storage_sort_order")
       .order("category", { ascending: true })
       .order("is_packed", { ascending: true })
       .order("sort_order", { ascending: true })
@@ -198,8 +198,9 @@ export class SupabaseTravelChecklistRepository implements TravelChecklistReposit
         is_packed: item.isPacked ?? false,
         notes: item.notes ?? null,
         storage_location_id: item.storageLocationId ?? null,
+        storage_sort_order: item.storageSortOrder ?? null,
       })
-      .select("id,label,category,sort_order,is_packed,notes,storage_location_id")
+      .select("id,label,category,sort_order,is_packed,notes,storage_location_id,storage_sort_order")
       .single();
 
     if (error) {
@@ -221,10 +222,11 @@ export class SupabaseTravelChecklistRepository implements TravelChecklistReposit
         sort_order: item.sortOrder,
         notes: item.notes ?? null,
         storage_location_id: item.storageLocationId ?? null,
+        storage_sort_order: item.storageSortOrder ?? null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
-      .select("id,label,category,sort_order,is_packed,notes,storage_location_id")
+      .select("id,label,category,sort_order,is_packed,notes,storage_location_id,storage_sort_order")
       .single();
 
     if (error) {
@@ -242,7 +244,7 @@ export class SupabaseTravelChecklistRepository implements TravelChecklistReposit
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
-      .select("id,label,category,sort_order,is_packed,notes,storage_location_id")
+      .select("id,label,category,sort_order,is_packed,notes,storage_location_id,storage_sort_order")
       .single();
 
     if (error) {
@@ -278,7 +280,14 @@ export class SupabaseTravelChecklistRepository implements TravelChecklistReposit
 function mapTravelChecklistItem(
   row: Pick<
     Database["public"]["Tables"]["travel_checklist_items"]["Row"],
-    "id" | "label" | "category" | "sort_order" | "is_packed" | "notes" | "storage_location_id"
+    | "id"
+    | "label"
+    | "category"
+    | "sort_order"
+    | "is_packed"
+    | "notes"
+    | "storage_location_id"
+    | "storage_sort_order"
   >,
 ): TravelChecklistItem {
   return {
@@ -289,5 +298,6 @@ function mapTravelChecklistItem(
     isPacked: row.is_packed,
     notes: row.notes,
     storageLocationId: row.storage_location_id,
+    storageSortOrder: row.storage_sort_order,
   };
 }
