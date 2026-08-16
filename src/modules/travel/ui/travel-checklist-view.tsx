@@ -1,6 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, type ButtonHTMLAttributes, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useFormStatus } from "react-dom";
 import { DragDropProvider, useDroppable } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { move } from "@dnd-kit/helpers";
@@ -74,6 +76,7 @@ export function TravelChecklistView({
   deleteLocationAction = async () => {},
   showOrganizationPanel = true,
 }: TravelChecklistViewProps) {
+  const router = useRouter();
   const [viewMode, setViewMode] = useState<"prepare" | "location">("prepare");
   const [sheetState, setSheetState] = useState<SheetState>({ mode: "closed" });
   const [pendingMutations, setPendingMutations] = useState<PendingTravelMutation[]>([]);
@@ -97,10 +100,49 @@ export function TravelChecklistView({
   );
   const visibleGroups = displayedChecklist.groups;
 
+  async function refreshAfterAction(
+    action: (formData: FormData) => void | Promise<void>,
+    formData: FormData,
+  ): Promise<void> {
+    await action(formData);
+    router.refresh();
+  }
+
+  async function refreshAfterNoArgAction(action: () => void | Promise<void>): Promise<void> {
+    await action();
+    router.refresh();
+  }
+
+  const createActionWithRefresh = (formData: FormData) =>
+    refreshAfterAction(createAction, formData);
+  const deleteActionWithRefresh = (formData: FormData) =>
+    refreshAfterAction(deleteAction, formData);
+  const setPackedActionWithRefresh = (formData: FormData) =>
+    refreshAfterAction(setPackedAction, formData);
+  const updateActionWithRefresh = (formData: FormData) =>
+    refreshAfterAction(updateAction, formData);
+  const reorderActionWithRefresh = (formData: FormData) =>
+    refreshAfterAction(reorderAction, formData);
+  const reorderStorageActionWithRefresh = (formData: FormData) =>
+    refreshAfterAction(reorderStorageAction, formData);
+  const resetActionWithRefresh = () => refreshAfterNoArgAction(resetAction);
+  const createCategoryActionWithRefresh = (formData: FormData) =>
+    refreshAfterAction(createCategoryAction, formData);
+  const updateCategoryActionWithRefresh = (formData: FormData) =>
+    refreshAfterAction(updateCategoryAction, formData);
+  const deleteCategoryActionWithRefresh = (formData: FormData) =>
+    refreshAfterAction(deleteCategoryAction, formData);
+  const createLocationActionWithRefresh = (formData: FormData) =>
+    refreshAfterAction(createLocationAction, formData);
+  const updateLocationActionWithRefresh = (formData: FormData) =>
+    refreshAfterAction(updateLocationAction, formData);
+  const deleteLocationActionWithRefresh = (formData: FormData) =>
+    refreshAfterAction(deleteLocationAction, formData);
+
   function handleDeleteOnline(event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) {
     event.preventDefault();
     setOptimisticDeletedIds((current) => new Set(current).add(item.id));
-    void deleteAction(new FormData(event.currentTarget));
+    void deleteActionWithRefresh(new FormData(event.currentTarget));
   }
 
   useEffect(() => {
@@ -149,7 +191,7 @@ export function TravelChecklistView({
     formData.set("items", JSON.stringify(reorder));
 
     try {
-      await reorderAction(formData);
+      await reorderActionWithRefresh(formData);
       setOptimisticReorder(null);
     } catch {
       setOptimisticReorder(null);
@@ -392,7 +434,7 @@ export function TravelChecklistView({
             <span aria-hidden="true">+</span>
           </button>
           <ConfirmSubmit
-            action={resetAction}
+            action={resetActionWithRefresh}
             message="¿Reiniciar la lista de viaje? Se eliminarán los cambios actuales."
             onConfirmedSubmit={(event) => {
               if (!navigator.onLine) {
@@ -400,14 +442,14 @@ export function TravelChecklistView({
               }
             }}
           >
-            <button
+            <TravelSubmitButton
               aria-label="Reiniciar lista"
               className={styles.iconCommandButton}
               title="Reiniciar lista"
               type="submit"
             >
               <span aria-hidden="true">↺</span>
-            </button>
+            </TravelSubmitButton>
           </ConfirmSubmit>
         </div>
       </section>
@@ -435,12 +477,12 @@ export function TravelChecklistView({
             <div className={styles.groups}>
               {visibleGroups.map((group) => (
                 <TravelChecklistGroupView
-                  deleteAction={deleteAction}
+                  deleteAction={deleteActionWithRefresh}
                   group={group}
                   key={group.category.slug}
                   openEditSheet={(item) => setSheetState({ item, mode: "edit" })}
                   openCreateSheet={(category) => setSheetState({ category, mode: "create" })}
-                  setPackedAction={setPackedAction}
+                  setPackedAction={setPackedActionWithRefresh}
                   pendingMutations={pendingMutations}
                   onDeleteOnline={handleDeleteOnline}
                 />
@@ -449,7 +491,7 @@ export function TravelChecklistView({
           </DragDropProvider>
         ) : viewMode === "location" ? (
           <TravelLocationGroups
-            deleteAction={deleteAction}
+            deleteAction={deleteActionWithRefresh}
             groups={groupTravelChecklistItemsByLocation(
               visibleChecklist.groups.flatMap((group) => group.items),
               checklist.locations ?? [],
@@ -457,8 +499,8 @@ export function TravelChecklistView({
             onEdit={(item) => setSheetState({ item, mode: "edit" })}
             onDeleteOnline={handleDeleteOnline}
             pendingMutations={pendingMutations}
-            reorderAction={reorderStorageAction}
-            setPackedAction={setPackedAction}
+            reorderAction={reorderStorageActionWithRefresh}
+            setPackedAction={setPackedActionWithRefresh}
           />
         ) : (
           <p className={styles.empty}>Aún no hay nada en la lista de viaje.</p>
@@ -467,25 +509,25 @@ export function TravelChecklistView({
 
       <TravelChecklistSheet
         categories={checklist.categories}
-        createAction={createAction}
+        createAction={createActionWithRefresh}
         items={visibleChecklist.groups.flatMap((group) => group.items)}
         onClose={() => setSheetState({ mode: "closed" })}
         onOfflineCreate={createItemOffline}
         onOfflineUpdate={updateItemOffline}
         sheetState={sheetState}
-        updateAction={updateAction}
+        updateAction={updateActionWithRefresh}
         locations={checklist.locations ?? []}
       />
       {showOrganizationPanel ? (
         <TravelOrganizationPanel
           categories={checklist.categories}
           locations={checklist.locations ?? []}
-          createCategoryAction={createCategoryAction}
-          updateCategoryAction={updateCategoryAction}
-          deleteCategoryAction={deleteCategoryAction}
-          createLocationAction={createLocationAction}
-          updateLocationAction={updateLocationAction}
-          deleteLocationAction={deleteLocationAction}
+          createCategoryAction={createCategoryActionWithRefresh}
+          updateCategoryAction={updateCategoryActionWithRefresh}
+          deleteCategoryAction={deleteCategoryActionWithRefresh}
+          createLocationAction={createLocationActionWithRefresh}
+          updateLocationAction={updateLocationActionWithRefresh}
+          deleteLocationAction={deleteLocationActionWithRefresh}
         />
       ) : null}
     </>
@@ -677,14 +719,14 @@ function TravelChecklistItemContent({
       >
         <input name="id" type="hidden" value={item.id} />
         <input name="isPacked" type="hidden" value={item.isPacked ? "false" : "true"} />
-        <button
+        <TravelSubmitButton
           aria-label={item.isPacked ? "Marcar como pendiente" : "Marcar como preparado"}
           aria-pressed={item.isPacked}
           title={item.isPacked ? "Marcar como pendiente" : "Marcar como preparado"}
           type="submit"
         >
           <span aria-hidden="true">{item.isPacked ? "✓" : ""}</span>
-        </button>
+        </TravelSubmitButton>
       </form>
       <div className={styles.itemBody}>
         <strong>{item.label}</strong>
@@ -713,14 +755,14 @@ function TravelChecklistItemContent({
           }}
         >
           <input name="id" type="hidden" value={item.id} />
-          <button
+          <TravelSubmitButton
             aria-label={`Borrar ${item.label}`}
             className={styles.dangerIconButton}
             title="Borrar"
             type="submit"
           >
             <span aria-hidden="true">×</span>
-          </button>
+          </TravelSubmitButton>
         </ConfirmSubmit>
       </div>
     </>
@@ -945,14 +987,14 @@ function TravelChecklistItemForm({
         >
           <span aria-hidden="true">×</span>
         </button>
-        <button
+        <TravelSubmitButton
           aria-label={submitLabel}
           className={styles.primaryButton}
           title={submitLabel}
           type="submit"
         >
           <span aria-hidden="true">✓</span>
-        </button>
+        </TravelSubmitButton>
       </div>
     </form>
   );
@@ -964,6 +1006,20 @@ function formatProgress(progress: TravelChecklistProgress): string {
   }
 
   return `${progress.packed} de ${progress.total}`;
+}
+
+function TravelSubmitButton({
+  children,
+  disabled,
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement>) {
+  const { pending } = useFormStatus();
+
+  return (
+    <button {...props} aria-busy={pending || undefined} disabled={pending || disabled}>
+      {pending ? <span aria-hidden="true">…</span> : children}
+    </button>
+  );
 }
 
 async function setTravelItemPackedOffline(
@@ -1262,23 +1318,27 @@ function TravelOrganizationPanel({
                 type="number"
                 defaultValue={category.sortOrder}
               />
-              <button title="Guardar categoría" type="submit">
+              <TravelSubmitButton title="Guardar categoría" type="submit">
                 ✓
-              </button>
+              </TravelSubmitButton>
               <ConfirmSubmit
                 action={deleteCategoryAction}
                 message={`¿Borrar la categoría “${category.label}”? Primero debe estar vacía.`}
               >
                 <input name="slug" type="hidden" value={category.slug} />
-                <button className={styles.dangerIconButton} title="Borrar categoría" type="submit">
+                <TravelSubmitButton
+                  className={styles.dangerIconButton}
+                  title="Borrar categoría"
+                  type="submit"
+                >
                   ×
-                </button>
+                </TravelSubmitButton>
               </ConfirmSubmit>
             </form>
           ))}
           <form action={createCategoryAction} className={styles.inlineCreate}>
             <input maxLength={80} name="label" placeholder="Nueva categoría" required />
-            <button type="submit">Añadir</button>
+            <TravelSubmitButton type="submit">Añadir</TravelSubmitButton>
           </form>
         </section>
         <section aria-labelledby="travel-locations-title">
@@ -1318,17 +1378,21 @@ function TravelOrganizationPanel({
                 type="number"
                 defaultValue={location.sortOrder}
               />
-              <button title="Guardar ubicación" type="submit">
+              <TravelSubmitButton title="Guardar ubicación" type="submit">
                 ✓
-              </button>
+              </TravelSubmitButton>
               <ConfirmSubmit
                 action={deleteLocationAction}
                 message={`¿Borrar “${location.label}”? Primero debe estar vacía.`}
               >
                 <input name="id" type="hidden" value={location.id} />
-                <button className={styles.dangerIconButton} title="Borrar ubicación" type="submit">
+                <TravelSubmitButton
+                  className={styles.dangerIconButton}
+                  title="Borrar ubicación"
+                  type="submit"
+                >
                   ×
-                </button>
+                </TravelSubmitButton>
               </ConfirmSubmit>
             </form>
           ))}
@@ -1350,7 +1414,7 @@ function TravelOrganizationPanel({
                 ))}
             </select>
             <input min="0" name="sortOrder" type="number" defaultValue="10" />
-            <button type="submit">Añadir</button>
+            <TravelSubmitButton type="submit">Añadir</TravelSubmitButton>
           </form>
         </section>
       </div>

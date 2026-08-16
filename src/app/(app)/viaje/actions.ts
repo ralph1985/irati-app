@@ -55,7 +55,6 @@ export async function createTravelChecklistItemAction(formData: FormData) {
   }
 
   invalidateTravelChecklistReads();
-  redirect("/viaje?created=1");
 }
 
 export async function updateTravelChecklistItemAction(formData: FormData) {
@@ -100,7 +99,10 @@ export async function updateTravelChecklistItemAction(formData: FormData) {
           ? (currentItem.storageSortOrder ?? null)
           : await getNextStorageSortOrder(repository, storageLocationId),
     });
-    if (reorderedItems.length > 0) {
+    const categoryChanged = currentItem?.category !== category;
+    const positionChanged = reorderedItem?.sortOrder !== currentItem?.sortOrder;
+
+    if (reorderedItems.length > 0 && (categoryChanged || positionChanged)) {
       await persistTravelChecklistReorder(reorderedItems);
     }
   } catch (error) {
@@ -112,7 +114,6 @@ export async function updateTravelChecklistItemAction(formData: FormData) {
   }
 
   invalidateTravelChecklistReads();
-  redirect("/viaje?updated=1");
 }
 
 export async function setTravelChecklistItemPackedAction(formData: FormData) {
@@ -131,7 +132,6 @@ export async function setTravelChecklistItemPackedAction(formData: FormData) {
   }
 
   invalidateTravelChecklistReads();
-  redirect("/viaje");
 }
 
 export async function reorderTravelChecklistItemsAction(formData: FormData) {
@@ -216,7 +216,6 @@ export async function resetTravelChecklistAction() {
   }
 
   invalidateTravelChecklistReads();
-  redirect("/viaje?reset=1");
 }
 
 export async function createTravelChecklistCategoryAction(formData: FormData) {
@@ -227,7 +226,6 @@ export async function createTravelChecklistCategoryAction(formData: FormData) {
     redirect("/viaje?error=save");
   }
   invalidateTravelChecklistReads();
-  redirect("/viaje?updated=1");
 }
 
 export async function updateTravelChecklistCategoryAction(formData: FormData) {
@@ -242,7 +240,6 @@ export async function updateTravelChecklistCategoryAction(formData: FormData) {
     redirect("/viaje?error=save");
   }
   invalidateTravelChecklistReads();
-  redirect("/viaje?updated=1");
 }
 
 export async function deleteTravelChecklistCategoryAction(formData: FormData) {
@@ -253,7 +250,6 @@ export async function deleteTravelChecklistCategoryAction(formData: FormData) {
     redirect("/viaje?error=delete");
   }
   invalidateTravelChecklistReads();
-  redirect("/viaje?updated=1");
 }
 
 export async function createTravelStorageLocationAction(formData: FormData) {
@@ -268,7 +264,6 @@ export async function createTravelStorageLocationAction(formData: FormData) {
     redirect("/viaje?error=save");
   }
   invalidateTravelChecklistReads();
-  redirect("/viaje?updated=1");
 }
 
 export async function updateTravelStorageLocationAction(formData: FormData) {
@@ -283,7 +278,6 @@ export async function updateTravelStorageLocationAction(formData: FormData) {
     redirect("/viaje?error=save");
   }
   invalidateTravelChecklistReads();
-  redirect("/viaje?updated=1");
 }
 
 export async function deleteTravelStorageLocationAction(formData: FormData) {
@@ -294,7 +288,6 @@ export async function deleteTravelStorageLocationAction(formData: FormData) {
     redirect("/viaje?error=delete");
   }
   invalidateTravelChecklistReads();
-  redirect("/viaje?updated=1");
 }
 
 function newRepository() {
