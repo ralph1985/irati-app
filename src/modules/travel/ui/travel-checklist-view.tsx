@@ -1,13 +1,13 @@
 "use client";
 
-import { FormEvent, type ButtonHTMLAttributes, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useFormStatus } from "react-dom";
 import { DragDropProvider, useDroppable } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { move } from "@dnd-kit/helpers";
 import { BottomSheet } from "../../../shared/ui/bottom-sheet";
 import { ConfirmSubmit } from "../../../shared/ui/confirm-submit";
+import { PendingSubmitButton } from "../../../shared/ui/pending-submit-button";
 import {
   calculateTravelChecklistProgress,
   createTravelChecklistItem,
@@ -80,8 +80,10 @@ export function TravelChecklistView({
   const [viewMode, setViewMode] = useState<"prepare" | "location">("prepare");
   const [sheetState, setSheetState] = useState<SheetState>({ mode: "closed" });
   const [pendingMutations, setPendingMutations] = useState<PendingTravelMutation[]>([]);
+  const [pendingServerIds, setPendingServerIds] = useState<Set<string>>(new Set());
   const [optimisticDeletedIds, setOptimisticDeletedIds] = useState<Set<string>>(new Set());
   const [optimisticReorder, setOptimisticReorder] = useState<TravelChecklistItem[] | null>(null);
+  const [isReordering, setIsReordering] = useState(false);
   const [reorderAnnouncement, setReorderAnnouncement] = useState("");
   const [dragGroupItems, setDragGroupItems] = useState<TravelGroupItems | null>(null);
   const dragGroupItemsRef = useRef<TravelGroupItems | null>(null);
@@ -113,14 +115,18 @@ export function TravelChecklistView({
     router.refresh();
   }
 
-  const createActionWithRefresh = (formData: FormData) =>
-    refreshAfterAction(createAction, formData);
+  const createActionWithRefresh = async (formData: FormData) => {
+    await refreshAfterAction(createAction, formData);
+    setSheetState({ mode: "closed" });
+  };
   const deleteActionWithRefresh = (formData: FormData) =>
     refreshAfterAction(deleteAction, formData);
   const setPackedActionWithRefresh = (formData: FormData) =>
     refreshAfterAction(setPackedAction, formData);
-  const updateActionWithRefresh = (formData: FormData) =>
-    refreshAfterAction(updateAction, formData);
+  const updateActionWithRefresh = async (formData: FormData) => {
+    await refreshAfterAction(updateAction, formData);
+    setSheetState({ mode: "closed" });
+  };
   const reorderActionWithRefresh = (formData: FormData) =>
     refreshAfterAction(reorderAction, formData);
   const reorderStorageActionWithRefresh = (formData: FormData) =>
@@ -142,7 +148,14 @@ export function TravelChecklistView({
   function handleDeleteOnline(event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) {
     event.preventDefault();
     setOptimisticDeletedIds((current) => new Set(current).add(item.id));
-    void deleteActionWithRefresh(new FormData(event.currentTarget));
+    setPendingServerIds((current) => new Set(current).add(item.id));
+    void deleteActionWithRefresh(new FormData(event.currentTarget)).finally(() => {
+      setPendingServerIds((current) => {
+        const next = new Set(current);
+        next.delete(item.id);
+        return next;
+      });
+    });
   }
 
   useEffect(() => {
@@ -175,26 +188,28 @@ export function TravelChecklistView({
     reorder: TravelChecklistReorder[],
   ): Promise<void> {
     setOptimisticReorder(items);
-
-    if (!navigator.onLine) {
-      await applyOfflineTravelChecklistReorder(reorder);
-      await enqueuePendingTravelMutation({
-        id: `travel-reorder-${crypto.randomUUID()}`,
-        operation: "reorder",
-        payload: reorder,
-      });
-      dispatchOfflineTravelEvents();
-      return;
-    }
-
-    const formData = new FormData();
-    formData.set("items", JSON.stringify(reorder));
+    setIsReordering(true);
 
     try {
+      if (!navigator.onLine) {
+        await applyOfflineTravelChecklistReorder(reorder);
+        await enqueuePendingTravelMutation({
+          id: `travel-reorder-${crypto.randomUUID()}`,
+          operation: "reorder",
+          payload: reorder,
+        });
+        dispatchOfflineTravelEvents();
+        return;
+      }
+
+      const formData = new FormData();
+      formData.set("items", JSON.stringify(reorder));
       await reorderActionWithRefresh(formData);
       setOptimisticReorder(null);
     } catch {
       setOptimisticReorder(null);
+    } finally {
+      setIsReordering(false);
     }
   }
 
@@ -442,19 +457,23 @@ export function TravelChecklistView({
               }
             }}
           >
-            <TravelSubmitButton
+            <PendingSubmitButton
               aria-label="Reiniciar lista"
               className={styles.iconCommandButton}
               title="Reiniciar lista"
               type="submit"
             >
               <span aria-hidden="true">↺</span>
-            </TravelSubmitButton>
+            </PendingSubmitButton>
           </ConfirmSubmit>
         </div>
       </section>
 
-      <section className={styles.panel} aria-labelledby="travel-list-title">
+      <section
+        aria-busy={isReordering}
+        className={styles.panel}
+        aria-labelledby="travel-list-title"
+      >
         <div className={styles.sectionTitle}>
           <h2 id="travel-list-title">Checklist</h2>
           <span>{visibleChecklist.progress.pending} pendientes</span>
@@ -465,7 +484,7 @@ export function TravelChecklistView({
             : "La misma lista, agrupada por bolso y compartimento."}
         </p>
         <p aria-live="polite" className={styles.srOnly} role="status">
-          {reorderAnnouncement}
+          {isReordering ? "Guardando el orden…" : reorderAnnouncement}
         </p>
 
         {viewMode === "prepare" && visibleGroups.some((group) => group.items.length > 0) ? (
@@ -484,6 +503,8 @@ export function TravelChecklistView({
                   openCreateSheet={(category) => setSheetState({ category, mode: "create" })}
                   setPackedAction={setPackedActionWithRefresh}
                   pendingMutations={pendingMutations}
+                  pendingServerIds={pendingServerIds}
+                  isReordering={isReordering}
                   onDeleteOnline={handleDeleteOnline}
                 />
               ))}
@@ -499,6 +520,7 @@ export function TravelChecklistView({
             onEdit={(item) => setSheetState({ item, mode: "edit" })}
             onDeleteOnline={handleDeleteOnline}
             pendingMutations={pendingMutations}
+            pendingServerIds={pendingServerIds}
             reorderAction={reorderStorageActionWithRefresh}
             setPackedAction={setPackedActionWithRefresh}
           />
@@ -539,6 +561,8 @@ function TravelChecklistGroupView({
   group,
   openEditSheet,
   openCreateSheet,
+  isReordering,
+  pendingServerIds,
   pendingMutations,
   setPackedAction,
   onDeleteOnline,
@@ -547,6 +571,8 @@ function TravelChecklistGroupView({
   group: TravelChecklistGroup;
   openEditSheet: (item: TravelChecklistItem) => void;
   openCreateSheet: (category: TravelChecklistCategory) => void;
+  isReordering: boolean;
+  pendingServerIds: Set<string>;
   pendingMutations: PendingTravelMutation[];
   setPackedAction: (formData: FormData) => void | Promise<void>;
   onDeleteOnline: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => void;
@@ -591,7 +617,11 @@ function TravelChecklistGroupView({
             onOfflineDelete={deleteTravelItemOffline}
             onOfflinePacked={setTravelItemPackedOffline}
             packedAction={setPackedAction}
-            pending={isPendingTravelItem(pendingMutations, item.id)}
+            pending={
+              isReordering ||
+              pendingServerIds.has(item.id) ||
+              isPendingTravelItem(pendingMutations, item.id)
+            }
             index={index}
             category={group.category.slug}
           />
@@ -719,14 +749,14 @@ function TravelChecklistItemContent({
       >
         <input name="id" type="hidden" value={item.id} />
         <input name="isPacked" type="hidden" value={item.isPacked ? "false" : "true"} />
-        <TravelSubmitButton
+        <PendingSubmitButton
           aria-label={item.isPacked ? "Marcar como pendiente" : "Marcar como preparado"}
           aria-pressed={item.isPacked}
           title={item.isPacked ? "Marcar como pendiente" : "Marcar como preparado"}
           type="submit"
         >
           <span aria-hidden="true">{item.isPacked ? "✓" : ""}</span>
-        </TravelSubmitButton>
+        </PendingSubmitButton>
       </form>
       <div className={styles.itemBody}>
         <strong>{item.label}</strong>
@@ -755,14 +785,14 @@ function TravelChecklistItemContent({
           }}
         >
           <input name="id" type="hidden" value={item.id} />
-          <TravelSubmitButton
+          <PendingSubmitButton
             aria-label={`Borrar ${item.label}`}
             className={styles.dangerIconButton}
             title="Borrar"
             type="submit"
           >
             <span aria-hidden="true">×</span>
-          </TravelSubmitButton>
+          </PendingSubmitButton>
         </ConfirmSubmit>
       </div>
     </>
@@ -987,14 +1017,14 @@ function TravelChecklistItemForm({
         >
           <span aria-hidden="true">×</span>
         </button>
-        <TravelSubmitButton
+        <PendingSubmitButton
           aria-label={submitLabel}
           className={styles.primaryButton}
           title={submitLabel}
           type="submit"
         >
           <span aria-hidden="true">✓</span>
-        </TravelSubmitButton>
+        </PendingSubmitButton>
       </div>
     </form>
   );
@@ -1006,20 +1036,6 @@ function formatProgress(progress: TravelChecklistProgress): string {
   }
 
   return `${progress.packed} de ${progress.total}`;
-}
-
-function TravelSubmitButton({
-  children,
-  disabled,
-  ...props
-}: ButtonHTMLAttributes<HTMLButtonElement>) {
-  const { pending } = useFormStatus();
-
-  return (
-    <button {...props} aria-busy={pending || undefined} disabled={pending || disabled}>
-      {pending ? <span aria-hidden="true">…</span> : children}
-    </button>
-  );
 }
 
 async function setTravelItemPackedOffline(
@@ -1060,6 +1076,7 @@ function TravelLocationGroups({
   onEdit,
   setPackedAction,
   pendingMutations,
+  pendingServerIds,
   reorderAction,
 }: {
   groups: ReturnType<typeof groupTravelChecklistItemsByLocation>;
@@ -1067,11 +1084,13 @@ function TravelLocationGroups({
   onDeleteOnline: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => void;
   onEdit: (item: TravelChecklistItem) => void;
   pendingMutations: PendingTravelMutation[];
+  pendingServerIds: Set<string>;
   reorderAction: (formData: FormData) => void | Promise<void>;
   setPackedAction: (formData: FormData) => void | Promise<void>;
 }) {
   const [dragGroups, setDragGroups] = useState<LocationGroupItems | null>(null);
   const dragGroupsRef = useRef<LocationGroupItems | null>(null);
+  const [isReordering, setIsReordering] = useState(false);
 
   if (groups.length === 0) return <p className={styles.empty}>Aún no hay ubicaciones asignadas.</p>;
 
@@ -1114,20 +1133,25 @@ function TravelLocationGroups({
 
     if (reorder.length === 0) return;
 
-    if (!navigator.onLine) {
-      await applyOfflineTravelStorageReorder(reorder);
-      await enqueuePendingTravelMutation({
-        id: `travel-storage-reorder-${crypto.randomUUID()}`,
-        operation: "reorderStorage",
-        payload: reorder,
-      });
-      dispatchOfflineTravelEvents();
-      return;
-    }
+    setIsReordering(true);
+    try {
+      if (!navigator.onLine) {
+        await applyOfflineTravelStorageReorder(reorder);
+        await enqueuePendingTravelMutation({
+          id: `travel-storage-reorder-${crypto.randomUUID()}`,
+          operation: "reorderStorage",
+          payload: reorder,
+        });
+        dispatchOfflineTravelEvents();
+        return;
+      }
 
-    const formData = new FormData();
-    formData.set("items", JSON.stringify(reorder));
-    await reorderAction(formData);
+      const formData = new FormData();
+      formData.set("items", JSON.stringify(reorder));
+      await reorderAction(formData);
+    } finally {
+      setIsReordering(false);
+    }
   }
 
   return (
@@ -1136,7 +1160,7 @@ function TravelLocationGroups({
       onDragOver={handleLocationDragOver}
       onDragStart={beginLocationDrag}
     >
-      <div className={styles.groups}>
+      <div aria-busy={isReordering} className={styles.groups}>
         {displayedGroups.map((group) => {
           const locationKey = group.location?.id ?? UNASSIGNED_LOCATION_KEY;
           return (
@@ -1160,7 +1184,11 @@ function TravelLocationGroups({
                     onOfflineDelete={deleteTravelItemOffline}
                     onOfflinePacked={setTravelItemPackedOffline}
                     packedAction={setPackedAction}
-                    pending={isPendingTravelItem(pendingMutations, item.id)}
+                    pending={
+                      isReordering ||
+                      pendingServerIds.has(item.id) ||
+                      isPendingTravelItem(pendingMutations, item.id)
+                    }
                   />
                 ))}
               </TravelLocationDropZone>
@@ -1318,27 +1346,27 @@ function TravelOrganizationPanel({
                 type="number"
                 defaultValue={category.sortOrder}
               />
-              <TravelSubmitButton title="Guardar categoría" type="submit">
+              <PendingSubmitButton title="Guardar categoría" type="submit">
                 ✓
-              </TravelSubmitButton>
+              </PendingSubmitButton>
               <ConfirmSubmit
                 action={deleteCategoryAction}
                 message={`¿Borrar la categoría “${category.label}”? Primero debe estar vacía.`}
               >
                 <input name="slug" type="hidden" value={category.slug} />
-                <TravelSubmitButton
+                <PendingSubmitButton
                   className={styles.dangerIconButton}
                   title="Borrar categoría"
                   type="submit"
                 >
                   ×
-                </TravelSubmitButton>
+                </PendingSubmitButton>
               </ConfirmSubmit>
             </form>
           ))}
           <form action={createCategoryAction} className={styles.inlineCreate}>
             <input maxLength={80} name="label" placeholder="Nueva categoría" required />
-            <TravelSubmitButton type="submit">Añadir</TravelSubmitButton>
+            <PendingSubmitButton type="submit">Añadir</PendingSubmitButton>
           </form>
         </section>
         <section aria-labelledby="travel-locations-title">
@@ -1378,21 +1406,21 @@ function TravelOrganizationPanel({
                 type="number"
                 defaultValue={location.sortOrder}
               />
-              <TravelSubmitButton title="Guardar ubicación" type="submit">
+              <PendingSubmitButton title="Guardar ubicación" type="submit">
                 ✓
-              </TravelSubmitButton>
+              </PendingSubmitButton>
               <ConfirmSubmit
                 action={deleteLocationAction}
                 message={`¿Borrar “${location.label}”? Primero debe estar vacía.`}
               >
                 <input name="id" type="hidden" value={location.id} />
-                <TravelSubmitButton
+                <PendingSubmitButton
                   className={styles.dangerIconButton}
                   title="Borrar ubicación"
                   type="submit"
                 >
                   ×
-                </TravelSubmitButton>
+                </PendingSubmitButton>
               </ConfirmSubmit>
             </form>
           ))}
@@ -1414,7 +1442,7 @@ function TravelOrganizationPanel({
                 ))}
             </select>
             <input min="0" name="sortOrder" type="number" defaultValue="10" />
-            <TravelSubmitButton type="submit">Añadir</TravelSubmitButton>
+            <PendingSubmitButton type="submit">Añadir</PendingSubmitButton>
           </form>
         </section>
       </div>

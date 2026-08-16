@@ -292,6 +292,12 @@
   padding: 4px 6px;
 }
 
+.items li[data-pending="true"] button {
+  cursor: wait;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
 .items li[data-dragging="true"] {
   opacity: 0.45;
 }

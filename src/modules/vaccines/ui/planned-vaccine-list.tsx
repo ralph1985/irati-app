@@ -3,6 +3,7 @@
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 import { BottomSheet } from "../../../shared/ui/bottom-sheet";
 import { ConfirmSubmit } from "../../../shared/ui/confirm-submit";
+import { PendingSubmitButton } from "../../../shared/ui/pending-submit-button";
 import {
   AppliedVaccineDose,
   assignPlannedVaccineDoseStatuses,
@@ -308,9 +309,9 @@ function PlannedVaccineForm({
         <button className={styles.secondaryButton} onClick={onCancel} type="button">
           Cancelar
         </button>
-        <button className={styles.primaryButton} type="submit">
+        <PendingSubmitButton className={styles.primaryButton} type="submit">
           Guardar cambios
-        </button>
+        </PendingSubmitButton>
       </div>
     </form>
   );
@@ -457,9 +458,9 @@ function AppliedVaccineEditor({
             }}
           >
             <input name="applicationId" type="hidden" value={application.id} />
-            <button className={styles.reopenButton} type="submit">
+            <PendingSubmitButton className={styles.reopenButton} type="submit">
               Volver a pendiente
-            </button>
+            </PendingSubmitButton>
           </ConfirmSubmit>
         </BottomSheet>
       ) : null}
@@ -560,9 +561,9 @@ function VaccineApplicationForm({
         <button className={styles.secondaryButton} onClick={onCancel} type="button">
           Cancelar
         </button>
-        <button className={styles.primaryButton} type="submit">
+        <PendingSubmitButton className={styles.primaryButton} type="submit">
           {submitLabel}
-        </button>
+        </PendingSubmitButton>
       </div>
     </form>
   );

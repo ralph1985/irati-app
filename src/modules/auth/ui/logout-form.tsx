@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { clearOfflineData } from "@/shared/infrastructure/offline/irati-offline-db";
+import { PendingSubmitButton } from "@/shared/ui/pending-submit-button";
 
 type LogoutFormProps = {
   buttonClassName?: string;
@@ -26,9 +27,9 @@ export function LogoutForm({ buttonClassName, label = "Salir" }: LogoutFormProps
   return (
     <form action="/logout" method="post" onSubmit={submitLogout} suppressHydrationWarning>
       {error ? <p role="alert">{error}</p> : null}
-      <button className={buttonClassName} type="submit">
+      <PendingSubmitButton className={buttonClassName} type="submit">
         {label}
-      </button>
+      </PendingSubmitButton>
     </form>
   );
 }

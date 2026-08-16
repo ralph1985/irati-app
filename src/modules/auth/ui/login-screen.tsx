@@ -1,3 +1,5 @@
+import { PendingSubmitButton } from "@/shared/ui/pending-submit-button";
+
 type LoginScreenProps = {
   error?: string;
 };
@@ -28,7 +30,7 @@ export function LoginScreen({ error }: LoginScreenProps) {
         {error ? (
           <p className="auth-error">{errorMessages[error] ?? errorMessages.invalid}</p>
         ) : null}
-        <button type="submit">Entrar</button>
+        <PendingSubmitButton type="submit">Entrar</PendingSubmitButton>
       </form>
     </main>
   );

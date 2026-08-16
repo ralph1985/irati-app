@@ -2,6 +2,7 @@
 
 import { FormEvent, ReactNode, useState } from "react";
 import { BottomSheet } from "../../../shared/ui/bottom-sheet";
+import { PendingSubmitButton } from "../../../shared/ui/pending-submit-button";
 import { createWeightEntry, isWeightPlace } from "../domain/weight-entry";
 import {
   applyOfflineWeightEntry,
@@ -157,9 +158,9 @@ export function WeightCreateSheet({
               <button className={styles.secondaryButton} onClick={closeSheet} type="button">
                 Cancelar
               </button>
-              <button className={styles.primaryButton} type="submit">
+              <PendingSubmitButton className={styles.primaryButton} type="submit">
                 Guardar peso
-              </button>
+              </PendingSubmitButton>
             </div>
           </form>
         </BottomSheet>

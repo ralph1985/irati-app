@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { BottomSheet } from "../../../shared/ui/bottom-sheet";
 import { ConfirmSubmit } from "../../../shared/ui/confirm-submit";
+import { PendingSubmitButton } from "../../../shared/ui/pending-submit-button";
 import { createWeightEntry, isWeightPlace, WeightEntry } from "../domain/weight-entry";
 import {
   applyOfflineWeightEntry,
@@ -109,13 +110,13 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
                 }}
               >
                 <input name="id" type="hidden" value={entry.id} />
-                <button
+                <PendingSubmitButton
                   aria-label={`Borrar peso de ${formatDate(entry.measuredOn)}`}
                   className={`${styles.iconButton} ${styles.deleteIconButton}`}
                   type="submit"
                 >
                   <TrashIcon />
-                </button>
+                </PendingSubmitButton>
               </ConfirmSubmit>
             </div>
           </li>
@@ -185,9 +186,9 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
               <button className={styles.secondaryButton} onClick={closeEditor} type="button">
                 Cancelar
               </button>
-              <button className={styles.primaryButton} type="submit">
+              <PendingSubmitButton className={styles.primaryButton} type="submit">
                 Guardar cambios
-              </button>
+              </PendingSubmitButton>
             </div>
           </form>
         </BottomSheet>
