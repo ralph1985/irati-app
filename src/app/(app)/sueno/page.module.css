@@ -136,6 +136,12 @@
   color: #5b21b6;
 }
 
+.activeActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
 .awakeCard {
   display: grid;
   gap: 8px;

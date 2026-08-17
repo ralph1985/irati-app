@@ -18,6 +18,7 @@ type SheetState =
   | { mode: "closed" }
   | { kind: SleepEntry["kind"]; mode: "start" }
   | { mode: "finish"; entry: SleepEntry }
+  | { mode: "edit-start"; entry: SleepEntry }
   | { mode: "manual" }
   | { entry: SleepEntry; mode: "edit" }
   | { entry: SleepEntry; mode: "delete" };
@@ -84,13 +85,22 @@ export function SleepView({
             <output aria-live="polite" className={styles.timer}>
               {formatLiveDuration(new Date(activeEntry.startedAt), now)}
             </output>
-            <button
-              className={styles.secondaryButton}
-              onClick={() => setSheetState({ entry: activeEntry, mode: "finish" })}
-              type="button"
-            >
-              Finalizar sueño
-            </button>
+            <div className={styles.activeActions}>
+              <button
+                className={styles.secondaryButton}
+                onClick={() => setSheetState({ entry: activeEntry, mode: "edit-start" })}
+                type="button"
+              >
+                Editar inicio
+              </button>
+              <button
+                className={styles.secondaryButton}
+                onClick={() => setSheetState({ entry: activeEntry, mode: "finish" })}
+                type="button"
+              >
+                Finalizar sueño
+              </button>
+            </div>
           </div>
         ) : (
           <>
@@ -270,6 +280,17 @@ function SleepSheets({
         finishOnly
       />
     );
+  if (state.mode === "edit-start")
+    return (
+      <SleepFormSheet
+        action={updateAction}
+        entry={state.entry}
+        onClose={onClose}
+        onSubmit={onSubmit}
+        startOnly
+        title="Editar inicio"
+      />
+    );
   if (state.mode === "edit")
     return (
       <SleepFormSheet
@@ -316,6 +337,7 @@ function SleepFormSheet({
   onClose,
   onSubmit,
   startingOnly = false,
+  startOnly = false,
   title,
 }: {
   action?: SleepAction;
@@ -325,6 +347,7 @@ function SleepFormSheet({
   onClose: () => void;
   onSubmit: (action: SleepAction | undefined, event: FormEvent<HTMLFormElement>) => Promise<void>;
   startingOnly?: boolean;
+  startOnly?: boolean;
   title: string;
 }) {
   const [kind, setKind] = useState<SleepEntry["kind"]>(entry?.kind ?? defaultKind);
@@ -348,7 +371,7 @@ function SleepFormSheet({
           <input name="startedAt" type="hidden" value={entry.startedAt} />
         ) : null}
         <input name="kind" type="hidden" value={kind} />
-        {!finishOnly ? (
+        {!finishOnly && !startOnly ? (
           <div className={styles.kindChoices}>
             <button aria-pressed={kind === "nap"} onClick={() => setKind("nap")} type="button">
               Siesta
@@ -371,7 +394,7 @@ function SleepFormSheet({
               </label>
             </>
           ) : null}
-          {!startingOnly ? (
+          {!startingOnly && !startOnly ? (
             <>
               <label>
                 Fecha de finalización
