@@ -324,15 +324,24 @@ El modo offline-first se implementa por fases segun [`docs/offline-plan.md`](off
 - [x] Ejecutar validación automática completa.
 - [ ] Hacer prueba manual en móvil con las URLs reales.
 
+## Hito 21 - Registro de sueño
+
+- [x] Crear registros de siesta y noche con inicio, fin y un único sueño activo.
+- [x] Mostrar cronómetro en curso, tiempo despierta, resumen diario e historial.
+- [x] Añadir y editar registros mediante bottom sheets compartidos.
+- [x] Integrar Sueño a la derecha de Vacunas en la navegación online y offline.
+- [x] Permitir lectura y escritura offline, con resolución manual de conflictos entre sueños activos.
+- [x] Añadir migración Supabase, caché, backup, tests y validación completa.
+
 ## Fuera del MVP inicial
 
 - Exportacion o impresion para pediatra.
 - Percentiles oficiales o curvas clinicas.
-- Nuevas superficies offline fuera de Inicio, Peso, Vacunas, Viaje, Calendario y Ajustes.
+- Nuevas superficies offline fuera de Inicio, Peso, Vacunas, Sueño, Viaje, Calendario y Ajustes.
 - Realtime.
 - Multiusuario con cuentas separadas.
 - Permisos por rol.
 - Notificaciones push.
 - Email.
 - Compartir acceso con familiares.
-- Seguimiento de tomas, pañales, sueño u otros hitos.
+- Seguimiento de tomas, pañales u otros hitos.

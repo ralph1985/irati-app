@@ -2,6 +2,7 @@ import "fake-indexeddb/auto";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   applyOfflineWeightEntry,
+  applyOfflineSleepEntry,
   applyOfflineTravelChecklistItem,
   applyOfflineTravelChecklistReorder,
   applyOfflineAppliedVaccineDose,
@@ -10,12 +11,16 @@ import {
   deleteOfflineAppliedVaccineDose,
   deleteOfflineTravelChecklistItem,
   deleteOfflineWeightEntry,
+  deleteOfflineSleepEntry,
   enqueuePendingTravelMutation,
   enqueuePendingVaccineMutation,
   enqueuePendingWeightMutation,
+  enqueuePendingSleepMutation,
   listPendingTravelMutations,
   listPendingVaccineMutations,
   listPendingWeightMutations,
+  listPendingSleepMutations,
+  markPendingSleepMutationConflict,
   markPendingMutationError,
   readOfflineSnapshot,
   readSyncMetadata,
@@ -34,6 +39,7 @@ describe("Irati offline database", () => {
       appliedVaccineDoses: [],
       plannedVaccineDoses: [],
       profile: null,
+      sleepEntries: [],
       travelChecklistCategories: [],
       travelChecklistItems: [],
       travelStorageLocations: [],
@@ -43,7 +49,7 @@ describe("Irati offline database", () => {
       lastError: null,
       lastSuccessfulSyncAt: null,
       offlineAccessGranted: false,
-      schemaVersion: 7,
+      schemaVersion: 8,
     });
   });
 
@@ -111,7 +117,7 @@ describe("Irati offline database", () => {
     await expect(readSyncMetadata()).resolves.toMatchObject({
       lastSuccessfulSyncAt: "2026-07-23T10:00:00.000Z",
       offlineAccessGranted: true,
-      schemaVersion: 7,
+      schemaVersion: 8,
     });
   });
 
@@ -134,6 +140,7 @@ describe("Irati offline database", () => {
       appliedVaccineDoses: [],
       plannedVaccineDoses: [],
       profile: null,
+      sleepEntries: [],
       travelChecklistCategories: [],
       travelChecklistItems: [],
       travelStorageLocations: [],
@@ -212,6 +219,55 @@ describe("Irati offline database", () => {
     await expect(readOfflineSnapshot()).resolves.toMatchObject({
       weightEntries: [],
     });
+  });
+
+  it("stores sleep entries and keeps pending mutations after a conflict", async () => {
+    await applyOfflineSleepEntry({
+      createdAt: "2026-08-17T09:00:00.000Z",
+      endedAt: null,
+      id: "sleep-1",
+      kind: "nap",
+      startedAt: "2026-08-17T09:00:00.000Z",
+      updatedAt: "2026-08-17T09:00:00.000Z",
+    });
+    await enqueuePendingSleepMutation({
+      id: "sleep-mutation-1",
+      operation: "create",
+      payload: {
+        createdAt: "2026-08-17T09:00:00.000Z",
+        endedAt: null,
+        id: "sleep-1",
+        kind: "nap",
+        startedAt: "2026-08-17T09:00:00.000Z",
+        updatedAt: "2026-08-17T09:00:00.000Z",
+      },
+    });
+
+    await markPendingSleepMutationConflict("sleep-mutation-1", {
+      createdAt: "2026-08-17T08:00:00.000Z",
+      endedAt: null,
+      id: "remote-sleep-1",
+      kind: "night",
+      startedAt: "2026-08-17T08:00:00.000Z",
+      updatedAt: "2026-08-17T08:00:00.000Z",
+    });
+
+    await expect(readOfflineSnapshot()).resolves.toMatchObject({
+      sleepEntries: [{ id: "sleep-1" }],
+    });
+    await expect(listPendingSleepMutations()).resolves.toMatchObject([
+      {
+        conflict: {
+          code: "active_sleep_entry",
+          remoteActiveEntry: { id: "remote-sleep-1" },
+        },
+        id: "sleep-mutation-1",
+        lastError: "Conflicto de sueño: requiere revisión manual.",
+      },
+    ]);
+
+    await deleteOfflineSleepEntry("sleep-1");
+    await expect(readOfflineSnapshot()).resolves.toMatchObject({ sleepEntries: [] });
   });
 
   it("keeps failed pending weight mutations visible until they are removed", async () => {

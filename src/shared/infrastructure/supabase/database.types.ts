@@ -111,6 +111,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      sleep_entries: {
+        Row: {
+          id: string;
+          kind: "nap" | "night";
+          started_at: string;
+          ended_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          kind: "nap" | "night";
+          started_at: string;
+          ended_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          kind?: "nap" | "night";
+          started_at?: string;
+          ended_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       planned_vaccine_doses: {
         Row: {
           id: string;

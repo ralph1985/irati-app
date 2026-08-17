@@ -55,6 +55,26 @@ Indice:
 
 - `weight_entries_measured_on_idx`
 
+## `sleep_entries`
+
+Registro de siestas y sueño nocturno. La migración
+`supabase/migrations/20260817120000_create_sleep_entries.sql` garantiza que solo
+puede haber un registro activo (`ended_at` nulo) a la vez.
+
+| Campo        | Tipo          | Regla                                  |
+| ------------ | ------------- | -------------------------------------- |
+| `id`         | `uuid`        | Primary key                            |
+| `kind`       | `text`        | `nap` o `night`                        |
+| `started_at` | `timestamptz` | Inicio obligatorio                     |
+| `ended_at`   | `timestamptz` | Opcional; debe ser posterior al inicio |
+| `created_at` | `timestamptz` | `now()`                                |
+| `updated_at` | `timestamptz` | `now()`                                |
+
+Índices:
+
+- `sleep_entries_started_at_idx`
+- `sleep_entries_single_active_idx`, único parcial para impedir dos registros activos.
+
 ## `planned_vaccine_doses`
 
 Dosis planificadas del calendario editable.

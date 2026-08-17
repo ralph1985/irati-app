@@ -43,6 +43,13 @@ const tableDefinitions = [
     conflictColumns: ["id"],
   },
   {
+    name: "sleep_entries",
+    order: "started_at.asc",
+    columns: ["id", "kind", "started_at", "ended_at", "created_at", "updated_at"],
+    conflictColumns: ["id"],
+    optionalBeforeMigration: true,
+  },
+  {
     name: "applied_vaccine_doses",
     order: "applied_on.asc",
     columns: [
@@ -103,7 +110,10 @@ const tableDefinitions = [
 const config = await readSupabaseConfig();
 const rowsByTable = Object.fromEntries(
   await Promise.all(
-    tableDefinitions.map(async (table) => [table.name, await fetchRows(table.name, table.order)]),
+    tableDefinitions.map(async (table) => [
+      table.name,
+      await fetchRows(table.name, table.order, table.optionalBeforeMigration),
+    ]),
   ),
 );
 
@@ -163,7 +173,7 @@ function stripEnvQuotes(value) {
   return value;
 }
 
-async function fetchRows(tableName, order) {
+async function fetchRows(tableName, order, optionalBeforeMigration = false) {
   const params = new URLSearchParams({ select: "*" });
   params.set("order", order);
 
@@ -173,6 +183,10 @@ async function fetchRows(tableName, order) {
       authorization: `Bearer ${config.serviceRoleKey}`,
     },
   });
+
+  if (response.status === 404 && optionalBeforeMigration) {
+    return [];
+  }
 
   if (!response.ok) {
     throw new Error(`Could not fetch ${tableName}: ${response.status}`);
@@ -209,6 +223,7 @@ function buildDataSql(rowsByTable) {
     "begin;",
     "",
     "delete from public.applied_vaccine_doses;",
+    "delete from public.sleep_entries;",
     "delete from public.travel_checklist_items;",
     "delete from public.travel_checklist_categories;",
     "delete from public.weight_entries;",

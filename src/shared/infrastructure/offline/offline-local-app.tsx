@@ -35,14 +35,23 @@ import { buildWeightTrendSummary } from "@/modules/weight/application/weight-tre
 import { WeightChart } from "@/modules/weight/ui/weight-chart";
 import { WeightCreateSheet } from "@/modules/weight/ui/weight-create-sheet";
 import { WeightHistory } from "@/modules/weight/ui/weight-history";
+import { SleepView } from "@/modules/sleep/ui/sleep-view";
+import type { SleepEntry } from "@/modules/sleep/domain/sleep-entry";
 import {
+  applyOfflineSleepEntry,
+  clearPendingSleepMutationConflict,
+  deleteOfflineSleepEntry,
+  enqueuePendingSleepMutation,
+  listPendingSleepMutations,
   listPendingTravelMutations,
   listPendingVaccineMutations,
   listPendingWeightMutations,
+  removePendingMutation,
   readOfflineSnapshot,
   readCalendarSnapshot,
   readSyncMetadata,
   type OfflineSnapshot,
+  type PendingSleepMutation,
   type SyncMetadata,
 } from "./irati-offline-db";
 import localStyles from "./offline-local-app.module.css";
@@ -51,8 +60,9 @@ import travelStyles from "../../../app/(app)/viaje/page.module.css";
 import vaccineStyles from "../../../app/(app)/vacunas/page.module.css";
 import weightStyles from "../../../app/(app)/peso/page.module.css";
 import calendarPageStyles from "../../../app/(app)/calendario/page.module.css";
+import sleepStyles from "../../../app/(app)/sueno/page.module.css";
 
-type OfflineRoute = "/" | "/peso" | "/vacunas" | "/viaje" | "/calendario" | "/ajustes";
+type OfflineRoute = "/" | "/peso" | "/vacunas" | "/sueno" | "/viaje" | "/calendario" | "/ajustes";
 
 const noopAction = async () => {};
 
@@ -60,6 +70,7 @@ const tabs: Array<{ href: OfflineRoute; label: string }> = [
   { href: "/", label: "Inicio" },
   { href: "/peso", label: "Peso" },
   { href: "/vacunas", label: "Vacunas" },
+  { href: "/sueno", label: "Sueño" },
   { href: "/viaje", label: "Viaje" },
   { href: "/calendario", label: "Calendario" },
   { href: "/ajustes", label: "Ajustes" },
@@ -75,6 +86,7 @@ export function OfflineLocalApp() {
     travel: 0,
     vaccines: 0,
     weight: 0,
+    sleep: 0,
   });
 
   useEffect(() => {
@@ -86,7 +98,7 @@ export function OfflineLocalApp() {
     }
 
     async function refreshLocalData() {
-      const [nextSnapshot, nextMetadata, nextCalendarSnapshot, weight, travel, vaccines] =
+      const [nextSnapshot, nextMetadata, nextCalendarSnapshot, weight, travel, vaccines, sleep] =
         await Promise.all([
           readOfflineSnapshot(),
           readSyncMetadata(),
@@ -94,6 +106,7 @@ export function OfflineLocalApp() {
           listPendingWeightMutations(),
           listPendingTravelMutations(),
           listPendingVaccineMutations(),
+          listPendingSleepMutations(),
         ]);
 
       if (!isActive) {
@@ -107,6 +120,7 @@ export function OfflineLocalApp() {
         travel: travel.length,
         vaccines: vaccines.length,
         weight: weight.length,
+        sleep: sleep.length,
       });
     }
 
@@ -118,6 +132,7 @@ export function OfflineLocalApp() {
     window.addEventListener("irati-offline-weight-updated", refreshLocalData);
     window.addEventListener("irati-offline-travel-updated", refreshLocalData);
     window.addEventListener("irati-offline-vaccines-updated", refreshLocalData);
+    window.addEventListener("irati-offline-sleep-updated", refreshLocalData);
 
     return () => {
       isActive = false;
@@ -126,6 +141,7 @@ export function OfflineLocalApp() {
       window.removeEventListener("irati-offline-weight-updated", refreshLocalData);
       window.removeEventListener("irati-offline-travel-updated", refreshLocalData);
       window.removeEventListener("irati-offline-vaccines-updated", refreshLocalData);
+      window.removeEventListener("irati-offline-sleep-updated", refreshLocalData);
     };
   }, []);
 
@@ -172,7 +188,7 @@ function renderRoute(
   search: string,
   snapshot: OfflineSnapshot,
   metadata: SyncMetadata,
-  pendingCounts: { travel: number; vaccines: number; weight: number },
+  pendingCounts: { sleep: number; travel: number; vaccines: number; weight: number },
   calendarSnapshot: CalendarSnapshot | null,
 ) {
   switch (route) {
@@ -180,6 +196,8 @@ function renderRoute(
       return <OfflineWeightScreen search={search} snapshot={snapshot} />;
     case "/vacunas":
       return <OfflineVaccinesScreen search={search} snapshot={snapshot} />;
+    case "/sueno":
+      return <OfflineSleepScreen snapshot={snapshot} />;
     case "/viaje":
       return <OfflineTravelScreen snapshot={snapshot} />;
     case "/calendario":
@@ -195,6 +213,151 @@ function renderRoute(
     case "/":
       return <OfflineHomeScreen snapshot={snapshot} />;
   }
+}
+
+function OfflineSleepScreen({ snapshot }: { snapshot: OfflineSnapshot }) {
+  const entries = snapshot.sleepEntries ?? [];
+  const [conflicts, setConflicts] = useState<PendingSleepMutation[]>([]);
+
+  useEffect(() => {
+    async function refreshConflicts() {
+      setConflicts((await listPendingSleepMutations()).filter((mutation) => mutation.conflict));
+    }
+
+    void refreshConflicts();
+    window.addEventListener("irati-offline-sync-updated", refreshConflicts);
+    window.addEventListener("irati-offline-sleep-updated", refreshConflicts);
+    return () => {
+      window.removeEventListener("irati-offline-sync-updated", refreshConflicts);
+      window.removeEventListener("irati-offline-sleep-updated", refreshConflicts);
+    };
+  }, []);
+
+  async function createAction(formData: FormData) {
+    const entry = createOfflineSleepEntry(formData);
+    await applyOfflineSleepEntry(entry);
+    await enqueuePendingSleepMutation({
+      id: crypto.randomUUID(),
+      operation: "create",
+      payload: entry,
+    });
+    window.dispatchEvent(new Event("irati-offline-sleep-updated"));
+  }
+
+  async function updateAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    const current = entries.find((entry) => entry.id === id);
+    if (!current) return;
+    const entry = {
+      ...current,
+      ...readOfflineSleepValues(formData),
+      updatedAt: new Date().toISOString(),
+    };
+    await applyOfflineSleepEntry(entry);
+    await enqueuePendingSleepMutation({
+      id: crypto.randomUUID(),
+      operation: "update",
+      payload: entry,
+    });
+    window.dispatchEvent(new Event("irati-offline-sleep-updated"));
+  }
+
+  async function deleteAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    if (!id) return;
+    await deleteOfflineSleepEntry(id);
+    await enqueuePendingSleepMutation({
+      id: crypto.randomUUID(),
+      operation: "delete",
+      payload: { id },
+    });
+    window.dispatchEvent(new Event("irati-offline-sleep-updated"));
+  }
+
+  async function keepRemote(mutation: PendingSleepMutation) {
+    const localId = mutation.payload.id;
+    await deleteOfflineSleepEntry(localId);
+    const related = await listPendingSleepMutations();
+    await Promise.all(
+      related
+        .filter((item) => item.payload.id === localId)
+        .map((item) => removePendingMutation(item.id)),
+    );
+    if (mutation.conflict?.remoteActiveEntry) {
+      await applyOfflineSleepEntry(mutation.conflict.remoteActiveEntry);
+    }
+    window.dispatchEvent(new Event("irati-offline-sleep-updated"));
+  }
+
+  async function keepLocalAndDeleteRemote(mutation: PendingSleepMutation) {
+    const remote = mutation.conflict?.remoteActiveEntry;
+    if (!remote) return;
+    const response = await fetch("/api/offline/sleep-mutations", {
+      body: JSON.stringify({
+        createdAt: new Date().toISOString(),
+        entity: "sleep",
+        id: crypto.randomUUID(),
+        operation: "delete",
+        payload: { id: remote.id },
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    });
+    if (!response.ok) return;
+    await clearPendingSleepMutationConflict(mutation.id);
+    window.dispatchEvent(new Event("irati-offline-sync-updated"));
+  }
+
+  return (
+    <main className={sleepStyles.main}>
+      <header className={sleepStyles.header}>
+        <p>Sueño</p>
+        <h1>El descanso de Irati</h1>
+      </header>
+      {conflicts.map((mutation) => (
+        <section className={sleepStyles.conflict} key={mutation.id} role="alert">
+          <strong>Hay dos descansos activos</strong>
+          <span>Elige cuál conservar. El otro registro se borrará.</span>
+          <div>
+            <button onClick={() => void keepRemote(mutation)} type="button">
+              Conservar el otro dispositivo
+            </button>
+            <button onClick={() => void keepLocalAndDeleteRemote(mutation)} type="button">
+              Conservar este dispositivo
+            </button>
+          </div>
+        </section>
+      ))}
+      <SleepView
+        createAction={createAction}
+        deleteAction={deleteAction}
+        entries={entries}
+        updateAction={updateAction}
+      />
+    </main>
+  );
+}
+
+function createOfflineSleepEntry(formData: FormData): SleepEntry {
+  const now = new Date().toISOString();
+  return {
+    ...readOfflineSleepValues(formData),
+    createdAt: now,
+    id: crypto.randomUUID(),
+    updatedAt: now,
+  };
+}
+
+function readOfflineSleepValues(
+  formData: FormData,
+): Pick<SleepEntry, "endedAt" | "kind" | "startedAt"> {
+  const kind = String(formData.get("kind") ?? "");
+  if (kind !== "nap" && kind !== "night") throw new Error("Invalid sleep kind");
+  const startedAt = String(formData.get("startedAt") ?? "");
+  const endedAt = String(formData.get("endedAt") ?? "").trim() || null;
+  if (!startedAt || (endedAt && Date.parse(endedAt) <= Date.parse(startedAt)))
+    throw new Error("Invalid sleep time");
+  return { endedAt, kind, startedAt };
 }
 
 function OfflineCalendarScreen({ snapshot }: { snapshot: CalendarSnapshot | null }) {
@@ -475,10 +638,11 @@ function OfflineSettingsScreen({
   snapshot,
 }: {
   metadata: SyncMetadata;
-  pendingCounts: { travel: number; vaccines: number; weight: number };
+  pendingCounts: { sleep: number; travel: number; vaccines: number; weight: number };
   snapshot: OfflineSnapshot;
 }) {
-  const totalPending = pendingCounts.travel + pendingCounts.vaccines + pendingCounts.weight;
+  const totalPending =
+    pendingCounts.sleep + pendingCounts.travel + pendingCounts.vaccines + pendingCounts.weight;
 
   return (
     <main className={localStyles.settingsMain}>
@@ -521,6 +685,10 @@ function OfflineSettingsScreen({
                 ? formatDateTime(metadata.lastSuccessfulSyncAt)
                 : "Sin preparar"}
             </dd>
+          </div>
+          <div>
+            <dt>Sueño</dt>
+            <dd>{pendingCounts.sleep}</dd>
           </div>
           <div>
             <dt>Peso</dt>
@@ -600,6 +768,7 @@ function toOfflineRoute(pathname: string): OfflineRoute {
   if (
     pathname === "/peso" ||
     pathname === "/vacunas" ||
+    pathname === "/sueno" ||
     pathname === "/viaje" ||
     pathname === "/calendario" ||
     pathname === "/ajustes"

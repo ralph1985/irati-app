@@ -4,6 +4,7 @@ import { SupabaseProfileRepository } from "@/modules/profile/infrastructure/supa
 import { SupabaseTravelChecklistRepository } from "@/modules/travel/infrastructure/supabase-travel-checklist-repository";
 import { SupabaseVaccinePlanRepository } from "@/modules/vaccines/infrastructure/supabase-vaccine-plan-repository";
 import { SupabaseWeightRepository } from "@/modules/weight/infrastructure/supabase-weight-repository";
+import { SupabaseSleepRepository } from "@/modules/sleep/infrastructure/supabase-sleep-repository";
 import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
 import type { OfflineSnapshot } from "@/shared/infrastructure/offline/irati-offline-db";
@@ -18,6 +19,7 @@ export async function GET() {
   const weightRepository = new SupabaseWeightRepository(supabase);
   const vaccineRepository = new SupabaseVaccinePlanRepository(supabase);
   const travelRepository = new SupabaseTravelChecklistRepository(supabase);
+  const sleepRepository = new SupabaseSleepRepository(supabase);
 
   try {
     const [
@@ -28,6 +30,7 @@ export async function GET() {
       travelChecklistCategories,
       travelChecklistItems,
       travelStorageLocations,
+      sleepEntries,
     ] = await Promise.all([
       getBabyProfile(profileRepository),
       weightRepository.listWeightEntries(),
@@ -36,6 +39,7 @@ export async function GET() {
       travelRepository.listTravelChecklistCategories(),
       travelRepository.listTravelChecklistItems(),
       travelRepository.listTravelStorageLocations(),
+      sleepRepository.listSleepEntries(),
     ]);
     const snapshot: OfflineSnapshot = {
       appliedVaccineDoses,
@@ -45,6 +49,7 @@ export async function GET() {
       travelChecklistCategories,
       travelStorageLocations,
       weightEntries,
+      sleepEntries,
     };
 
     return NextResponse.json(

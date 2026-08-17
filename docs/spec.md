@@ -18,7 +18,7 @@ Incluido:
 - Acceso con PIN/passcode compartido y seguridad real de servidor.
 - PWA instalable desde el inicio.
 - Estilo visual familiar, suave y luminoso, con morado como color principal.
-- Navegacion inferior con Inicio, Peso, Vacunas, Viaje y Ajustes.
+- Navegacion inferior con Inicio, Peso, Vacunas, Sueño, Viaje, Calendario y Ajustes.
 - Registro de peso.
 - Grafica simple de peso.
 - Filtro de peso por lugar.
@@ -27,6 +27,7 @@ Incluido:
 - Estados de vacunas.
 - Avisos internos de proximas y retrasadas.
 - Checklist de viaje reutilizable, editable y compartida.
+- Registro de sueño con siestas, noche, cronómetro e historial diario.
 - Supabase como persistencia remota principal.
 - Copia local offline-first por dispositivo tras una sesion online valida.
 - Despliegue en Vercel.
@@ -38,7 +39,7 @@ Backups:
 - `pnpm backup:supabase` genera un archivo `irati-supabase-<timestamp>.sql.tar.gz` en `var/backups/supabase/`.
 - El archivo contiene `schema.sql`, `data.sql` y `manifest.txt`.
 - `schema.sql` concatena las migraciones versionadas del repositorio.
-- `data.sql` contiene los datos actuales de `baby_profiles`, `planned_vaccine_doses`, `weight_entries`, `applied_vaccine_doses`, `travel_checklist_categories`, `travel_checklist_items` y `developer_backup_runs`.
+- `data.sql` contiene los datos actuales de `baby_profiles`, `planned_vaccine_doses`, `weight_entries`, `applied_vaccine_doses`, `sleep_entries`, `travel_checklist_categories`, `travel_checklist_items` y `developer_backup_runs`.
 - Los archivos generados y logs viven en `var/` y no se suben a Git.
 - La retencion local por defecto es de 14 dias, configurable con `IRATI_SUPABASE_BACKUP_RETENTION_DAYS`.
 - `pnpm backup:supabase:cron:install` instala un cron cada 6 horas por defecto.
@@ -57,7 +58,7 @@ Excluido:
 - Percentiles oficiales.
 - Cuentas separadas para Rafa y Begoña.
 - Acceso familiar de solo lectura.
-- Seguimiento de sueño, tomas, pañales u otros hitos.
+- Seguimiento de tomas, pañales u otros hitos.
 
 ## Usuarios
 
@@ -388,6 +389,7 @@ El MVP debe cubrir estas superficies:
 - Inicio/resumen.
 - Peso.
 - Vacunas.
+- Sueño.
 - Viaje.
 - Ajustes minimos o perfil.
 
@@ -416,13 +418,14 @@ Pestañas iniciales:
 - Inicio.
 - Peso.
 - Vacunas.
+- Sueño.
 - Viaje.
 - Calendario.
 - Ajustes.
 
-La estructura puede crecer despues con mas pestañas o menus secundarios, pero el MVP parte de estas seis.
+La estructura puede crecer despues con mas pestañas o menus secundarios, pero el MVP parte de estas siete.
 
-La transicion entre pestañas principales usa una animacion lateral ligera sobre el contenido, manteniendo fijo el menu inferior. La direccion sigue el orden Inicio, Peso, Vacunas, Viaje y Ajustes. La animacion no se aplica a login, logout, modales, filtros ni cambios de query, y debe desactivarse cuando el usuario prefiera reducir movimiento.
+La transicion entre pestañas principales usa una animacion lateral ligera sobre el contenido, manteniendo fijo el menu inferior. La direccion sigue el orden Inicio, Peso, Vacunas, Sueño, Viaje, Calendario y Ajustes. La animacion no se aplica a login, logout, modales, filtros ni cambios de query, y debe desactivarse cuando el usuario prefiera reducir movimiento.
 
 ### Inicio
 
@@ -477,6 +480,18 @@ La linea temporal se organiza por edad de Irati, no solo por fecha concreta.
 La edicion del calendario de vacunas vive inicialmente dentro de Vacunas, no en Ajustes.
 
 La edicion de aplicaciones de vacunas se abre como bottom sheet, igual que marcar una dosis como aplicada y editar la planificacion.
+
+### Sueño
+
+La pantalla de Sueño registra siestas y sueño nocturno de Irati para consulta familiar, sin diagnóstico ni recomendaciones clínicas.
+
+- Cada registro tiene tipo `siesta` o `noche`, hora de inicio y hora de fin opcional.
+- Solo puede haber un sueño activo. La pantalla muestra su duración en directo y permite finalizarlo.
+- Sin sueño activo, muestra cuánto tiempo lleva despierta y permite iniciar una siesta o una noche.
+- Se puede añadir, editar o borrar un registro desde bottom sheets compartidos.
+- El resumen de hoy muestra tiempo total dormido, número de siestas y duración nocturna; el historial se agrupa por día.
+- El cronómetro activo se conserva en IndexedDB y continúa al reabrir la PWA.
+- Las escrituras se pueden hacer sin conexión. Si dos dispositivos crean sueños activos, la sincronización exige elegir cuál mantener activo y finalizar o borrar el otro sin descartar datos automáticamente.
 
 ### Ajustes
 

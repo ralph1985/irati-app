@@ -14,10 +14,12 @@ import type {
   PlannedVaccineDose,
 } from "@/modules/vaccines/domain/vaccine-calendar";
 import type { WeightEntry } from "@/modules/weight/domain/weight-entry";
+import type { SleepEntry } from "@/modules/sleep/domain/sleep-entry";
 
 export type OfflineSnapshot = {
   profile: BabyProfile | null;
   weightEntries: WeightEntry[];
+  sleepEntries?: SleepEntry[];
   plannedVaccineDoses: PlannedVaccineDose[];
   appliedVaccineDoses: AppliedVaccineDose[];
   travelChecklistItems: TravelChecklistItem[];
@@ -86,19 +88,38 @@ export type PendingVaccineMutation = PendingVaccineMutationPayload & {
 };
 
 export type PendingMutation =
-  PendingWeightMutation | PendingTravelMutation | PendingVaccineMutation;
+  PendingWeightMutation | PendingTravelMutation | PendingVaccineMutation | PendingSleepMutation;
+
+export type PendingSleepMutationOperation = "create" | "update" | "delete";
+
+export type SleepMutationConflict = {
+  code: "active_sleep_entry";
+  detectedAt: string;
+  remoteActiveEntry: SleepEntry | null;
+};
+
+export type PendingSleepMutation = {
+  id: string;
+  entity: "sleep";
+  operation: PendingSleepMutationOperation;
+  payload: SleepEntry | { id: string };
+  createdAt: string;
+  conflict: SleepMutationConflict | null;
+  lastError: string | null;
+};
 
 type StoredBabyProfile = BabyProfile & {
   id: "irati";
 };
 
-const currentSchemaVersion = 7;
+const currentSchemaVersion = 8;
 const profileId = "irati";
 const metadataId = "main";
 
 class IratiOfflineDatabase extends Dexie {
   babyProfiles!: Table<StoredBabyProfile, string>;
   weightEntries!: Table<WeightEntry, string>;
+  sleepEntries!: Table<SleepEntry, string>;
   plannedVaccineDoses!: Table<PlannedVaccineDose, string>;
   appliedVaccineDoses!: Table<AppliedVaccineDose, string>;
   travelChecklistItems!: Table<TravelChecklistItem, string>;
@@ -122,6 +143,7 @@ class IratiOfflineDatabase extends Dexie {
       travelChecklistCategories: "slug, sortOrder",
       travelStorageLocations: "id, parentId, sortOrder",
       weightEntries: "id, measuredOn",
+      sleepEntries: "id, startedAt, endedAt",
       calendarSnapshots: "id, fetchedAt",
     });
   }
@@ -152,6 +174,7 @@ export async function replaceOfflineSnapshot(
     [
       iratiOfflineDb.babyProfiles,
       iratiOfflineDb.weightEntries,
+      iratiOfflineDb.sleepEntries,
       iratiOfflineDb.plannedVaccineDoses,
       iratiOfflineDb.appliedVaccineDoses,
       iratiOfflineDb.travelChecklistItems,
@@ -163,6 +186,7 @@ export async function replaceOfflineSnapshot(
     async () => {
       await iratiOfflineDb.babyProfiles.clear();
       await iratiOfflineDb.weightEntries.clear();
+      await iratiOfflineDb.sleepEntries.clear();
       await iratiOfflineDb.plannedVaccineDoses.clear();
       await iratiOfflineDb.appliedVaccineDoses.clear();
       await iratiOfflineDb.travelChecklistItems.clear();
@@ -176,6 +200,7 @@ export async function replaceOfflineSnapshot(
       }
 
       await iratiOfflineDb.weightEntries.bulkPut(snapshot.weightEntries);
+      await iratiOfflineDb.sleepEntries.bulkPut(snapshot.sleepEntries ?? []);
       await iratiOfflineDb.plannedVaccineDoses.bulkPut(snapshot.plannedVaccineDoses);
       await iratiOfflineDb.appliedVaccineDoses.bulkPut(snapshot.appliedVaccineDoses);
       await iratiOfflineDb.travelChecklistItems.bulkPut(snapshot.travelChecklistItems);
@@ -198,6 +223,7 @@ export async function readOfflineSnapshot(): Promise<OfflineSnapshot> {
   const [
     profile,
     weightEntries,
+    sleepEntries,
     plannedVaccineDoses,
     appliedVaccineDoses,
     travelChecklistItems,
@@ -206,6 +232,7 @@ export async function readOfflineSnapshot(): Promise<OfflineSnapshot> {
   ] = await Promise.all([
     iratiOfflineDb.babyProfiles.get(profileId),
     iratiOfflineDb.weightEntries.orderBy("measuredOn").toArray(),
+    iratiOfflineDb.sleepEntries.orderBy("startedAt").reverse().toArray(),
     iratiOfflineDb.plannedVaccineDoses.orderBy("plannedDate").toArray(),
     iratiOfflineDb.appliedVaccineDoses.orderBy("appliedOn").toArray(),
     iratiOfflineDb.travelChecklistItems.orderBy("sortOrder").toArray(),
@@ -228,6 +255,7 @@ export async function readOfflineSnapshot(): Promise<OfflineSnapshot> {
     travelChecklistCategories,
     travelStorageLocations,
     weightEntries,
+    sleepEntries,
   };
 }
 
@@ -296,6 +324,59 @@ export async function enqueuePendingVaccineMutation(
 
 export async function applyOfflineWeightEntry(entry: WeightEntry): Promise<void> {
   await iratiOfflineDb.weightEntries.put(entry);
+}
+
+export async function applyOfflineSleepEntry(entry: SleepEntry): Promise<void> {
+  await iratiOfflineDb.sleepEntries.put(entry);
+}
+
+export async function deleteOfflineSleepEntry(id: string): Promise<void> {
+  await iratiOfflineDb.sleepEntries.delete(id);
+}
+
+export async function enqueuePendingSleepMutation(
+  mutation: Omit<PendingSleepMutation, "conflict" | "createdAt" | "entity" | "lastError"> &
+    Partial<Pick<PendingSleepMutation, "conflict" | "createdAt" | "lastError">>,
+): Promise<void> {
+  await iratiOfflineDb.pendingMutations.put({
+    ...mutation,
+    conflict: mutation.conflict ?? null,
+    createdAt: mutation.createdAt ?? new Date().toISOString(),
+    entity: "sleep",
+    lastError: mutation.lastError ?? null,
+  });
+}
+
+export async function markPendingSleepMutationConflict(
+  id: string,
+  remoteActiveEntry: SleepEntry | null,
+): Promise<void> {
+  await iratiOfflineDb.pendingMutations.update(id, {
+    conflict: {
+      code: "active_sleep_entry",
+      detectedAt: new Date().toISOString(),
+      remoteActiveEntry,
+    },
+    lastError: "Conflicto de sueño: requiere revisión manual.",
+  } as Partial<PendingSleepMutation>);
+}
+
+export async function clearPendingSleepMutationConflict(id: string): Promise<void> {
+  await iratiOfflineDb.pendingMutations.update(id, {
+    conflict: null,
+    lastError: null,
+  } as Partial<PendingSleepMutation>);
+}
+
+export async function listPendingSleepMutations(): Promise<PendingSleepMutation[]> {
+  const mutations = await iratiOfflineDb.pendingMutations
+    .where("entity")
+    .equals("sleep")
+    .sortBy("createdAt");
+
+  return mutations.filter(
+    (mutation): mutation is PendingSleepMutation => mutation.entity === "sleep",
+  );
 }
 
 export async function deleteOfflineWeightEntry(id: string): Promise<void> {
@@ -437,6 +518,7 @@ export async function clearOfflineData(): Promise<void> {
     [
       iratiOfflineDb.babyProfiles,
       iratiOfflineDb.weightEntries,
+      iratiOfflineDb.sleepEntries,
       iratiOfflineDb.plannedVaccineDoses,
       iratiOfflineDb.appliedVaccineDoses,
       iratiOfflineDb.travelChecklistItems,
@@ -449,6 +531,7 @@ export async function clearOfflineData(): Promise<void> {
     async () => {
       await iratiOfflineDb.babyProfiles.clear();
       await iratiOfflineDb.weightEntries.clear();
+      await iratiOfflineDb.sleepEntries.clear();
       await iratiOfflineDb.plannedVaccineDoses.clear();
       await iratiOfflineDb.appliedVaccineDoses.clear();
       await iratiOfflineDb.travelChecklistItems.clear();
