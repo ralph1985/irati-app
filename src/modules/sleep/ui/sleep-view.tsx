@@ -54,6 +54,7 @@ export function SleepView({
       return;
     }
 
+    setSheetState({ mode: "closed" });
     const formData = new FormData(event.currentTarget);
     const startedAt = readLocalDateTime(formData, "startedOn", "startedTime");
     const endedAt = readLocalDateTime(formData, "endedOn", "endedTime");
@@ -64,7 +65,6 @@ export function SleepView({
 
     formData.set("endedAt", endedAt ?? "");
     await action(formData);
-    setSheetState({ mode: "closed" });
   }
 
   return (
