@@ -44,7 +44,7 @@ export function SleepView({
       return;
     }
 
-    const interval = window.setInterval(() => setNow(new Date()), 30_000);
+    const interval = window.setInterval(() => setNow(new Date()), 1_000);
     return () => window.clearInterval(interval);
   }, [activeEntry]);
 
@@ -82,7 +82,7 @@ export function SleepView({
               <h3>Durmiendo desde {formatTime(activeEntry.startedAt)}</h3>
             </div>
             <output aria-live="polite" className={styles.timer}>
-              {formatDuration(new Date(activeEntry.startedAt), now)}
+              {formatLiveDuration(new Date(activeEntry.startedAt), now)}
             </output>
             <button
               className={styles.secondaryButton}
@@ -409,8 +409,15 @@ function isToday(date: string) {
   return dateValue(new Date(date)) === dateValue(new Date());
 }
 function formatDuration(start: Date, end: Date) {
-  const minutes = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
+  const minutes = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60_000));
   return `${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, "0")} min`;
+}
+function formatLiveDuration(start: Date, end: Date) {
+  const seconds = Math.max(0, Math.floor((end.getTime() - start.getTime()) / 1_000));
+  const hours = Math.floor(seconds / 3_600);
+  const minutes = Math.floor((seconds % 3_600) / 60);
+  const remainingSeconds = seconds % 60;
+  return `${hours} h ${String(minutes).padStart(2, "0")} min ${String(remainingSeconds).padStart(2, "0")} s`;
 }
 function formatDurationEntry(entry: SleepEntry) {
   return entry.endedAt

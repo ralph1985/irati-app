@@ -13,6 +13,20 @@ describe("SleepEntry", () => {
     ).toEqual({ endedAt: null, kind: "nap", startedAt: "2026-08-17T09:00:00.000Z" });
   });
 
+  it("normalizes PostgreSQL timestamp offsets before updating an active entry", () => {
+    expect(
+      createSleepEntry({
+        endedAt: "2026-08-17T09:45:00+00:00",
+        kind: "nap",
+        startedAt: "2026-08-17T09:00:00+00:00",
+      }),
+    ).toEqual({
+      endedAt: "2026-08-17T09:45:00.000Z",
+      kind: "nap",
+      startedAt: "2026-08-17T09:00:00.000Z",
+    });
+  });
+
   it("rejects an end before its start", () => {
     expect(() =>
       createSleepEntry({

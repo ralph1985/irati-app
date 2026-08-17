@@ -28,9 +28,9 @@ export function createSleepEntry(input: NewSleepEntry): NewSleepEntry {
   }
 
   return {
-    endedAt: input.endedAt,
+    endedAt: input.endedAt ? new Date(input.endedAt).toISOString() : null,
     kind: input.kind,
-    startedAt: input.startedAt,
+    startedAt: new Date(input.startedAt).toISOString(),
   };
 }
 
@@ -80,9 +80,9 @@ function validateSleepEntry(input: NewSleepEntry): string[] {
 }
 
 function isIsoDateTime(value: string): boolean {
-  if (Number.isNaN(Date.parse(value))) {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(value)) {
     return false;
   }
 
-  return new Date(value).toISOString() === value;
+  return !Number.isNaN(Date.parse(value));
 }
