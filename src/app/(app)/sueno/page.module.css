@@ -354,8 +354,9 @@
   display: grid;
   align-items: end;
   background: rgba(46, 23, 72, 0.32);
-  padding: 0 max(10px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px))
-    max(10px, env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
+  padding: 0 max(8px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px))
+    max(8px, env(safe-area-inset-left, 0px));
 }
 
 .sheet {
@@ -371,7 +372,7 @@
   border-radius: 18px 18px 0 0;
   background: #fff;
   box-shadow: 0 -20px 52px rgba(46, 23, 72, 0.22);
-  padding: 8px 16px 18px;
+  padding: 8px 12px 18px;
   transform: translateY(var(--sheet-drag-offset, 0px));
   animation: sheetIn 0.24s ease-out;
 }
@@ -398,6 +399,8 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   min-width: 0;
+  width: 100%;
+  max-width: 100%;
 }
 
 .sheetHeader {
@@ -413,6 +416,8 @@
   display: grid;
   gap: 7px;
   min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   color: #5b426f;
   font-size: 14px;
   font-weight: 700;
@@ -431,6 +436,20 @@
   color: #241335;
   font: inherit;
   padding: 0 12px;
+}
+
+.sheetFields input[type="date"],
+.sheetFields input[type="time"] {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  overflow: hidden;
+  font-size: 16px;
+  line-height: 44px;
+  margin: 0;
+  padding-inline: 8px;
+  text-overflow: clip;
+  white-space: nowrap;
 }
 
 .sheetActions {
