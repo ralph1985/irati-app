@@ -460,6 +460,7 @@ export function TravelChecklistView({
             <PendingSubmitButton
               aria-label="Reiniciar lista"
               className={styles.iconCommandButton}
+              pendingAriaLabel="Reiniciando lista"
               title="Reiniciar lista"
               type="submit"
             >
@@ -752,6 +753,7 @@ function TravelChecklistItemContent({
         <PendingSubmitButton
           aria-label={item.isPacked ? "Marcar como pendiente" : "Marcar como preparado"}
           aria-pressed={item.isPacked}
+          pendingAriaLabel="Actualizando elemento"
           title={item.isPacked ? "Marcar como pendiente" : "Marcar como preparado"}
           type="submit"
         >
@@ -788,6 +790,7 @@ function TravelChecklistItemContent({
           <PendingSubmitButton
             aria-label={`Borrar ${item.label}`}
             className={styles.dangerIconButton}
+            pendingAriaLabel={`Borrando ${item.label}`}
             title="Borrar"
             type="submit"
           >

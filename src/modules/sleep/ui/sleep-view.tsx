@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
+import { LoadingButton } from "@/shared/ui/pending-submit-button";
 import type { SleepEntry } from "../domain/sleep-entry";
 import styles from "@/app/(app)/sueno/page.module.css";
 
@@ -30,6 +31,7 @@ export function SleepView({
   updateAction,
 }: SleepViewProps) {
   const [sheetState, setSheetState] = useState<SheetState>({ mode: "closed" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const activeEntry = entries.find((entry) => entry.endedAt === null) ?? null;
   const completedEntries = useMemo(
@@ -51,11 +53,10 @@ export function SleepView({
 
   async function submit(action: SleepAction | undefined, event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!action) {
+    if (!action || isSubmitting) {
       return;
     }
 
-    setSheetState({ mode: "closed" });
     const formData = new FormData(event.currentTarget);
     const startedAt = readLocalDateTime(formData, "startedOn", "startedTime");
     const endedAt = readLocalDateTime(formData, "endedOn", "endedTime");
@@ -65,7 +66,13 @@ export function SleepView({
     }
 
     formData.set("endedAt", endedAt ?? "");
-    await action(formData);
+    setIsSubmitting(true);
+    try {
+      await action(formData);
+      setSheetState({ mode: "closed" });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -224,7 +231,12 @@ export function SleepView({
       <SleepSheets
         createAction={createAction}
         deleteAction={deleteAction}
-        onClose={() => setSheetState({ mode: "closed" })}
+        isSubmitting={isSubmitting}
+        onClose={() => {
+          if (!isSubmitting) {
+            setSheetState({ mode: "closed" });
+          }
+        }}
         onSubmit={submit}
         state={sheetState}
         updateAction={updateAction}
@@ -236,6 +248,7 @@ export function SleepView({
 function SleepSheets({
   createAction,
   deleteAction,
+  isSubmitting,
   onClose,
   onSubmit,
   state,
@@ -243,6 +256,7 @@ function SleepSheets({
 }: {
   createAction?: SleepAction;
   deleteAction?: SleepAction;
+  isSubmitting: boolean;
   onClose: () => void;
   onSubmit: (action: SleepAction | undefined, event: FormEvent<HTMLFormElement>) => Promise<void>;
   state: SheetState;
@@ -254,6 +268,7 @@ function SleepSheets({
       <SleepFormSheet
         action={createAction}
         defaultKind={state.kind}
+        isSubmitting={isSubmitting}
         onClose={onClose}
         onSubmit={onSubmit}
         startingOnly
@@ -264,6 +279,7 @@ function SleepSheets({
     return (
       <SleepFormSheet
         action={createAction}
+        isSubmitting={isSubmitting}
         onClose={onClose}
         onSubmit={onSubmit}
         title="Añadir descanso"
@@ -274,6 +290,7 @@ function SleepSheets({
       <SleepFormSheet
         action={updateAction}
         entry={state.entry}
+        isSubmitting={isSubmitting}
         onClose={onClose}
         onSubmit={onSubmit}
         title="Finalizar sueño"
@@ -285,6 +302,7 @@ function SleepSheets({
       <SleepFormSheet
         action={updateAction}
         entry={state.entry}
+        isSubmitting={isSubmitting}
         onClose={onClose}
         onSubmit={onSubmit}
         startOnly
@@ -296,6 +314,7 @@ function SleepSheets({
       <SleepFormSheet
         action={updateAction}
         entry={state.entry}
+        isSubmitting={isSubmitting}
         onClose={onClose}
         onSubmit={onSubmit}
         title="Editar descanso"
@@ -317,12 +336,22 @@ function SleepSheets({
         <p>Este registro se eliminará del historial.</p>
         <input name="id" type="hidden" value={state.entry.id} />
         <div className={styles.sheetActions}>
-          <button className={styles.secondaryButton} onClick={onClose} type="button">
+          <button
+            className={styles.secondaryButton}
+            disabled={isSubmitting}
+            onClick={onClose}
+            type="button"
+          >
             Cancelar
           </button>
-          <button className={styles.primaryButton} type="submit">
+          <LoadingButton
+            className={styles.primaryButton}
+            pending={isSubmitting}
+            pendingAriaLabel="Borrando descanso"
+            type="submit"
+          >
             Borrar
-          </button>
+          </LoadingButton>
         </div>
       </form>
     </BottomSheet>
@@ -336,6 +365,7 @@ function SleepFormSheet({
   finishOnly = false,
   onClose,
   onSubmit,
+  isSubmitting,
   startingOnly = false,
   startOnly = false,
   title,
@@ -346,6 +376,7 @@ function SleepFormSheet({
   finishOnly?: boolean;
   onClose: () => void;
   onSubmit: (action: SleepAction | undefined, event: FormEvent<HTMLFormElement>) => Promise<void>;
+  isSubmitting: boolean;
   startingOnly?: boolean;
   startOnly?: boolean;
   title: string;
@@ -373,10 +404,20 @@ function SleepFormSheet({
         <input name="kind" type="hidden" value={kind} />
         {!finishOnly && !startOnly ? (
           <div className={styles.kindChoices}>
-            <button aria-pressed={kind === "nap"} onClick={() => setKind("nap")} type="button">
+            <button
+              aria-pressed={kind === "nap"}
+              disabled={isSubmitting}
+              onClick={() => setKind("nap")}
+              type="button"
+            >
               Siesta
             </button>
-            <button aria-pressed={kind === "night"} onClick={() => setKind("night")} type="button">
+            <button
+              aria-pressed={kind === "night"}
+              disabled={isSubmitting}
+              onClick={() => setKind("night")}
+              type="button"
+            >
               Noche
             </button>
           </div>
@@ -386,11 +427,23 @@ function SleepFormSheet({
             <>
               <label>
                 Fecha de inicio
-                <input defaultValue={dateValue(start)} name="startedOn" required type="date" />
+                <input
+                  defaultValue={dateValue(start)}
+                  disabled={isSubmitting}
+                  name="startedOn"
+                  required
+                  type="date"
+                />
               </label>
               <label>
                 Hora de inicio
-                <input defaultValue={timeValue(start)} name="startedTime" required type="time" />
+                <input
+                  defaultValue={timeValue(start)}
+                  disabled={isSubmitting}
+                  name="startedTime"
+                  required
+                  type="time"
+                />
               </label>
             </>
           ) : null}
@@ -398,22 +451,50 @@ function SleepFormSheet({
             <>
               <label>
                 Fecha de finalización
-                <input defaultValue={dateValue(end)} name="endedOn" required type="date" />
+                <input
+                  defaultValue={dateValue(end)}
+                  disabled={isSubmitting}
+                  name="endedOn"
+                  required
+                  type="date"
+                />
               </label>
               <label>
                 Hora de finalización
-                <input defaultValue={timeValue(end)} name="endedTime" required type="time" />
+                <input
+                  defaultValue={timeValue(end)}
+                  disabled={isSubmitting}
+                  name="endedTime"
+                  required
+                  type="time"
+                />
               </label>
             </>
           ) : null}
         </div>
         <div className={styles.sheetActions}>
-          <button className={styles.secondaryButton} onClick={onClose} type="button">
+          <button
+            className={styles.secondaryButton}
+            disabled={isSubmitting}
+            onClick={onClose}
+            type="button"
+          >
             Cancelar
           </button>
-          <button className={styles.primaryButton} type="submit">
+          <LoadingButton
+            className={styles.primaryButton}
+            pending={isSubmitting}
+            pendingAriaLabel={
+              finishOnly
+                ? "Finalizando sueño"
+                : startingOnly
+                  ? "Iniciando sueño"
+                  : "Guardando descanso"
+            }
+            type="submit"
+          >
             {finishOnly ? "Finalizar" : startingOnly ? "Iniciar" : "Guardar"}
-          </button>
+          </LoadingButton>
         </div>
       </form>
     </BottomSheet>

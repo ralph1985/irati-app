@@ -113,6 +113,7 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
                 <PendingSubmitButton
                   aria-label={`Borrar peso de ${formatDate(entry.measuredOn)}`}
                   className={`${styles.iconButton} ${styles.deleteIconButton}`}
+                  pendingAriaLabel="Borrando peso"
                   type="submit"
                 >
                   <TrashIcon />
