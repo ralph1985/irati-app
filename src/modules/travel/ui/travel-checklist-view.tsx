@@ -116,16 +116,22 @@ export function TravelChecklistView({
   }
 
   const createActionWithRefresh = async (formData: FormData) => {
-    await refreshAfterAction(createAction, formData);
-    setSheetState({ mode: "closed" });
+    try {
+      await refreshAfterAction(createAction, formData);
+    } finally {
+      setSheetState({ mode: "closed" });
+    }
   };
   const deleteActionWithRefresh = (formData: FormData) =>
     refreshAfterAction(deleteAction, formData);
   const setPackedActionWithRefresh = (formData: FormData) =>
     refreshAfterAction(setPackedAction, formData);
   const updateActionWithRefresh = async (formData: FormData) => {
-    await refreshAfterAction(updateAction, formData);
-    setSheetState({ mode: "closed" });
+    try {
+      await refreshAfterAction(updateAction, formData);
+    } finally {
+      setSheetState({ mode: "closed" });
+    }
   };
   const reorderActionWithRefresh = (formData: FormData) =>
     refreshAfterAction(reorderAction, formData);
@@ -932,10 +938,7 @@ function TravelChecklistItemForm({
         if (!navigator.onLine) {
           event.preventDefault();
           void onOfflineSubmit(event.currentTarget);
-          return;
         }
-
-        onCancel();
       }}
     >
       {defaults?.id ? <input name="id" type="hidden" value={defaults.id} /> : null}
