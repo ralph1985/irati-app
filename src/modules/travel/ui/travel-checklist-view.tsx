@@ -932,7 +932,10 @@ function TravelChecklistItemForm({
         if (!navigator.onLine) {
           event.preventDefault();
           void onOfflineSubmit(event.currentTarget);
+          return;
         }
+
+        onCancel();
       }}
     >
       {defaults?.id ? <input name="id" type="hidden" value={defaults.id} /> : null}

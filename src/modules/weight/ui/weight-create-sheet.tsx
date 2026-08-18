@@ -46,6 +46,7 @@ export function WeightCreateSheet({
 
   async function submitWeight(event: FormEvent<HTMLFormElement>) {
     if (navigator.onLine) {
+      closeSheet();
       return;
     }
 

@@ -269,7 +269,10 @@ function PlannedVaccineForm({
         if (!navigator.onLine) {
           event.preventDefault();
           void updatePlannedVaccineDoseOffline(event.currentTarget, dose, onCancel);
+          return;
         }
+
+        onCancel();
       }}
     >
       <div className={styles.sheetHeader}>
@@ -454,7 +457,10 @@ function AppliedVaccineEditor({
               if (!navigator.onLine) {
                 event.preventDefault();
                 void reopenVaccineDoseOffline(event, dose, () => setIsOpen(false));
+                return;
               }
+
+              setIsOpen(false);
             }}
           >
             <input name="applicationId" type="hidden" value={application.id} />
@@ -497,7 +503,10 @@ function VaccineApplicationForm({
         if (!navigator.onLine) {
           event.preventDefault();
           void applyVaccineApplicationOffline(event.currentTarget, dose, applicationId, onCancel);
+          return;
         }
+
+        onCancel();
       }}
     >
       <div className={styles.sheetHeader}>

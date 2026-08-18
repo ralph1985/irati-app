@@ -66,10 +66,10 @@ export function SleepView({
     }
 
     formData.set("endedAt", endedAt ?? "");
+    setSheetState({ mode: "closed" });
     setIsSubmitting(true);
     try {
       await action(formData);
-      setSheetState({ mode: "closed" });
     } finally {
       setIsSubmitting(false);
     }

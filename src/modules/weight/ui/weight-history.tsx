@@ -137,7 +137,10 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
             onSubmit={(event) => {
               if (!navigator.onLine) {
                 void updateEntryOffline(event, closeEditor);
+                return;
               }
+
+              closeEditor();
             }}
           >
             <div className={styles.sheetHeader}>
