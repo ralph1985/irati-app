@@ -124,8 +124,11 @@
 }
 
 .timer {
+  display: block;
+  min-width: 0;
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
-  font-size: clamp(38px, 12vw, 54px);
+  font-size: clamp(24px, 10vw, 54px);
   font-weight: 900;
   letter-spacing: -0.06em;
   line-height: 0.95;
