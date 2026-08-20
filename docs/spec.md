@@ -244,6 +244,7 @@ Reglas:
 - La grafica permite filtrar por Todos, Hospital, Farmacia o Pediatra.
 - No se calcula el percentil individual de cada peso ni se interpreta clinicamente en el MVP.
 - No se mezclan estimaciones con pesos registrados en el MVP.
+- El historico muestra en cada registro el cambio respecto al anterior y el promedio diario en g/dia cuando las fechas son distintas; el registro mas antiguo muestra "Sin comparacion".
 
 Criterios de aceptacion:
 

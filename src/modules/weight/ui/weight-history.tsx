@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { buildWeightHistory, WeightHistoryRow } from "../application/weight-history";
 import { BottomSheet } from "../../../shared/ui/bottom-sheet";
 import { ConfirmSubmit } from "../../../shared/ui/confirm-submit";
 import { PendingSubmitButton } from "../../../shared/ui/pending-submit-button";
@@ -18,6 +19,10 @@ type WeightHistoryProps = {
   deleteAction: (formData: FormData) => void | Promise<void>;
   entries: WeightEntry[];
   updateAction: (formData: FormData) => void | Promise<void>;
+};
+
+type RenderedHistoryRow = WeightHistoryRow & {
+  mutation?: PendingWeightMutation;
 };
 
 export function WeightHistory({ deleteAction, entries, updateAction }: WeightHistoryProps) {
@@ -52,6 +57,17 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
     return <p className={styles.empty}>Aún no hay pesos en este filtro.</p>;
   }
 
+  const pendingMutationsByEntryId = new Map(
+    pendingState.entries.map(({ entry, mutation }) => [entry.id, mutation]),
+  );
+  const historyRows: RenderedHistoryRow[] = buildWeightHistory([
+    ...visibleEntries,
+    ...pendingState.entries.map(({ entry }) => entry),
+  ]).map((row) => ({
+    ...row,
+    mutation: pendingMutationsByEntryId.get(row.entry.id),
+  }));
+
   function openEditor(entry: WeightEntry) {
     setEditingEntry(entry);
   }
@@ -63,63 +79,52 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
   return (
     <>
       <ol className={styles.history}>
-        {pendingState.entries.map(({ entry, mutation }) => (
-          <li data-pending="true" key={mutation.id}>
+        {historyRows.map(({ entry, mutation, differenceGrams, averageGramsPerDay }) => (
+          <li data-pending={mutation ? "true" : undefined} key={mutation?.id ?? entry.id}>
             <div className={styles.historySummary}>
               <div>
                 <strong>{entry.weightGrams.toLocaleString("es-ES")} g</strong>
                 <span>
-                  {mutation.lastError ? "Error pendiente" : "Pendiente"} ·{" "}
+                  {mutation ? `${mutation.lastError ? "Error pendiente" : "Pendiente"} · ` : ""}
                   {formatPlace(entry.place)} ·{" "}
                   <time dateTime={entry.measuredOn}>{formatDate(entry.measuredOn)}</time>
                 </span>
-              </div>
-            </div>
-          </li>
-        ))}
-
-        {visibleEntries.map((entry) => (
-          <li key={entry.id}>
-            <div className={styles.historySummary}>
-              <div>
-                <strong>{entry.weightGrams.toLocaleString("es-ES")} g</strong>
-                <span>
-                  {formatPlace(entry.place)} ·{" "}
-                  <time dateTime={entry.measuredOn}>{formatDate(entry.measuredOn)}</time>
-                </span>
+                <span>{formatWeightChange(differenceGrams, averageGramsPerDay)}</span>
               </div>
             </div>
 
-            <div className={styles.historyActions}>
-              <button
-                aria-label={`Editar peso de ${formatDate(entry.measuredOn)}`}
-                className={styles.iconButton}
-                onClick={() => openEditor(entry)}
-                type="button"
-              >
-                <EditIcon />
-              </button>
-
-              <ConfirmSubmit
-                action={deleteAction}
-                message="¿Borrar este peso? Esta acción no se puede deshacer."
-                onConfirmedSubmit={(event) => {
-                  if (!navigator.onLine) {
-                    void deleteEntryOffline(event, entry.id);
-                  }
-                }}
-              >
-                <input name="id" type="hidden" value={entry.id} />
-                <PendingSubmitButton
-                  aria-label={`Borrar peso de ${formatDate(entry.measuredOn)}`}
-                  className={`${styles.iconButton} ${styles.deleteIconButton}`}
-                  pendingAriaLabel="Borrando peso"
-                  type="submit"
+            {!mutation ? (
+              <div className={styles.historyActions}>
+                <button
+                  aria-label={`Editar peso de ${formatDate(entry.measuredOn)}`}
+                  className={styles.iconButton}
+                  onClick={() => openEditor(entry)}
+                  type="button"
                 >
-                  <TrashIcon />
-                </PendingSubmitButton>
-              </ConfirmSubmit>
-            </div>
+                  <EditIcon />
+                </button>
+
+                <ConfirmSubmit
+                  action={deleteAction}
+                  message="¿Borrar este peso? Esta acción no se puede deshacer."
+                  onConfirmedSubmit={(event) => {
+                    if (!navigator.onLine) {
+                      void deleteEntryOffline(event, entry.id);
+                    }
+                  }}
+                >
+                  <input name="id" type="hidden" value={entry.id} />
+                  <PendingSubmitButton
+                    aria-label={`Borrar peso de ${formatDate(entry.measuredOn)}`}
+                    className={`${styles.iconButton} ${styles.deleteIconButton}`}
+                    pendingAriaLabel="Borrando peso"
+                    type="submit"
+                  >
+                    <TrashIcon />
+                  </PendingSubmitButton>
+                </ConfirmSubmit>
+              </div>
+            ) : null}
           </li>
         ))}
       </ol>
@@ -196,6 +201,33 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
       ) : null}
     </>
   );
+}
+
+function formatWeightChange(
+  differenceGrams: number | null,
+  averageGramsPerDay: number | null,
+): string {
+  if (differenceGrams === null) {
+    return "Sin comparación";
+  }
+
+  const difference = formatSignedGrams(differenceGrams);
+
+  return averageGramsPerDay === null
+    ? `${difference} · Sin promedio diario`
+    : `${difference} · ${formatSignedGrams(averageGramsPerDay)}/día`;
+}
+
+function formatSignedGrams(value: number): string {
+  if (value > 0) {
+    return `+${value.toLocaleString("es-ES")} g`;
+  }
+
+  if (value < 0) {
+    return `−${Math.abs(value).toLocaleString("es-ES")} g`;
+  }
+
+  return "0 g";
 }
 
 async function updateEntryOffline(event: FormEvent<HTMLFormElement>, onDone: () => void) {
