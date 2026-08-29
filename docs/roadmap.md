@@ -332,6 +332,7 @@ El modo offline-first se implementa por fases segun [`docs/offline-plan.md`](off
 - [x] Integrar Sueño a la derecha de Vacunas en la navegación online y offline.
 - [x] Permitir lectura y escritura offline, con resolución manual de conflictos entre sueños activos.
 - [x] Añadir migración Supabase, caché, backup, tests y validación completa.
+- [x] Añadir URL de atajo para alternar inicio/parada y mostrar solo el cronómetro.
 
 ## Fuera del MVP inicial
 

@@ -36,7 +36,12 @@ import { WeightChart } from "@/modules/weight/ui/weight-chart";
 import { WeightCreateSheet } from "@/modules/weight/ui/weight-create-sheet";
 import { WeightHistory } from "@/modules/weight/ui/weight-history";
 import { SleepView } from "@/modules/sleep/ui/sleep-view";
-import type { SleepEntry } from "@/modules/sleep/domain/sleep-entry";
+import type { SleepEntry, SleepKind } from "@/modules/sleep/domain/sleep-entry";
+import {
+  toggleSleepEntry,
+  type ToggleSleepResult,
+} from "@/modules/sleep/application/toggle-sleep-entry";
+import { QuickSleepView } from "@/modules/sleep/ui/quick-sleep-view";
 import {
   applyOfflineSleepEntry,
   clearPendingSleepMutationConflict,
@@ -62,7 +67,8 @@ import weightStyles from "../../../app/(app)/peso/page.module.css";
 import calendarPageStyles from "../../../app/(app)/calendario/page.module.css";
 import sleepStyles from "../../../app/(app)/sueno/page.module.css";
 
-type OfflineRoute = "/" | "/peso" | "/vacunas" | "/sueno" | "/viaje" | "/calendario" | "/ajustes";
+type OfflineRoute =
+  "/" | "/peso" | "/vacunas" | "/sueno" | "/sueno/atajo" | "/viaje" | "/calendario" | "/ajustes";
 
 const noopAction = async () => {};
 
@@ -198,6 +204,8 @@ function renderRoute(
       return <OfflineVaccinesScreen search={search} snapshot={snapshot} />;
     case "/sueno":
       return <OfflineSleepScreen snapshot={snapshot} />;
+    case "/sueno/atajo":
+      return <OfflineQuickSleepScreen search={search} snapshot={snapshot} />;
     case "/viaje":
       return <OfflineTravelScreen snapshot={snapshot} />;
     case "/calendario":
@@ -213,6 +221,53 @@ function renderRoute(
     case "/":
       return <OfflineHomeScreen snapshot={snapshot} />;
   }
+}
+
+function OfflineQuickSleepScreen({
+  search,
+  snapshot,
+}: {
+  search: string;
+  snapshot: OfflineSnapshot;
+}) {
+  const entries = snapshot.sleepEntries ?? [];
+
+  async function toggleAction(kind: SleepKind): Promise<ToggleSleepResult> {
+    const now = new Date().toISOString();
+    const result = await toggleSleepEntry(
+      {
+        createSleepEntry: async (input) => {
+          const entry: SleepEntry = {
+            ...input,
+            createdAt: now,
+            id: crypto.randomUUID(),
+            updatedAt: now,
+          };
+          await applyOfflineSleepEntry(entry);
+          return entry;
+        },
+        getActiveSleepEntry: async () => entries.find((entry) => entry.endedAt === null) ?? null,
+        updateSleepEntry: async (id, input) => {
+          const currentEntry = entries.find((entry) => entry.id === id);
+          if (!currentEntry) throw new Error("Sleep entry not found");
+          const entry = { ...currentEntry, ...input, updatedAt: now };
+          await applyOfflineSleepEntry(entry);
+          return entry;
+        },
+      },
+      kind,
+      now,
+    );
+    await enqueuePendingSleepMutation({
+      id: crypto.randomUUID(),
+      operation: result.action === "started" ? "create" : "update",
+      payload: result.entry,
+    });
+    window.dispatchEvent(new Event("irati-offline-sleep-updated"));
+    return result;
+  }
+
+  return <QuickSleepView kind={getQuickSleepKind(search)} offlineToggle={toggleAction} />;
 }
 
 function OfflineSleepScreen({ snapshot }: { snapshot: OfflineSnapshot }) {
@@ -769,6 +824,7 @@ function toOfflineRoute(pathname: string): OfflineRoute {
     pathname === "/peso" ||
     pathname === "/vacunas" ||
     pathname === "/sueno" ||
+    pathname === "/sueno/atajo" ||
     pathname === "/viaje" ||
     pathname === "/calendario" ||
     pathname === "/ajustes"
@@ -777,6 +833,11 @@ function toOfflineRoute(pathname: string): OfflineRoute {
   }
 
   return "/";
+}
+
+function getQuickSleepKind(search: string): SleepKind {
+  const type = new URLSearchParams(search).get("tipo");
+  return type === "noche" || type === "night" ? "night" : "nap";
 }
 
 function formatDateTime(value: string): string {

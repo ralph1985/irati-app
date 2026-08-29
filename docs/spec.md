@@ -493,6 +493,7 @@ La pantalla de Sueño registra siestas y sueño nocturno de Irati para consulta 
 - El resumen de hoy muestra tiempo total dormido, número de siestas y duración nocturna; el historial se agrupa por día.
 - El cronómetro activo se conserva en IndexedDB y continúa al reabrir la PWA.
 - Las escrituras se pueden hacer sin conexión. Si dos dispositivos crean sueños activos, la sincronización exige elegir cuál mantener activo y finalizar o borrar el otro sin descartar datos automáticamente.
+- El atajo `/sueno/atajo` alterna inicio y parada al abrirse y muestra únicamente el cronómetro o la duración recién registrada; usa siesta por defecto y admite `?tipo=noche` para iniciar una noche.
 
 ### Ajustes
 
