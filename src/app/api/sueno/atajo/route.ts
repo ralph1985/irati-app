@@ -6,7 +6,7 @@ import { isSleepKind } from "@/modules/sleep/domain/sleep-entry";
 import { SupabaseSleepRepository } from "@/modules/sleep/infrastructure/supabase-sleep-repository";
 import { CACHE_TAGS } from "@/shared/infrastructure/cache/cache-tags";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
-import { revalidatePath, updateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function POST(request: Request) {
   if (!(await hasValidSession())) {
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       new SupabaseSleepRepository(createServerSupabaseClient()),
       kind,
     );
-    updateTag(CACHE_TAGS.sleepEntries);
+    revalidateTag(CACHE_TAGS.sleepEntries, "max");
     revalidatePath("/sueno");
 
     return NextResponse.json(result, {
