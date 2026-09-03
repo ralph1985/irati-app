@@ -149,6 +149,24 @@ Indice:
 
 La tabla no contiene datos familiares funcionales, solo salud de backup. La app la lee desde servidor con `SUPABASE_SERVICE_ROLE_KEY`.
 
+## `login_rate_limit_buckets`
+
+Contadores tecnicos compartidos para limitar los intentos de login entre instancias de Vercel.
+
+Migracion: `supabase/migrations/20260903190000_create_login_rate_limit.sql`.
+
+| Campo             | Tipo          | Regla                              |
+| ----------------- | ------------- | ---------------------------------- |
+| `client_key`      | `text`        | HMAC-SHA-256 de la IP, primary key |
+| `failed_attempts` | `integer`     | Mayor que cero                     |
+| `reset_at`        | `timestamptz` | Fin de la ventana de 15 minutos    |
+| `updated_at`      | `timestamptz` | Ultima reserva del contador        |
+
+La tabla tiene RLS y no concede acceso a `anon` ni `authenticated`. Las funciones
+`reserve_login_attempt` y `clear_login_attempts` son `security definer`, validan
+la clave y solo se pueden ejecutar con el rol `service_role`. La reserva es
+atomica para que varias instancias no puedan saltarse el limite por una carrera.
+
 ## `travel_checklist_categories`
 
 Categorías configurables de la checklist de viaje. El slug se conserva como identificador estable para no romper los datos offline ni las mutaciones pendientes.

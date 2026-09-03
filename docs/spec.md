@@ -93,8 +93,8 @@ Contrato de autenticacion:
 - La cookie se firma con `SESSION_SECRET` mediante HMAC SHA-256.
 - La cookie usa `SameSite=Lax`, `Path=/`, expiracion de 30 dias y `Secure` en produccion.
 - El logout se hace por `POST /logout` y borra la cookie de sesion.
-- En desarrollo y primera version MVP, el rate limit es en memoria por IP: 5 intentos fallidos cada 15 minutos.
-- Para Vercel en produccion, si se necesita robustez multi-instancia, el puerto de rate limit debe cambiar a un almacen compartido antes de ampliar acceso.
+- El rate limit usa la cabecera `x-vercel-forwarded-for`, guarda un HMAC de la IP y reserva cada intento de forma atomica en Supabase: 5 intentos cada 15 minutos por cliente.
+- Si el almacenamiento del rate limit no esta disponible, el login falla de forma cerrada y no crea sesiones.
 - La rotacion del passcode se hace cambiando `IRATI_PASSCODE_HASH`.
 - La rotacion de `SESSION_SECRET` invalida todas las sesiones activas.
 
