@@ -1,29 +1,41 @@
-type AttemptBucket = {
-  count: number;
-  resetAt: number;
-};
+import { createHmac } from "node:crypto";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/shared/infrastructure/supabase/database.types";
 
-const MAX_ATTEMPTS = 5;
-const WINDOW_MS = 15 * 60 * 1000;
-const attempts = new Map<string, AttemptBucket>();
+const VERCEL_CLIENT_IP_HEADER = "x-vercel-forwarded-for";
 
-export function canAttemptLogin(key: string, now = Date.now()): boolean {
-  const bucket = attempts.get(key);
+type ServerSupabaseClient = SupabaseClient<Database>;
 
-  return !bucket || bucket.resetAt <= now || bucket.count < MAX_ATTEMPTS;
+export function getLoginClientKey(headers: Headers, secret: string): string {
+  const clientAddress = headers.get(VERCEL_CLIENT_IP_HEADER)?.split(",")[0]?.trim() || "unknown";
+
+  return createHmac("sha256", secret).update(clientAddress).digest("hex");
 }
 
-export function recordFailedLogin(key: string, now = Date.now()): void {
-  const bucket = attempts.get(key);
+export async function reserveLoginAttempt(
+  supabase: ServerSupabaseClient,
+  clientKey: string,
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc("reserve_login_attempt", {
+    p_client_key: clientKey,
+  });
 
-  if (!bucket || bucket.resetAt <= now) {
-    attempts.set(key, { count: 1, resetAt: now + WINDOW_MS });
-    return;
+  if (error) {
+    throw error;
   }
 
-  bucket.count += 1;
+  return data;
 }
 
-export function clearLoginAttempts(key: string): void {
-  attempts.delete(key);
+export async function clearLoginAttempts(
+  supabase: ServerSupabaseClient,
+  clientKey: string,
+): Promise<void> {
+  const { error } = await supabase.rpc("clear_login_attempts", {
+    p_client_key: clientKey,
+  });
+
+  if (error) {
+    throw error;
+  }
 }

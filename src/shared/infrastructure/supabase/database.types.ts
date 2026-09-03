@@ -260,6 +260,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      login_rate_limit_buckets: {
+        Row: {
+          client_key: string;
+          failed_attempts: number;
+          reset_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          client_key: string;
+          failed_attempts?: number;
+          reset_at: string;
+          updated_at?: string;
+        };
+        Update: {
+          client_key?: string;
+          failed_attempts?: number;
+          reset_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       travel_checklist_items: {
         Row: {
           id: string;
@@ -308,6 +329,14 @@ export type Database = {
       };
       reorder_travel_checklist_items_by_location: {
         Args: { p_items: Json };
+        Returns: undefined;
+      };
+      reserve_login_attempt: {
+        Args: { p_client_key: string };
+        Returns: boolean;
+      };
+      clear_login_attempts: {
+        Args: { p_client_key: string };
         Returns: undefined;
       };
     };
