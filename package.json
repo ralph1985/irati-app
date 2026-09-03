@@ -28,17 +28,17 @@
     "react-dom": "19.2.4"
   },
   "devDependencies": {
-    "@types/node": "20.19.43",
+    "@types/node": "26.4.0",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
-    "eslint": "9.39.5",
+    "eslint": "10.9.1",
     "eslint-config-next": "16.3.3",
     "fake-indexeddb": "6.2.5",
-    "prettier": "3.9.5",
+    "prettier": "3.9.6",
     "serwist": "9.5.12",
-    "supabase": "2.109.1",
-    "typescript": "5.9.3",
-    "vitest": "4.1.10"
+    "supabase": "2.116.0",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
   },
   "pnpm": {
     "overrides": {
