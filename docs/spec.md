@@ -91,8 +91,8 @@ Contrato de autenticacion:
 - La comparacion del passcode se hace en servidor con comparacion segura.
 - La sesion vive en una cookie HttpOnly llamada `irati_session`.
 - La cookie se firma con `SESSION_SECRET` mediante HMAC SHA-256.
-- La cookie usa `SameSite=Lax`, `Path=/`, expiracion de 30 dias y `Secure` en produccion.
-- El logout se hace por `POST /logout` y borra la cookie de sesion.
+- La cookie usa `SameSite=Strict`, `Path=/`, expiracion de 30 dias y `Secure` en produccion.
+- El logout se hace por `POST /logout` y expira la misma cookie host-only de sesion.
 - El rate limit usa la cabecera `x-vercel-forwarded-for`, guarda un HMAC de la IP y reserva cada intento de forma atomica en Supabase: 5 intentos cada 15 minutos por cliente.
 - Si el almacenamiento del rate limit no esta disponible, el login falla de forma cerrada y no crea sesiones.
 - La rotacion del passcode se hace cambiando `IRATI_PASSCODE_HASH`.

@@ -1,5 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { shouldUseSecureSessionCookie } from "./session-cookie-security";
+import { getSessionCookieOptions, shouldUseSecureSessionCookie } from "./session-cookie-security";
+
+describe("getSessionCookieOptions", () => {
+  it("uses strict, host-only session cookie defaults", () => {
+    expect(
+      getSessionCookieOptions({
+        headers: new Headers({ "x-forwarded-proto": "https" }),
+        nodeEnv: "production",
+        url: "https://irati.example/login",
+      }),
+    ).toEqual({
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 30,
+      path: "/",
+      sameSite: "strict",
+      secure: true,
+    });
+  });
+});
 
 describe("shouldUseSecureSessionCookie", () => {
   it("does not mark cookies secure in local production over http", () => {
