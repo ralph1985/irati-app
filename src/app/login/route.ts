@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AUTH_SESSION_COOKIE, SESSION_DURATION_SECONDS } from "@/modules/auth/domain/auth-session";
+import { AUTH_SESSION_COOKIE } from "@/modules/auth/domain/auth-session";
 import { getRequiredEnv } from "@/modules/auth/infrastructure/env";
 import {
   clearLoginAttempts,
@@ -7,7 +7,7 @@ import {
   reserveLoginAttempt,
 } from "@/modules/auth/infrastructure/login-rate-limit";
 import { verifyPasscode } from "@/modules/auth/infrastructure/passcode-hash";
-import { shouldUseSecureSessionCookie } from "@/modules/auth/infrastructure/session-cookie-security";
+import { getSessionCookieOptions } from "@/modules/auth/infrastructure/session-cookie-security";
 import { createSessionToken } from "@/modules/auth/infrastructure/session-token";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
 
@@ -67,11 +67,7 @@ export async function POST(request: NextRequest) {
 
   const response = NextResponse.redirect(redirectUrl, 303);
   response.cookies.set(AUTH_SESSION_COOKIE, createSessionToken(sessionSecret), {
-    httpOnly: true,
-    maxAge: SESSION_DURATION_SECONDS,
-    path: "/",
-    sameSite: "lax",
-    secure: shouldUseSecureSessionCookie(request),
+    ...getSessionCookieOptions(request),
   });
 
   return response;
