@@ -448,9 +448,10 @@ function OfflineHomeScreen({ snapshot }: { snapshot: OfflineSnapshot }) {
               Nacida el {formatBirthDate(snapshot.profile)} a las{" "}
               {formatBirthTime(snapshot.profile)}
             </p>
-            <p className={homeStyles.age}>
-              Edad: <LiveAge initialNow={new Date().toISOString()} profile={snapshot.profile} />
-            </p>
+            <div className={homeStyles.age}>
+              <p className={homeStyles.ageLabel}>Edad</p>
+              <LiveAge initialNow={new Date().toISOString()} profile={snapshot.profile} />
+            </div>
           </>
         ) : null}
         <p className={homeStyles.dataNotice}>Usando copia local del dispositivo.</p>

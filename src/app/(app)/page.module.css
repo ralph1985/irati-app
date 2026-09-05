@@ -34,10 +34,18 @@
 }
 
 .age {
-  margin: -4px 0 0;
+  display: grid;
+  gap: 7px;
+  margin: 2px 0 0;
+}
+
+.ageLabel {
+  margin: 0;
   color: #6b587c;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .dataNotice {

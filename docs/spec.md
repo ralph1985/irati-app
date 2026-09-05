@@ -433,6 +433,7 @@ La transicion entre pestañas principales usa una animacion lateral ligera sobre
 El inicio debe priorizar:
 
 - Irati y su edad actual.
+- La edad se muestra en bloques suaves separados para años, meses, días, horas, minutos y segundos. Años, meses y días tienen prioridad visual; las unidades de reloj son secundarias. La cifra que cambia puede animarse de forma breve, pero la animación se desactiva cuando el dispositivo solicita reducir movimiento.
 - Vacunas retrasadas si existen.
 - Vacunas proximas.
 - Ultimo peso registrado, con fecha y lugar.

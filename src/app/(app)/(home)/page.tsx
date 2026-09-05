@@ -87,9 +87,10 @@ export default async function Home({ searchParams }: HomeProps) {
         <p className={styles.birthDate}>
           Nacida el {formatBirthDate(profile)} a las {formatBirthTime(profile)}
         </p>
-        <p className={styles.age}>
-          Edad: <LiveAge initialNow={new Date().toISOString()} profile={profile} />
-        </p>
+        <div className={styles.age}>
+          <p className={styles.ageLabel}>Edad</p>
+          <LiveAge initialNow={new Date().toISOString()} profile={profile} />
+        </div>
         {source === "fallback" ? (
           <p className={styles.dataNotice}>Usando datos locales temporales.</p>
         ) : null}
