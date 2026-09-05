@@ -31,3 +31,7 @@ export function getAgeUnits(age: BabyAge): AgeUnit[] {
     value: age[definition.key],
   }));
 }
+
+export function formatAgeUnitValue(unit: AgeUnit): string {
+  return unit.emphasis === "secondary" ? String(unit.value).padStart(2, "0") : String(unit.value);
+}

@@ -37,6 +37,7 @@
   background: linear-gradient(145deg, #fff, #faf5ff);
   box-shadow: 0 8px 20px rgba(76, 29, 149, 0.08);
   padding: 9px 6px 8px;
+  transform-origin: center center;
 }
 
 .unit::before {
@@ -70,23 +71,38 @@
 }
 
 .valueViewport {
-  display: grid;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 2ch;
-  overflow: hidden;
   font-size: clamp(24px, 8vw, 34px);
   font-weight: 900;
   line-height: 1;
   text-align: center;
+  perspective: 320px;
 }
 
-.valueViewport > span {
+.digitViewport {
+  display: grid;
+  width: 0.66em;
+  height: 1em;
+  overflow: hidden;
+}
+
+.digit {
   grid-area: 1 / 1;
   display: inline-block;
+  transform-origin: center center;
+  will-change: transform, opacity;
 }
 
 .unit[data-emphasis="secondary"] .valueViewport {
   font-size: 17px;
   font-weight: 850;
+}
+
+.unit[data-emphasis="secondary"] .digitViewport {
+  width: 0.62em;
 }
 
 .label {
@@ -113,7 +129,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .valueViewport > span {
+  .digit {
     transition: none;
+    transform: none;
+    will-change: auto;
   }
 }

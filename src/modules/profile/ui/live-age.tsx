@@ -1,9 +1,9 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useEffect, useState } from "react";
+import { AnimatePresence, motion, useAnimationControls, useReducedMotion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import { calculateAge, formatAge, type BabyProfile } from "../domain/baby-profile";
-import { getAgeUnits } from "./live-age-model";
+import { formatAgeUnitValue, getAgeUnits, type AgeUnit } from "./live-age-model";
 import styles from "./live-age.module.css";
 
 type LiveAgeProps = {
@@ -45,29 +45,57 @@ export function LiveAge({ initialNow, profile }: LiveAgeProps) {
   );
 }
 
-function AgeUnit({
-  reduceMotion,
-  unit,
-}: {
-  reduceMotion: boolean | null;
-  unit: ReturnType<typeof getAgeUnits>[number];
-}) {
+function AgeUnit({ reduceMotion, unit }: { reduceMotion: boolean | null; unit: AgeUnit }) {
+  const value = formatAgeUnitValue(unit);
+  const pulseControls = useAnimationControls();
+  const previousValue = useRef(unit.value);
+
+  useEffect(() => {
+    const changed = previousValue.current !== unit.value;
+    previousValue.current = unit.value;
+
+    if (!changed || reduceMotion !== false) {
+      return;
+    }
+
+    void pulseControls.start({
+      rotateZ: [0, -0.7, 0],
+      scale: [1, 1.035, 1],
+      transition: { duration: 0.38, ease: [0.22, 1, 0.36, 1] },
+    });
+  }, [pulseControls, reduceMotion, unit.value]);
+
   return (
-    <span className={styles.unit} data-emphasis={unit.emphasis}>
-      <span className={styles.valueViewport}>
-        <AnimatePresence initial={false} mode="popLayout">
-          <motion.span
-            animate={{ opacity: 1, y: 0 }}
-            exit={reduceMotion ? undefined : { opacity: 0, y: "-70%" }}
-            initial={reduceMotion ? false : { opacity: 0, y: "70%" }}
-            key={unit.value}
-            transition={{ duration: reduceMotion ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {unit.value}
-          </motion.span>
-        </AnimatePresence>
-      </span>
+    <motion.span animate={pulseControls} className={styles.unit} data-emphasis={unit.emphasis}>
+      <AnimatedDigits reduceMotion={reduceMotion} value={value} />
       <span className={styles.label}>{unit.label}</span>
+    </motion.span>
+  );
+}
+
+function AnimatedDigits({ reduceMotion, value }: { reduceMotion: boolean | null; value: string }) {
+  return (
+    <span aria-hidden="true" className={styles.valueViewport}>
+      {value.split("").map((digit, index) => (
+        <span className={styles.digitViewport} key={index}>
+          <AnimatePresence initial={false} mode="popLayout">
+            <motion.span
+              animate={{ opacity: 1, rotateX: 0, scale: 1, y: 0 }}
+              className={styles.digit}
+              exit={reduceMotion ? undefined : { opacity: 0, rotateX: 18, scale: 1.08, y: "-100%" }}
+              initial={reduceMotion ? false : { opacity: 0, rotateX: -18, scale: 0.88, y: "100%" }}
+              key={digit}
+              transition={
+                reduceMotion
+                  ? { duration: 0 }
+                  : { damping: 24, mass: 0.38, stiffness: 420, type: "spring" }
+              }
+            >
+              {digit}
+            </motion.span>
+          </AnimatePresence>
+        </span>
+      ))}
     </span>
   );
 }
