@@ -8,6 +8,7 @@ import {
 } from "@/modules/sleep/application/apply-offline-sleep-mutation";
 import { createSleepEntry, isSleepKind, type SleepEntry } from "@/modules/sleep/domain/sleep-entry";
 import type { Database } from "@/shared/infrastructure/supabase/database.types";
+import { readJsonBody, toJsonBodyError } from "@/shared/infrastructure/http/read-json-body";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
 import type { PendingSleepMutation } from "@/shared/infrastructure/offline/irati-offline-db";
 
@@ -16,7 +17,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const mutation = await request.json().catch(() => null);
+  let mutation: unknown;
+
+  try {
+    mutation = await readJsonBody(request);
+  } catch (error) {
+    const bodyError = toJsonBodyError(error);
+    return NextResponse.json({ error: bodyError.message }, { status: bodyError.status });
+  }
   if (!isPendingSleepMutation(mutation)) {
     return NextResponse.json({ error: "Invalid mutation" }, { status: 400 });
   }

@@ -5,6 +5,7 @@ import {
   isTravelChecklistCategory,
   updateTravelChecklistItemInput,
 } from "@/modules/travel/domain/travel-checklist-item";
+import { readJsonBody, toJsonBodyError } from "@/shared/infrastructure/http/read-json-body";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
 import type { PendingTravelMutation } from "@/shared/infrastructure/offline/irati-offline-db";
 
@@ -13,7 +14,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const mutation = await request.json().catch(() => null);
+  let mutation: unknown;
+
+  try {
+    mutation = await readJsonBody(request);
+  } catch (error) {
+    const bodyError = toJsonBodyError(error);
+    return NextResponse.json({ error: bodyError.message }, { status: bodyError.status });
+  }
 
   if (!isPendingTravelMutation(mutation)) {
     return NextResponse.json({ error: "Invalid mutation" }, { status: 400 });

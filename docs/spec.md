@@ -95,6 +95,7 @@ Contrato de autenticacion:
 - El logout se hace por `POST /logout` y expira la misma cookie host-only de sesion.
 - El rate limit usa la cabecera `x-vercel-forwarded-for`, guarda un HMAC de la IP y reserva cada intento de forma atomica en Supabase: 5 intentos cada 15 minutos por cliente.
 - Si el almacenamiento del rate limit no esta disponible, el login falla de forma cerrada y no crea sesiones.
+- Las APIs JSON aceptan solo `Content-Type: application/json`, limitan el cuerpo a 64 KiB, devuelven `413` si se supera el límite y `400` ante JSON o payload inválido.
 - La rotacion del passcode se hace cambiando `IRATI_PASSCODE_HASH`.
 - La rotacion de `SESSION_SECRET` invalida todas las sesiones activas.
 
