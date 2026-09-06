@@ -42,10 +42,10 @@ Backups:
 - `data.sql` contiene los datos actuales de `baby_profiles`, `planned_vaccine_doses`, `weight_entries`, `applied_vaccine_doses`, `sleep_entries`, `travel_checklist_categories`, `travel_checklist_items` y `developer_backup_runs`.
 - Los archivos generados y logs viven en `var/` y no se suben a Git.
 - La retencion local por defecto es de 14 dias, configurable con `IRATI_SUPABASE_BACKUP_RETENTION_DAYS`.
-- `pnpm backup:supabase:cron:install` instala un cron cada 6 horas por defecto.
+- `pnpm backup:supabase:cron:install` instala un cron diario a las 00:00 por defecto.
 - La frecuencia puede cambiarse con `IRATI_SUPABASE_BACKUP_CRON_SCHEDULE`.
 - Cada ejecucion registra metadata tecnica en `developer_backup_runs`.
-- Ajustes muestra la salud de backup y avisa si la ultima copia correcta tiene mas de 6 horas.
+- Ajustes muestra la salud de backup y avisa si la ultima copia correcta tiene mas de 24 horas.
 - Las variables requeridas son `NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`.
 
 Excluido:

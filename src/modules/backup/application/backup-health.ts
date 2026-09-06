@@ -1,7 +1,7 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "@/shared/infrastructure/supabase/database.types";
 
-const STALE_AFTER_HOURS = 6;
+const STALE_AFTER_HOURS = 24;
 const STALE_AFTER_MS = STALE_AFTER_HOURS * 60 * 60 * 1000;
 
 export type BackupHealth =

@@ -235,7 +235,7 @@ No se copia en el MVP inicial:
 - [x] Guardar copias locales en `var/backups/supabase/`.
 - [x] Mantener copias y logs fuera de Git.
 - [x] Añadir retencion local configurable.
-- [x] Añadir instalador de cron cada 6 horas.
+- [x] Añadir instalador de cron diario a las 00:00.
 - [x] Registrar metadata de exito o fallo de cada ejecucion.
 - [x] Mostrar salud de backup en Ajustes.
 - [x] Aplicar migracion en Supabase remoto.

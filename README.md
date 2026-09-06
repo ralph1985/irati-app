@@ -115,7 +115,7 @@ Antes de cerrar un cambio de producto, ejecuta `pnpm typecheck`, `pnpm lint`, `p
 
 `pnpm backup:supabase` genera un archivo comprimido con esquema, datos y metadatos en `var/backups/supabase/`. Esa carpeta está ignorada por Git.
 
-Para instalar el cron de backup cada seis horas:
+Para instalar el cron diario de backup, a las 00:00:
 
 ```bash
 pnpm backup:supabase:cron:install

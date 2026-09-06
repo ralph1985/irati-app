@@ -45,12 +45,12 @@ describe("getBackupHealth", () => {
     expect(health.status).toBe("success");
   });
 
-  it("marks backup as stale when the latest success is older than six hours", async () => {
+  it("marks backup as stale when the latest success is older than 24 hours", async () => {
     const health = await getBackupHealth(
       supabaseWithRuns([
         {
           status: "success",
-          finished_at: "2026-07-18T04:00:00Z",
+          finished_at: "2026-07-17T11:00:00Z",
           file_name: "irati-supabase.sql.tar.gz",
           file_size_bytes: 1024,
           duration_ms: 1000,
