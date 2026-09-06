@@ -5,6 +5,7 @@ import { toggleSleepEntry } from "@/modules/sleep/application/toggle-sleep-entry
 import { isSleepKind } from "@/modules/sleep/domain/sleep-entry";
 import { SupabaseSleepRepository } from "@/modules/sleep/infrastructure/supabase-sleep-repository";
 import { CACHE_TAGS } from "@/shared/infrastructure/cache/cache-tags";
+import { readJsonBody, toJsonBodyError } from "@/shared/infrastructure/http/read-json-body";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
 import { revalidatePath, revalidateTag } from "next/cache";
 
@@ -13,11 +14,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const payload = await request.json().catch(() => null);
-  const kind =
-    payload && typeof payload === "object" && "kind" in payload && isSleepKind(payload.kind)
-      ? payload.kind
-      : "nap";
+  let payload: unknown;
+
+  try {
+    payload = await readJsonBody(request);
+  } catch (error) {
+    const bodyError = toJsonBodyError(error);
+    return NextResponse.json({ error: bodyError.message }, { status: bodyError.status });
+  }
+
+  if (
+    !payload ||
+    typeof payload !== "object" ||
+    !("kind" in payload) ||
+    typeof payload.kind !== "string" ||
+    !isSleepKind(payload.kind)
+  ) {
+    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  }
+
+  const kind = payload.kind;
 
   try {
     const result = await toggleSleepEntry(
