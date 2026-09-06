@@ -11,7 +11,6 @@ import type {
   AppliedVaccineDose,
   PlannedVaccineDose,
 } from "@/modules/vaccines/domain/vaccine-calendar";
-import { readJsonBody, toJsonBodyError } from "@/shared/infrastructure/http/read-json-body";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
 import type { Database } from "@/shared/infrastructure/supabase/database.types";
 import type { PendingVaccineMutation } from "@/shared/infrastructure/offline/irati-offline-db";
@@ -21,14 +20,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let mutation: unknown;
-
-  try {
-    mutation = await readJsonBody(request);
-  } catch (error) {
-    const bodyError = toJsonBodyError(error);
-    return NextResponse.json({ error: bodyError.message }, { status: bodyError.status });
-  }
+  const mutation = await request.json().catch(() => null);
 
   if (!isPendingVaccineMutation(mutation)) {
     return NextResponse.json({ error: "Invalid mutation" }, { status: 400 });
