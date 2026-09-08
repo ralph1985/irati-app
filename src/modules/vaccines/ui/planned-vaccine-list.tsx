@@ -14,9 +14,13 @@ import {
   PlannedVaccineDose,
   PlannedVaccineDoseGroups,
   PlannedVaccineDoseWithStatus,
+  VaccineDoseStatus,
   vaccineDoseStatuses,
 } from "../domain/vaccine-calendar";
-import { VaccineTimelineGroup } from "../application/vaccine-plan-views";
+import {
+  selectNextActionableVaccineDose,
+  VaccineTimelineGroup,
+} from "../application/vaccine-plan-views";
 import {
   applyOfflineAppliedVaccineDose,
   applyOfflinePlannedVaccineDose,
@@ -64,6 +68,10 @@ export function PlannedVaccineList({
     () => buildVisibleTimelineGroups(timelineGroups, visibleDoses),
     [timelineGroups, visibleDoses],
   );
+  const nextActionableDose = useMemo(
+    () => selectNextActionableVaccineDose(visibleDoses),
+    [visibleDoses],
+  );
   const doses = visibleDoses;
 
   useEffect(() => {
@@ -92,62 +100,124 @@ export function PlannedVaccineList({
     return <p className={styles.empty}>Aún no hay dosis planificadas.</p>;
   }
 
-  if (view === "timeline") {
+  return (
+    <>
+      <NextVaccineAction dose={nextActionableDose} markAppliedAction={markAppliedAction} />
+      {view === "timeline" ? (
+        <div className={styles.timelineGroups}>
+          {visibleTimelineGroups.map((group) => (
+            <details
+              className={styles.timelineGroup}
+              key={group.ageLabel}
+              open={shouldOpenTimelineGroup(group)}
+            >
+              <summary className={styles.timelineTitle}>
+                <span className={styles.timelineHeading} role="heading" aria-level={3}>
+                  {group.ageLabel}
+                </span>
+                <span className={styles.timelineMeta}>
+                  <time dateTime={group.plannedDate}>{formatDate(group.plannedDate)}</time>
+                  <span>{group.doses.length} dosis</span>
+                </span>
+              </summary>
+              <ol className={styles.doseList}>
+                {group.doses.map((dose) => (
+                  <PlannedVaccineItem
+                    dose={dose}
+                    key={dose.id}
+                    markAppliedAction={markAppliedAction}
+                    reopenAction={reopenAction}
+                    updateAction={updateAction}
+                    updateApplicationAction={updateApplicationAction}
+                    pendingMutations={pendingMutations}
+                  />
+                ))}
+              </ol>
+            </details>
+          ))}
+        </div>
+      ) : (
+        <div className={styles.statusGroups}>
+          {vaccineDoseStatuses.map((status) => (
+            <details
+              className={styles.statusGroup}
+              key={status}
+              open={shouldOpenStatus(status, visibleGroups[status])}
+            >
+              <summary className={styles.statusTitle}>
+                <span className={styles.statusHeading} role="heading" aria-level={3}>
+                  {getVaccineDoseStatusLabel(status)}
+                </span>
+                <span>{visibleGroups[status].length}</span>
+              </summary>
+              {visibleGroups[status].length > 0 ? (
+                <ol className={styles.doseList}>
+                  {visibleGroups[status].map((dose) => (
+                    <PlannedVaccineItem
+                      dose={dose}
+                      key={dose.id}
+                      markAppliedAction={markAppliedAction}
+                      reopenAction={reopenAction}
+                      updateAction={updateAction}
+                      updateApplicationAction={updateApplicationAction}
+                      pendingMutations={pendingMutations}
+                    />
+                  ))}
+                </ol>
+              ) : (
+                <p className={styles.empty}>Nada en este grupo.</p>
+              )}
+            </details>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+function NextVaccineAction({
+  dose,
+  markAppliedAction,
+}: {
+  dose: PlannedVaccineDoseWithStatus | null;
+  markAppliedAction: (formData: FormData) => void | Promise<void>;
+}) {
+  if (!dose) {
     return (
-      <div className={styles.timelineGroups}>
-        {visibleTimelineGroups.map((group) => (
-          <section className={styles.timelineGroup} key={group.ageLabel}>
-            <div className={styles.timelineTitle}>
-              <h3>{group.ageLabel}</h3>
-              <span>{formatDate(group.plannedDate)}</span>
-            </div>
-            <ol className={styles.doseList}>
-              {group.doses.map((dose) => (
-                <PlannedVaccineItem
-                  dose={dose}
-                  key={dose.id}
-                  markAppliedAction={markAppliedAction}
-                  reopenAction={reopenAction}
-                  updateAction={updateAction}
-                  updateApplicationAction={updateApplicationAction}
-                  pendingMutations={pendingMutations}
-                />
-              ))}
-            </ol>
-          </section>
-        ))}
-      </div>
+      <section className={styles.nextAction} data-empty aria-label="Próxima acción">
+        <div>
+          <p className={styles.nextActionKicker}>Próxima acción</p>
+          <h2>Calendario al día</h2>
+          <p className={styles.nextActionDescription}>No hay dosis pendientes de revisar.</p>
+        </div>
+      </section>
     );
   }
 
   return (
-    <div className={styles.statusGroups}>
-      {vaccineDoseStatuses.map((status) => (
-        <section className={styles.statusGroup} key={status} aria-labelledby={`status-${status}`}>
-          <div className={styles.statusTitle}>
-            <h3 id={`status-${status}`}>{getVaccineDoseStatusLabel(status)}</h3>
-            <span>{visibleGroups[status].length}</span>
-          </div>
-          {visibleGroups[status].length > 0 ? (
-            <ol className={styles.doseList}>
-              {visibleGroups[status].map((dose) => (
-                <PlannedVaccineItem
-                  dose={dose}
-                  key={dose.id}
-                  markAppliedAction={markAppliedAction}
-                  reopenAction={reopenAction}
-                  updateAction={updateAction}
-                  updateApplicationAction={updateApplicationAction}
-                  pendingMutations={pendingMutations}
-                />
-              ))}
-            </ol>
-          ) : (
-            <p className={styles.empty}>Nada en este grupo.</p>
-          )}
-        </section>
-      ))}
-    </div>
+    <section className={styles.nextAction} aria-labelledby="next-vaccine-title">
+      <div className={styles.nextActionCopy}>
+        <p className={styles.nextActionKicker}>Revisar primero</p>
+        <h2 id="next-vaccine-title">{dose.vaccineName}</h2>
+        <p className={styles.nextActionDescription}>
+          {dose.doseLabel}
+          {dose.ageLabel ? ` · ${dose.ageLabel}` : ""}
+        </p>
+        <div className={styles.nextActionMeta}>
+          <span className={styles.statusBadge} data-status={dose.status}>
+            {getVaccineDoseStatusLabel(dose.status)}
+          </span>
+          <time dateTime={dose.plannedDate}>{formatDate(dose.plannedDate)}</time>
+        </div>
+      </div>
+      <VaccineApplicationSheet
+        buttonClassName={styles.nextActionButton}
+        dose={dose}
+        markAppliedAction={markAppliedAction}
+      >
+        Registrar aplicación
+      </VaccineApplicationSheet>
+    </section>
   );
 }
 
@@ -229,6 +299,7 @@ function PlannedVaccineEditor({
         type="button"
       >
         <EditIcon />
+        <span className={styles.actionLabel}>Editar</span>
       </button>
 
       {isOpen ? (
@@ -375,7 +446,12 @@ function MarkAppliedForm({
         title="Registrar vacuna aplicada"
         type="button"
       >
-        {children ?? <CheckIcon />}
+        {children ?? (
+          <>
+            <CheckIcon />
+            <span className={styles.actionLabel}>Registrar</span>
+          </>
+        )}
       </button>
 
       {isOpen ? (
@@ -427,6 +503,7 @@ function AppliedVaccineEditor({
         type="button"
       >
         <EditIcon />
+        <span className={styles.actionLabel}>Editar aplicación</span>
       </button>
 
       {isOpen ? (
@@ -593,6 +670,17 @@ function formatDate(date: string): string {
     year: "numeric",
     timeZone: "UTC",
   }).format(new Date(`${date}T00:00:00.000Z`));
+}
+
+function shouldOpenStatus(
+  status: VaccineDoseStatus,
+  doses: PlannedVaccineDoseWithStatus[],
+): boolean {
+  return doses.length > 0 && (status === "retrasada" || status === "proxima");
+}
+
+function shouldOpenTimelineGroup(group: VaccineTimelineGroup): boolean {
+  return group.doses.some((dose) => dose.status === "retrasada" || dose.status === "proxima");
 }
 
 function buildVisibleVaccineDoses(

@@ -45,10 +45,46 @@
   font-size: 20px;
 }
 
-.sectionTitle span {
+.sectionTitleHeading {
+  color: #241335;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.sectionTitle span:not(.sectionTitleHeading) {
   color: #6b587c;
   font-size: 13px;
   font-weight: 700;
+}
+
+.sourcePanel {
+  gap: 0;
+}
+
+.sourcePanel[open] {
+  gap: 16px;
+}
+
+.sourcePanel > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.sourcePanel > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sourcePanel > summary::before {
+  content: "›";
+  color: #7c3aed;
+  font-size: 24px;
+  line-height: 1;
+  transform: rotate(0deg);
+  transition: transform 0.18s ease;
+}
+
+.sourcePanel[open] > summary::before {
+  transform: rotate(90deg);
 }
 
 .copy {
@@ -130,17 +166,19 @@
 
 .statusGroups {
   display: grid;
-  gap: 16px;
+  gap: 10px;
 }
 
 .timelineGroups {
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 .timelineGroup {
-  display: grid;
-  gap: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  border-radius: 16px;
+  background: #fff;
 }
 
 .timelineTitle {
@@ -148,21 +186,58 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
+  cursor: pointer;
+  list-style: none;
+  padding: 13px 14px;
 }
 
-.timelineTitle h3 {
+.timelineTitle::-webkit-details-marker {
+  display: none;
+}
+
+.timelineTitle::before {
+  content: "›";
+  color: #7c3aed;
+  font-size: 24px;
+  line-height: 1;
+  transform: rotate(0deg);
+  transition: transform 0.18s ease;
+}
+
+.timelineGroup[open] > .timelineTitle {
+  border-bottom: 1px solid rgba(96, 72, 115, 0.12);
+}
+
+.timelineGroup[open] > .timelineTitle::before {
+  transform: rotate(90deg);
+}
+
+.timelineHeading {
+  flex: 1;
   font-size: 16px;
+  font-weight: 800;
 }
 
-.timelineTitle span {
+.timelineMeta {
+  display: grid;
+  gap: 2px;
+  justify-items: end;
   color: #6b587c;
   font-size: 13px;
   font-weight: 800;
 }
 
+.timelineGroup > .doseList {
+  margin: 12px;
+}
+
 .statusGroup {
+  overflow: hidden;
   display: grid;
-  gap: 10px;
+  gap: 0;
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  border-radius: 16px;
+  background: #fff;
 }
 
 .statusTitle {
@@ -170,13 +245,39 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  cursor: pointer;
+  list-style: none;
+  padding: 13px 14px;
 }
 
-.statusTitle h3 {
+.statusTitle::-webkit-details-marker {
+  display: none;
+}
+
+.statusTitle::before {
+  content: "›";
+  color: #7c3aed;
+  font-size: 24px;
+  line-height: 1;
+  transform: rotate(0deg);
+  transition: transform 0.18s ease;
+}
+
+.statusGroup[open] > .statusTitle {
+  border-bottom: 1px solid rgba(96, 72, 115, 0.12);
+}
+
+.statusGroup[open] > .statusTitle::before {
+  transform: rotate(90deg);
+}
+
+.statusHeading {
+  flex: 1;
   font-size: 16px;
+  font-weight: 800;
 }
 
-.statusTitle span {
+.statusTitle > span:last-child {
   display: inline-flex;
   min-width: 28px;
   min-height: 28px;
@@ -187,6 +288,85 @@
   color: #5b21b6;
   font-size: 13px;
   font-weight: 900;
+}
+
+.statusGroup > .doseList,
+.statusGroup > .empty {
+  margin: 12px;
+}
+
+.nextAction {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: 16px;
+  background: #faf7ff;
+  padding: 14px;
+}
+
+.nextActionCopy {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.nextActionKicker {
+  color: #7c3aed;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.nextAction h2 {
+  color: #2e1748;
+  font-size: 19px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.nextActionDescription {
+  color: #604873;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.nextActionMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.nextActionMeta time {
+  color: #6b587c;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.nextAction[data-empty] {
+  background: #f8fafc;
+}
+
+.nextActionButton {
+  display: inline-flex;
+  min-height: 44px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 12px;
+  background: #7c3aed;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 0 14px;
+  white-space: nowrap;
 }
 
 .doseList {
@@ -302,24 +482,28 @@
 
 .doseActions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
 }
 
 .actionButton,
 .secondaryActionButton {
-  display: grid;
-  width: 38px;
+  display: inline-flex;
+  width: auto;
+  min-width: 38px;
   justify-self: end;
   min-height: 36px;
-  place-items: center;
+  align-items: center;
+  justify-content: center;
   border: 0;
   border-radius: 12px;
   cursor: pointer;
   font: inherit;
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 800;
-  padding: 0;
+  padding: 0 10px;
+  white-space: nowrap;
 }
 
 .actionButton svg,
@@ -333,6 +517,10 @@
   stroke-width: 2.2;
 }
 
+.actionLabel {
+  margin-inline-start: 5px;
+}
+
 .actionButton {
   background: #7c3aed;
   color: #fff;
@@ -342,6 +530,22 @@
   border: 1px solid rgba(124, 58, 237, 0.18);
   background: #f3e8ff;
   color: #5b21b6;
+}
+
+.actionButton:hover,
+.nextActionButton:hover,
+.primaryButton:hover,
+.secondaryActionButton:hover,
+.secondaryButton:hover {
+  filter: brightness(0.97);
+}
+
+.actionButton:active,
+.nextActionButton:active,
+.primaryButton:active,
+.secondaryActionButton:active,
+.secondaryButton:active {
+  transform: scale(0.98);
 }
 
 .reopenForm {
@@ -504,6 +708,33 @@
 
   .sheetFields {
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .nextAction {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .nextActionButton {
+    width: 100%;
+  }
+
+  .doseActions {
+    justify-content: stretch;
+  }
+
+  .doseActions > button {
+    flex: 1 1 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sourcePanel > summary::before,
+  .timelineTitle::before,
+  .statusTitle::before {
+    transition: none;
   }
 }
 

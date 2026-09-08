@@ -58,8 +58,65 @@ describe("PlannedVaccineList", () => {
     expect(html).toContain("2027-07-02");
     expect(html).toContain('aria-label="Registrar vacuna aplicada"');
     expect(html).toContain('title="Registrar vacuna aplicada"');
+    expect(html).toContain("Revisar primero");
+    expect(html).toContain("Registrar aplicación");
     expect(html).toContain('aria-label="Editar planificación"');
     expect(html).toContain('title="Editar planificación"');
+  });
+
+  it("opens actionable status groups and keeps history collapsed", () => {
+    const html = renderToStaticMarkup(
+      <PlannedVaccineList
+        groups={{
+          ...emptyGroups,
+          retrasada: [
+            {
+              id: "late-dose",
+              vaccineName: "Hexavalente",
+              doseLabel: "1.ª dosis",
+              plannedDate: "2026-09-02",
+              ageLabel: "2 meses",
+              notes: null,
+              application: null,
+              appliedOn: null,
+              status: "retrasada",
+            },
+          ],
+          proxima: [
+            {
+              id: "next-dose",
+              vaccineName: "Neumococo",
+              doseLabel: "1.ª dosis",
+              plannedDate: "2026-09-10",
+              ageLabel: "2 meses",
+              notes: null,
+              application: null,
+              appliedOn: null,
+              status: "proxima",
+            },
+          ],
+          pendiente: [
+            {
+              id: "pending-dose",
+              vaccineName: "Rotavirus",
+              doseLabel: "1.ª dosis",
+              plannedDate: "2026-10-02",
+              ageLabel: "3 meses",
+              notes: null,
+              application: null,
+              appliedOn: null,
+              status: "pendiente",
+            },
+          ],
+        }}
+        markAppliedAction={noopAction}
+        reopenAction={noopAction}
+        updateAction={noopAction}
+        updateApplicationAction={noopAction}
+      />,
+    );
+
+    expect(html.match(/<details[^>]*open/g)).toHaveLength(2);
   });
 
   it("renders applied dose editing as a sheet action", () => {
@@ -108,7 +165,7 @@ describe("PlannedVaccineList", () => {
       id: "dose-1",
       vaccineName: "Meningococo ACWY",
       doseLabel: "Dosis 12 meses",
-      plannedDate: "2027-07-02",
+      plannedDate: "2000-01-01",
       ageLabel: "12 meses",
       notes: null,
       application: null,
@@ -127,7 +184,7 @@ describe("PlannedVaccineList", () => {
           {
             ageLabel: "12 meses",
             doses: [dose],
-            plannedDate: "2027-07-02",
+            plannedDate: "2000-01-01",
           },
         ]}
         updateAction={noopAction}
@@ -138,5 +195,7 @@ describe("PlannedVaccineList", () => {
 
     expect(html).toContain("12 meses");
     expect(html).toContain("Meningococo ACWY");
+    expect(html).toContain("Registrar aplicación");
+    expect(html).toContain('open=""');
   });
 });

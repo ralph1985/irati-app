@@ -82,16 +82,18 @@ export default async function VaccinesPage({ searchParams }: VaccinesPageProps) 
         <h1>Vacunas de Irati</h1>
       </header>
 
-      <section className={styles.panel} aria-labelledby="source-title">
-        <div className={styles.sectionTitle}>
-          <h2 id="source-title">Fuente verificada</h2>
+      <details className={`${styles.panel} ${styles.sourcePanel}`}>
+        <summary className={styles.sectionTitle}>
+          <span className={styles.sectionTitleHeading} role="heading" aria-level={2}>
+            Fuente verificada
+          </span>
           <span>{madridVaccineCalendarSource.verifiedOn}</span>
-        </div>
+        </summary>
         <p className={styles.copy}>
           Calendario 2026 de la Comunidad de Madrid. Las fechas iniciales están calculadas desde el
           nacimiento de Irati y se pueden ajustar manualmente.
         </p>
-      </section>
+      </details>
 
       <section className={styles.panel} aria-labelledby="planned-doses-title">
         <div className={styles.sectionTitle}>
