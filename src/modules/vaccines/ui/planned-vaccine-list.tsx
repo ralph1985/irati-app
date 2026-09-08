@@ -237,6 +237,7 @@ function PlannedVaccineItem({
   updateApplicationAction: (formData: FormData) => void | Promise<void>;
 }) {
   const pendingMessage = getPendingVaccineDoseMessage(pendingMutations, dose);
+  const applicationLot = dose.application?.lot?.trim();
 
   return (
     <li data-pending={pendingMessage ? "true" : "false"}>
@@ -259,6 +260,7 @@ function PlannedVaccineItem({
       {dose.appliedOn ? (
         <p className={styles.notes}>Aplicada el {formatDate(dose.appliedOn)}.</p>
       ) : null}
+      {applicationLot ? <p className={styles.notes}>Lote: {applicationLot}</p> : null}
       {dose.notes ? <p className={styles.notes}>{dose.notes}</p> : null}
       {pendingMessage ? <p className={styles.pendingNote}>{pendingMessage}</p> : null}
 

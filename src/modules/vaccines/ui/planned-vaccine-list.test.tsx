@@ -156,8 +156,47 @@ describe("PlannedVaccineList", () => {
 
     expect(html).toContain("Editar aplicación");
     expect(html).toContain('title="Editar aplicación"');
+    expect(html).toContain("Lote: ABC123");
     expect(html).not.toContain("Centro de salud");
     expect(html).not.toContain("Volver a pendiente");
+  });
+
+  it("does not render an empty lot for an applied dose", () => {
+    const html = renderToStaticMarkup(
+      <PlannedVaccineList
+        groups={{
+          ...emptyGroups,
+          aplicada: [
+            {
+              id: "dose-1",
+              vaccineName: "Meningococo ACWY",
+              doseLabel: "Dosis 12 meses",
+              plannedDate: "2027-07-02",
+              ageLabel: "12 meses",
+              notes: null,
+              application: {
+                id: "application-1",
+                plannedDoseId: "dose-1",
+                appliedOn: "2027-07-03",
+                vaccineName: "Meningococo ACWY",
+                doseLabel: "Dosis 12 meses",
+                place: "",
+                lot: "   ",
+                notes: null,
+              },
+              appliedOn: "2027-07-03",
+              status: "aplicada",
+            },
+          ],
+        }}
+        markAppliedAction={noopAction}
+        reopenAction={noopAction}
+        updateAction={noopAction}
+        updateApplicationAction={noopAction}
+      />,
+    );
+
+    expect(html).not.toContain("Lote:");
   });
 
   it("renders timeline groups", () => {
