@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { buildHomeAgenda } from "@/modules/home/application/home-agenda";
 import type { CalendarSnapshot } from "@/modules/calendar/domain/calendar-event";
 import { CalendarView } from "@/modules/calendar/ui/calendar-view";
@@ -102,6 +102,7 @@ export function OfflineLocalApp() {
   const [calendarSnapshot, setCalendarSnapshot] = useState<CalendarSnapshot | null>(null);
   const [route, setRoute] = useState<OfflineRoute>("/");
   const [search, setSearch] = useState("");
+  const activeTabRef = useRef<HTMLAnchorElement>(null);
   const [pendingCounts, setPendingCounts] = useState({
     travel: 0,
     vaccines: 0,
@@ -178,6 +179,14 @@ export function OfflineLocalApp() {
     };
   }, []);
 
+  useEffect(() => {
+    activeTabRef.current?.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }, [route]);
+
   if (!snapshot || !metadata) {
     return <main className={localStyles.loading}>Cargando copia local...</main>;
   }
@@ -207,7 +216,12 @@ export function OfflineLocalApp() {
       </div>
       <nav className={localStyles.nav} aria-label="Navegacion offline">
         {tabs.map((tab) => (
-          <a aria-current={route === tab.href ? "page" : undefined} href={tab.href} key={tab.href}>
+          <a
+            aria-current={route === tab.href ? "page" : undefined}
+            href={tab.href}
+            key={tab.href}
+            ref={route === tab.href ? activeTabRef : undefined}
+          >
             {tab.label}
           </a>
         ))}

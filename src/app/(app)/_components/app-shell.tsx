@@ -3,7 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { OfflineSnapshotHydrator } from "@/shared/infrastructure/offline/offline-snapshot-hydrator";
 import { OfflineStatusIndicator } from "@/shared/infrastructure/offline/offline-status-indicator";
 import { OfflineTravelMutationSync } from "@/shared/infrastructure/offline/offline-travel-mutation-sync";
@@ -73,6 +73,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     direction: "none",
     pathname,
   }));
+  const activeTabRef = useRef<HTMLAnchorElement>(null);
   const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -82,6 +83,14 @@ export function AppShell({ children }: { children: ReactNode }) {
       }
     }
   }, [pathname, router]);
+
+  useEffect(() => {
+    activeTabRef.current?.scrollIntoView({
+      behavior: shouldReduceMotion ? "auto" : "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }, [pathname, shouldReduceMotion]);
 
   let currentNavigationState = navigationState;
   let currentOptimisticNavigationState = optimisticNavigationState;
@@ -139,6 +148,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             aria-label={tab.label}
             href={tab.href}
             key={tab.href}
+            ref={tab.href === pathname ? activeTabRef : undefined}
             onFocus={() => {
               if (tab.href !== pathname) {
                 router.prefetch(tab.href);
