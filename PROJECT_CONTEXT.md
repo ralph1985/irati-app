@@ -5,11 +5,12 @@ Irati es una aplicación privada para Rafa y Begoña orientada al seguimiento de
 ## Arquitectura Principal
 
 - `src/app/`: rutas y layouts de Next.js App Router.
-- `src/app/(app)/`: zona privada autenticada con Inicio, Peso, Vacunas y Ajustes.
+- `src/app/(app)/`: zona privada autenticada con Inicio, Peso, Medidas, Vacunas, Sueño, Viaje, Calendario y Ajustes.
 - `src/app/login/route.ts` y `src/app/logout/route.ts`: superficie HTTP de autenticación.
 - `src/modules/auth`: passcode, sesión, cookies y rate limit.
 - `src/modules/profile`: perfil básico de Irati.
 - `src/modules/weight`: entradas de peso, filtros, grafica e historial.
+- `src/modules/growth`: altura, perímetro craneal, gráficas OMS e históricos.
 - `src/modules/vaccines`: calendario planificado, estados, avisos y aplicación de dosis.
 - `src/modules/backup`: lectura de salud de backups.
 - `src/shared/infrastructure/supabase`: cliente de servidor y tipos de base de datos.
@@ -18,9 +19,9 @@ Irati es una aplicación privada para Rafa y Begoña orientada al seguimiento de
 
 ## Producto
 
-El MVP incluye perfil básico, peso, vacunas, avisos internos, PWA instalable, passcode compartido y Supabase remoto como persistencia principal.
+El MVP incluye perfil básico, peso, medidas de crecimiento, vacunas, avisos internos, PWA instalable, passcode compartido y Supabase remoto como persistencia principal.
 
-Fuera del MVP: offline de datos, realtime, email, push notifications, percentiles oficiales, exportación para pediatra, cuentas separadas y acceso familiar de solo lectura.
+Fuera del MVP: realtime, email, push notifications, interpretación clínica automática, exportación para pediatra, cuentas separadas y acceso familiar de solo lectura.
 
 La especificación viva es `docs/spec.md`. El estado de hitos vive en `docs/roadmap.md`.
 

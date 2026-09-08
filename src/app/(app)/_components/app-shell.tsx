@@ -10,11 +10,13 @@ import { OfflineTravelMutationSync } from "@/shared/infrastructure/offline/offli
 import { OfflineVaccineMutationSync } from "@/shared/infrastructure/offline/offline-vaccine-mutation-sync";
 import { OfflineWeightMutationSync } from "@/shared/infrastructure/offline/offline-weight-mutation-sync";
 import { OfflineSleepMutationSync } from "@/shared/infrastructure/offline/offline-sleep-mutation-sync";
+import { OfflineGrowthMutationSync } from "@/shared/infrastructure/offline/offline-growth-mutation-sync";
 import styles from "./app-shell.module.css";
 
 const tabs = [
   { href: "/", icon: "home", label: "Inicio" },
   { href: "/peso", icon: "weight", label: "Peso" },
+  { href: "/medidas", icon: "ruler", label: "Medidas" },
   { href: "/vacunas", icon: "vaccine", label: "Vacunas" },
   { href: "/sueno", icon: "sleep", label: "Sueño" },
   { href: "/viaje", icon: "bag", label: "Viaje" },
@@ -109,6 +111,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <OfflineVaccineMutationSync />
       <OfflineWeightMutationSync />
       <OfflineSleepMutationSync />
+      <OfflineGrowthMutationSync />
       <OfflineStatusIndicator styles={styles} />
       <div className={styles.view}>
         <AnimatePresence custom={direction} initial={false} mode="popLayout">
@@ -215,6 +218,13 @@ function TabIcon({ name }: { name: TabIcon }) {
           <path d="M6 20h12l1.5-12h-15L6 20Z" />
           <path d="M9 8a3 3 0 0 1 6 0" />
           <path d="M12 12v3" />
+        </svg>
+      );
+    case "ruler":
+      return (
+        <svg aria-hidden="true" className={styles.navIcon} viewBox="0 0 24 24">
+          <path d="m4 17 13-13 3 3L7 20H4v-3Z" />
+          <path d="m10 11 2 2M13 8l2 2M7 14l2 2M16 5l2 2" />
         </svg>
       );
     case "vaccine":

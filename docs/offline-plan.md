@@ -80,7 +80,7 @@ Estado: implementacion lista. Pendiente de validacion manual en PWA instalada.
 Tareas:
 
 - [x] Instalar Dexie y Serwist.
-- [x] Crear storage local con tablas para `baby_profiles`, `weight_entries`, `planned_vaccine_doses`, `applied_vaccine_doses`, `travel_checklist_items` y `sync_metadata`.
+- [x] Crear storage local con tablas para `baby_profiles`, `weight_entries`, `height_entries`, `head_circumference_entries`, `planned_vaccine_doses`, `applied_vaccine_doses`, `travel_checklist_items` y `sync_metadata`.
 - [x] Añadir tests del storage local para snapshot vacio, reemplazo completo y limpieza en logout.
 - [x] Configurar Serwist con registro manual, fallback offline y cache restrictiva de assets.
 - [x] Precachear el fallback `/~offline`.
@@ -95,7 +95,7 @@ Tareas:
 - [x] Mantener las escrituras online con Server Actions como ahora.
 - [x] Guardar marcador local `offlineAccessGranted` tras hidratacion autenticada.
 - [x] Bloquear datos privados offline si el dispositivo no tiene marcador local y snapshot valido.
-- [x] Renderizar `/`, `/peso`, `/vacunas`, `/viaje` y `/ajustes` desde el shell local cuando el service worker sirve `/~offline`.
+- [x] Renderizar `/`, `/peso`, `/medidas`, `/vacunas`, `/viaje` y `/ajustes` desde el shell local cuando el service worker sirve `/~offline`.
 
 Gate:
 
@@ -126,6 +126,16 @@ Tareas:
 - [x] Mantener operaciones fallidas visibles y reintentables.
 - [x] Permitir alta de peso offline desde el formulario de Peso.
 - [x] Permitir edicion y borrado de peso offline desde el historico.
+
+## Fase 5 - Escritura Offline En Medidas
+
+Objetivo: crear, editar y borrar altura y perímetro craneal sin conexión y sincronizarlos al recuperar red.
+
+- [x] Añadir tablas locales para `height_entries` y `head_circumference_entries`.
+- [x] Añadir operaciones `create`, `update` y `delete` a la cola local.
+- [x] Aplicar cambios optimistas y mantener errores pendientes visibles.
+- [x] Crear endpoint autenticado e idempotente para ambas entidades.
+- [x] Renderizar `/medidas` desde el shell offline con las mismas pestañas y gráficas OMS locales.
 
 Gate:
 

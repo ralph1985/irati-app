@@ -2,12 +2,16 @@ import "fake-indexeddb/auto";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   applyOfflineWeightEntry,
+  applyOfflineHeightEntry,
+  applyOfflineHeadCircumferenceEntry,
   applyOfflineSleepEntry,
   applyOfflineTravelChecklistItem,
   applyOfflineTravelChecklistReorder,
   applyOfflineAppliedVaccineDose,
   applyOfflinePlannedVaccineDose,
   clearOfflineData,
+  deleteOfflineHeightEntry,
+  deleteOfflineHeadCircumferenceEntry,
   deleteOfflineAppliedVaccineDose,
   deleteOfflineTravelChecklistItem,
   deleteOfflineWeightEntry,
@@ -15,10 +19,12 @@ import {
   enqueuePendingTravelMutation,
   enqueuePendingVaccineMutation,
   enqueuePendingWeightMutation,
+  enqueuePendingGrowthMutation,
   enqueuePendingSleepMutation,
   listPendingTravelMutations,
   listPendingVaccineMutations,
   listPendingWeightMutations,
+  listPendingGrowthMutations,
   listPendingSleepMutations,
   markPendingSleepMutationConflict,
   markPendingMutationError,
@@ -37,6 +43,8 @@ describe("Irati offline database", () => {
   it("starts with an empty snapshot and no sync timestamp", async () => {
     await expect(readOfflineSnapshot()).resolves.toEqual({
       appliedVaccineDoses: [],
+      headCircumferenceEntries: [],
+      heightEntries: [],
       plannedVaccineDoses: [],
       profile: null,
       sleepEntries: [],
@@ -49,7 +57,7 @@ describe("Irati offline database", () => {
       lastError: null,
       lastSuccessfulSyncAt: null,
       offlineAccessGranted: false,
-      schemaVersion: 8,
+      schemaVersion: 9,
     });
   });
 
@@ -117,7 +125,7 @@ describe("Irati offline database", () => {
     await expect(readSyncMetadata()).resolves.toMatchObject({
       lastSuccessfulSyncAt: "2026-07-23T10:00:00.000Z",
       offlineAccessGranted: true,
-      schemaVersion: 8,
+      schemaVersion: 9,
     });
   });
 
@@ -138,6 +146,8 @@ describe("Irati offline database", () => {
 
     await expect(readOfflineSnapshot()).resolves.toEqual({
       appliedVaccineDoses: [],
+      headCircumferenceEntries: [],
+      heightEntries: [],
       plannedVaccineDoses: [],
       profile: null,
       sleepEntries: [],
@@ -218,6 +228,61 @@ describe("Irati offline database", () => {
 
     await expect(readOfflineSnapshot()).resolves.toMatchObject({
       weightEntries: [],
+    });
+  });
+
+  it("stores growth measures and queues them by metric", async () => {
+    await applyOfflineHeightEntry({
+      heightCm: 57,
+      id: "height-1",
+      measuredOn: "2026-09-08",
+      place: "pediatra",
+    });
+    await applyOfflineHeadCircumferenceEntry({
+      headCircumferenceCm: 39,
+      id: "head-1",
+      measuredOn: "2026-09-08",
+      place: "pediatra",
+    });
+    await enqueuePendingGrowthMutation({
+      createdAt: "2026-09-08T10:01:00.000Z",
+      entity: "headCircumference",
+      id: "growth-2",
+      operation: "create",
+      payload: {
+        headCircumferenceCm: 39,
+        id: "head-1",
+        measuredOn: "2026-09-08",
+        place: "pediatra",
+      },
+    });
+    await enqueuePendingGrowthMutation({
+      createdAt: "2026-09-08T10:00:00.000Z",
+      entity: "height",
+      id: "growth-1",
+      operation: "create",
+      payload: {
+        heightCm: 57,
+        id: "height-1",
+        measuredOn: "2026-09-08",
+        place: "pediatra",
+      },
+    });
+
+    await expect(readOfflineSnapshot()).resolves.toMatchObject({
+      headCircumferenceEntries: [{ headCircumferenceCm: 39 }],
+      heightEntries: [{ heightCm: 57 }],
+    });
+    await expect(listPendingGrowthMutations()).resolves.toMatchObject([
+      { entity: "height", id: "growth-1" },
+      { entity: "headCircumference", id: "growth-2" },
+    ]);
+
+    await deleteOfflineHeightEntry("height-1");
+    await deleteOfflineHeadCircumferenceEntry("head-1");
+    await expect(readOfflineSnapshot()).resolves.toMatchObject({
+      headCircumferenceEntries: [],
+      heightEntries: [],
     });
   });
 

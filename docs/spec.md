@@ -18,10 +18,12 @@ Incluido:
 - Acceso con PIN/passcode compartido y seguridad real de servidor.
 - PWA instalable desde el inicio.
 - Estilo visual familiar, suave y luminoso, con morado como color principal.
-- Navegacion inferior con Inicio, Peso, Vacunas, Sueño, Viaje, Calendario y Ajustes.
+- Navegacion inferior con Inicio, Peso, Medidas, Vacunas, Sueño, Viaje, Calendario y Ajustes.
 - Registro de peso.
 - Grafica simple de peso.
 - Filtro de peso por lugar.
+- Registro independiente de altura y perímetro craneal.
+- Gráficas de altura y perímetro craneal con referencias OMS orientativas.
 - Planificacion editable de vacunas.
 - Registro de vacunas aplicadas.
 - Estados de vacunas.
@@ -39,7 +41,7 @@ Backups:
 - `pnpm backup:supabase` genera un archivo `irati-supabase-<timestamp>.sql.tar.gz` en `var/backups/supabase/`.
 - El archivo contiene `schema.sql`, `data.sql` y `manifest.txt`.
 - `schema.sql` concatena las migraciones versionadas del repositorio.
-- `data.sql` contiene los datos actuales de `baby_profiles`, `planned_vaccine_doses`, `weight_entries`, `applied_vaccine_doses`, `sleep_entries`, `travel_checklist_categories`, `travel_checklist_items` y `developer_backup_runs`.
+- `data.sql` contiene los datos actuales de `baby_profiles`, `planned_vaccine_doses`, `weight_entries`, `height_entries`, `head_circumference_entries`, `applied_vaccine_doses`, `sleep_entries`, `travel_checklist_categories`, `travel_checklist_items` y `developer_backup_runs`.
 - Los archivos generados y logs viven en `var/` y no se suben a Git.
 - La retencion local por defecto es de 14 dias, configurable con `IRATI_SUPABASE_BACKUP_RETENTION_DAYS`.
 - `pnpm backup:supabase:cron:install` instala un cron diario a las 00:00 por defecto.
@@ -55,7 +57,7 @@ Excluido:
 - Email.
 - Push notifications.
 - Exportacion o impresion para pediatra.
-- Percentiles oficiales.
+- Interpretación clínica automática o alertas basadas en percentiles.
 - Cuentas separadas para Rafa y Begoña.
 - Acceso familiar de solo lectura.
 - Seguimiento de tomas, pañales u otros hitos.
@@ -260,6 +262,37 @@ Criterios de aceptacion:
 - Puedo filtrar la grafica por Hospital.
 - Si no hay pesos para un filtro, veo un estado vacio claro.
 
+### Medidas de crecimiento
+
+La pantalla `/medidas` conserva dos historiales independientes mediante pestañas:
+
+- `Altura`: fecha, centímetros enteros, lugar y notas.
+- `Cabeza`: fecha, perímetro craneal en centímetros enteros, lugar y notas.
+
+Lugares validos:
+
+- Hospital.
+- Pediatra.
+- Farmacia.
+
+Reglas:
+
+- La altura se guarda en `height_entries.height_cm`, entre 1 y 150 centímetros enteros.
+- El perímetro craneal se guarda en `head_circumference_entries.head_circumference_cm`, entre 1 y 70 centímetros enteros.
+- Cada pestaña permite añadir, editar y borrar registros con confirmación.
+- Cada pestaña muestra histórico ordenado por fecha descendente, resumen del último registro y gráfica SVG propia.
+- Las gráficas usan las tablas OMS de niñas de 0 a 5 años para longitud/altura para la edad y perímetro cefálico para la edad.
+- Fuente oficial: [OMS, longitud/altura para la edad](https://www.who.int/tools/child-growth-standards/standards/length-height-for-age) y [OMS, perímetro cefálico para la edad](https://www.who.int/toolkits/child-growth-standards/standards/head-circumference-for-age).
+- Las tablas ampliadas de percentiles se verificaron el 08/09/2026 y se incorporan como datos estáticos locales.
+- Se muestran las curvas P3, P15, P50, P85 y P97 como referencia visual, sin calcular el percentil individual ni emitir interpretación clínica.
+- Las referencias se almacenan como datos estáticos locales para que la vista funcione offline.
+- La referencia se limita a los 5 años y no se extrapola más allá.
+
+Datos iniciales de la migración:
+
+- 08/09/2026, Pediatra, altura: 57 cm.
+- 08/09/2026, Pediatra, perímetro craneal: 39 cm.
+
 ### Vacunas
 
 La app gestiona vacunas planificadas y vacunas aplicadas.
@@ -426,7 +459,7 @@ Pestañas iniciales:
 
 La estructura puede crecer despues con mas pestañas o menus secundarios, pero el MVP parte de estas siete.
 
-La transicion entre pestañas principales usa una animacion lateral ligera sobre el contenido, manteniendo fijo el menu inferior. La direccion sigue el orden Inicio, Peso, Vacunas, Sueño, Viaje, Calendario y Ajustes. La animacion no se aplica a login, logout, modales, filtros ni cambios de query, y debe desactivarse cuando el usuario prefiera reducir movimiento.
+La transicion entre pestañas principales usa una animacion lateral ligera sobre el contenido, manteniendo fijo el menu inferior. La direccion sigue el orden Inicio, Peso, Medidas, Vacunas, Sueño, Viaje, Calendario y Ajustes. La animacion no se aplica a login, logout, modales, filtros ni cambios de query, y debe desactivarse cuando el usuario prefiera reducir movimiento.
 
 ### Inicio
 
@@ -575,12 +608,14 @@ Decisiones de Fase 0 del plan offline:
 - Serwist sera la estrategia base de service worker para Next.
 - El primer acceso offline por dispositivo no existe: requiere una carga online autenticada e hidratacion local correcta.
 - Logout debe limpiar IndexedDB por defecto.
-- La escritura offline empieza por Peso y queda fuera de la lectura offline inicial.
+- La escritura offline empieza por Peso y se amplía a Medidas con cola local e idempotencia.
 
 Tablas previstas, pendientes de concretar en `docs/database-schema.md`:
 
 - `app_profile` o equivalente para Irati y configuracion base.
 - `weight_entries`.
+- `height_entries`.
+- `head_circumference_entries`.
 - `vaccine_plans`.
 - `vaccine_applications` o campos de aplicacion en la planificacion.
 - `travel_checklist_items`.

@@ -14,11 +14,14 @@ import type {
   PlannedVaccineDose,
 } from "@/modules/vaccines/domain/vaccine-calendar";
 import type { WeightEntry } from "@/modules/weight/domain/weight-entry";
+import type { HeadCircumferenceEntry, HeightEntry } from "@/modules/growth/domain/growth-entry";
 import type { SleepEntry } from "@/modules/sleep/domain/sleep-entry";
 
 export type OfflineSnapshot = {
   profile: BabyProfile | null;
   weightEntries: WeightEntry[];
+  heightEntries?: HeightEntry[];
+  headCircumferenceEntries?: HeadCircumferenceEntry[];
   sleepEntries?: SleepEntry[];
   plannedVaccineDoses: PlannedVaccineDose[];
   appliedVaccineDoses: AppliedVaccineDose[];
@@ -44,6 +47,17 @@ export type PendingWeightMutation = {
   entity: "weight";
   operation: PendingWeightMutationOperation;
   payload: WeightEntry | { id: string };
+  createdAt: string;
+  lastError: string | null;
+};
+
+export type PendingGrowthMutationOperation = "create" | "update" | "delete";
+
+export type PendingGrowthMutation = {
+  id: string;
+  entity: "height" | "headCircumference";
+  operation: PendingGrowthMutationOperation;
+  payload: HeightEntry | HeadCircumferenceEntry | { id: string };
   createdAt: string;
   lastError: string | null;
 };
@@ -88,7 +102,11 @@ export type PendingVaccineMutation = PendingVaccineMutationPayload & {
 };
 
 export type PendingMutation =
-  PendingWeightMutation | PendingTravelMutation | PendingVaccineMutation | PendingSleepMutation;
+  | PendingWeightMutation
+  | PendingGrowthMutation
+  | PendingTravelMutation
+  | PendingVaccineMutation
+  | PendingSleepMutation;
 
 export type PendingSleepMutationOperation = "create" | "update" | "delete";
 
@@ -112,13 +130,15 @@ type StoredBabyProfile = BabyProfile & {
   id: "irati";
 };
 
-const currentSchemaVersion = 8;
+const currentSchemaVersion = 9;
 const profileId = "irati";
 const metadataId = "main";
 
 class IratiOfflineDatabase extends Dexie {
   babyProfiles!: Table<StoredBabyProfile, string>;
   weightEntries!: Table<WeightEntry, string>;
+  heightEntries!: Table<HeightEntry, string>;
+  headCircumferenceEntries!: Table<HeadCircumferenceEntry, string>;
   sleepEntries!: Table<SleepEntry, string>;
   plannedVaccineDoses!: Table<PlannedVaccineDose, string>;
   appliedVaccineDoses!: Table<AppliedVaccineDose, string>;
@@ -143,6 +163,8 @@ class IratiOfflineDatabase extends Dexie {
       travelChecklistCategories: "slug, sortOrder",
       travelStorageLocations: "id, parentId, sortOrder",
       weightEntries: "id, measuredOn",
+      heightEntries: "id, measuredOn",
+      headCircumferenceEntries: "id, measuredOn",
       sleepEntries: "id, startedAt, endedAt",
       calendarSnapshots: "id, fetchedAt",
     });
@@ -174,6 +196,8 @@ export async function replaceOfflineSnapshot(
     [
       iratiOfflineDb.babyProfiles,
       iratiOfflineDb.weightEntries,
+      iratiOfflineDb.heightEntries,
+      iratiOfflineDb.headCircumferenceEntries,
       iratiOfflineDb.sleepEntries,
       iratiOfflineDb.plannedVaccineDoses,
       iratiOfflineDb.appliedVaccineDoses,
@@ -186,6 +210,8 @@ export async function replaceOfflineSnapshot(
     async () => {
       await iratiOfflineDb.babyProfiles.clear();
       await iratiOfflineDb.weightEntries.clear();
+      await iratiOfflineDb.heightEntries.clear();
+      await iratiOfflineDb.headCircumferenceEntries.clear();
       await iratiOfflineDb.sleepEntries.clear();
       await iratiOfflineDb.plannedVaccineDoses.clear();
       await iratiOfflineDb.appliedVaccineDoses.clear();
@@ -200,6 +226,10 @@ export async function replaceOfflineSnapshot(
       }
 
       await iratiOfflineDb.weightEntries.bulkPut(snapshot.weightEntries);
+      await iratiOfflineDb.heightEntries.bulkPut(snapshot.heightEntries ?? []);
+      await iratiOfflineDb.headCircumferenceEntries.bulkPut(
+        snapshot.headCircumferenceEntries ?? [],
+      );
       await iratiOfflineDb.sleepEntries.bulkPut(snapshot.sleepEntries ?? []);
       await iratiOfflineDb.plannedVaccineDoses.bulkPut(snapshot.plannedVaccineDoses);
       await iratiOfflineDb.appliedVaccineDoses.bulkPut(snapshot.appliedVaccineDoses);
@@ -223,6 +253,8 @@ export async function readOfflineSnapshot(): Promise<OfflineSnapshot> {
   const [
     profile,
     weightEntries,
+    heightEntries,
+    headCircumferenceEntries,
     sleepEntries,
     plannedVaccineDoses,
     appliedVaccineDoses,
@@ -232,6 +264,8 @@ export async function readOfflineSnapshot(): Promise<OfflineSnapshot> {
   ] = await Promise.all([
     iratiOfflineDb.babyProfiles.get(profileId),
     iratiOfflineDb.weightEntries.orderBy("measuredOn").toArray(),
+    iratiOfflineDb.heightEntries.orderBy("measuredOn").reverse().toArray(),
+    iratiOfflineDb.headCircumferenceEntries.orderBy("measuredOn").reverse().toArray(),
     iratiOfflineDb.sleepEntries.orderBy("startedAt").reverse().toArray(),
     iratiOfflineDb.plannedVaccineDoses.orderBy("plannedDate").toArray(),
     iratiOfflineDb.appliedVaccineDoses.orderBy("appliedOn").toArray(),
@@ -255,6 +289,8 @@ export async function readOfflineSnapshot(): Promise<OfflineSnapshot> {
     travelChecklistCategories,
     travelStorageLocations,
     weightEntries,
+    heightEntries,
+    headCircumferenceEntries,
     sleepEntries,
   };
 }
@@ -296,6 +332,17 @@ export async function enqueuePendingWeightMutation(
   });
 }
 
+export async function enqueuePendingGrowthMutation(
+  mutation: Omit<PendingGrowthMutation, "createdAt" | "lastError"> &
+    Partial<Pick<PendingGrowthMutation, "createdAt" | "lastError">>,
+): Promise<void> {
+  await iratiOfflineDb.pendingMutations.put({
+    ...mutation,
+    createdAt: mutation.createdAt ?? new Date().toISOString(),
+    lastError: mutation.lastError ?? null,
+  });
+}
+
 export async function enqueuePendingTravelMutation(
   mutation: Omit<PendingTravelMutation, "createdAt" | "entity" | "lastError"> &
     Partial<Pick<PendingTravelMutation, "createdAt" | "lastError">>,
@@ -324,6 +371,16 @@ export async function enqueuePendingVaccineMutation(
 
 export async function applyOfflineWeightEntry(entry: WeightEntry): Promise<void> {
   await iratiOfflineDb.weightEntries.put(entry);
+}
+
+export async function applyOfflineHeightEntry(entry: HeightEntry): Promise<void> {
+  await iratiOfflineDb.heightEntries.put(entry);
+}
+
+export async function applyOfflineHeadCircumferenceEntry(
+  entry: HeadCircumferenceEntry,
+): Promise<void> {
+  await iratiOfflineDb.headCircumferenceEntries.put(entry);
 }
 
 export async function applyOfflineSleepEntry(entry: SleepEntry): Promise<void> {
@@ -391,6 +448,26 @@ export async function listPendingWeightMutations(): Promise<PendingWeightMutatio
 
   return mutations.filter(
     (mutation): mutation is PendingWeightMutation => mutation.entity === "weight",
+  );
+}
+
+export async function deleteOfflineHeightEntry(id: string): Promise<void> {
+  await iratiOfflineDb.heightEntries.delete(id);
+}
+
+export async function deleteOfflineHeadCircumferenceEntry(id: string): Promise<void> {
+  await iratiOfflineDb.headCircumferenceEntries.delete(id);
+}
+
+export async function listPendingGrowthMutations(): Promise<PendingGrowthMutation[]> {
+  const mutations = await iratiOfflineDb.pendingMutations
+    .where("entity")
+    .anyOf("height", "headCircumference")
+    .sortBy("createdAt");
+
+  return mutations.filter(
+    (mutation): mutation is PendingGrowthMutation =>
+      mutation.entity === "height" || mutation.entity === "headCircumference",
   );
 }
 
@@ -518,6 +595,8 @@ export async function clearOfflineData(): Promise<void> {
     [
       iratiOfflineDb.babyProfiles,
       iratiOfflineDb.weightEntries,
+      iratiOfflineDb.heightEntries,
+      iratiOfflineDb.headCircumferenceEntries,
       iratiOfflineDb.sleepEntries,
       iratiOfflineDb.plannedVaccineDoses,
       iratiOfflineDb.appliedVaccineDoses,
@@ -531,6 +610,8 @@ export async function clearOfflineData(): Promise<void> {
     async () => {
       await iratiOfflineDb.babyProfiles.clear();
       await iratiOfflineDb.weightEntries.clear();
+      await iratiOfflineDb.heightEntries.clear();
+      await iratiOfflineDb.headCircumferenceEntries.clear();
       await iratiOfflineDb.sleepEntries.clear();
       await iratiOfflineDb.plannedVaccineDoses.clear();
       await iratiOfflineDb.appliedVaccineDoses.clear();

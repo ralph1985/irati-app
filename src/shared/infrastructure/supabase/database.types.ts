@@ -111,6 +111,66 @@ export type Database = {
         };
         Relationships: [];
       };
+      height_entries: {
+        Row: {
+          id: string;
+          measured_on: string;
+          height_cm: number;
+          place: "hospital" | "pediatra" | "farmacia";
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          measured_on: string;
+          height_cm: number;
+          place: "hospital" | "pediatra" | "farmacia";
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          measured_on?: string;
+          height_cm?: number;
+          place?: "hospital" | "pediatra" | "farmacia";
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      head_circumference_entries: {
+        Row: {
+          id: string;
+          measured_on: string;
+          head_circumference_cm: number;
+          place: "hospital" | "pediatra" | "farmacia";
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          measured_on: string;
+          head_circumference_cm: number;
+          place: "hospital" | "pediatra" | "farmacia";
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          measured_on?: string;
+          head_circumference_cm?: number;
+          place?: "hospital" | "pediatra" | "farmacia";
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       sleep_entries: {
         Row: {
           id: string;

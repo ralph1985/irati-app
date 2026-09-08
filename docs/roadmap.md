@@ -304,7 +304,7 @@ El modo offline-first se implementa por fases segun [`docs/offline-plan.md`](off
 - [x] Fase 2: permitir escritura offline solo en Peso con cola local e idempotencia.
 - [x] Fase 3: ampliar escritura offline a Viaje si Peso queda estable.
 - [x] Fase 4: diseñar e implementar escritura offline en Vacunas con matriz de conflictos.
-- [x] Permitir que `/~offline` renderice Inicio, Peso, Vacunas, Viaje y Ajustes desde IndexedDB conservando las URLs principales.
+- [x] Permitir que `/~offline` renderice Inicio, Peso, Medidas, Vacunas, Viaje y Ajustes desde IndexedDB conservando las URLs principales.
 - [x] Guardar autorizacion offline local tras hidratacion autenticada y bloquear datos privados si falta.
 - [ ] Convertir las escrituras online a local-first, con IndexedDB como primer estado visible y Supabase como sync posterior.
 - [ ] Validar cada fase con checks completos cuando haya codigo y prueba manual en PWA instalada.
@@ -334,11 +334,22 @@ El modo offline-first se implementa por fases segun [`docs/offline-plan.md`](off
 - [x] Añadir migración Supabase, caché, backup, tests y validación completa.
 - [x] Añadir URL de atajo para alternar inicio/parada y mostrar solo el cronómetro.
 
+## Hito 22 - Medidas de crecimiento y referencias OMS
+
+- [x] Definir historiales independientes para altura y perímetro craneal.
+- [x] Crear tablas Supabase con RLS y registros iniciales del 08/09/2026.
+- [x] Crear pantalla `/medidas` con pestañas, formularios e histórico.
+- [x] Añadir gráficas SVG con referencias OMS estáticas para niñas de 0 a 5 años.
+- [x] Integrar lectura y escritura offline con cola de sincronización.
+- [x] Incluir las nuevas tablas en backups y documentación del esquema.
+- [x] Añadir tests de dominio, referencias OMS, gráficas e IndexedDB.
+- [ ] Aplicar migración y verificar los registros iniciales en Supabase remoto.
+- [ ] Ejecutar validación automática completa y prueba manual en PWA instalada.
+
 ## Fuera del MVP inicial
 
 - Exportacion o impresion para pediatra.
-- Percentiles oficiales o curvas clinicas.
-- Nuevas superficies offline fuera de Inicio, Peso, Vacunas, Sueño, Viaje, Calendario y Ajustes.
+- Interpretación clínica automática de percentiles o curvas.
 - Realtime.
 - Multiusuario con cuentas separadas.
 - Permisos por rol.

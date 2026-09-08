@@ -55,6 +55,42 @@ Indice:
 
 - `weight_entries_measured_on_idx`
 
+## `height_entries`
+
+Histórico independiente de alturas de Irati.
+
+Migración: `supabase/migrations/20260908160000_create_growth_entries.sql`.
+
+| Campo         | Tipo          | Regla                               |
+| ------------- | ------------- | ----------------------------------- |
+| `id`          | `uuid`        | Primary key                         |
+| `measured_on` | `date`        | Fecha de la medida                  |
+| `height_cm`   | `smallint`    | Entre 1 y 150 centímetros enteros   |
+| `place`       | `text`        | `hospital`, `pediatra` o `farmacia` |
+| `notes`       | `text`        | Opcional                            |
+| `created_at`  | `timestamptz` | `now()`                             |
+| `updated_at`  | `timestamptz` | `now()`                             |
+
+Índice: `height_entries_measured_on_idx`.
+
+## `head_circumference_entries`
+
+Histórico independiente de perímetro craneal.
+
+Migración: `supabase/migrations/20260908160000_create_growth_entries.sql`.
+
+| Campo                   | Tipo          | Regla                               |
+| ----------------------- | ------------- | ----------------------------------- |
+| `id`                    | `uuid`        | Primary key                         |
+| `measured_on`           | `date`        | Fecha de la medida                  |
+| `head_circumference_cm` | `smallint`    | Entre 1 y 70 centímetros enteros    |
+| `place`                 | `text`        | `hospital`, `pediatra` o `farmacia` |
+| `notes`                 | `text`        | Opcional                            |
+| `created_at`            | `timestamptz` | `now()`                             |
+| `updated_at`            | `timestamptz` | `now()`                             |
+
+Índice: `head_circumference_entries_measured_on_idx`.
+
 ## `sleep_entries`
 
 Registro de siestas y sueño nocturno. La migración

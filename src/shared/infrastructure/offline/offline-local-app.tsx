@@ -42,6 +42,10 @@ import {
   type ToggleSleepResult,
 } from "@/modules/sleep/application/toggle-sleep-entry";
 import { QuickSleepView } from "@/modules/sleep/ui/quick-sleep-view";
+import { GrowthChart } from "@/modules/growth/ui/growth-chart";
+import { GrowthCreateSheet } from "@/modules/growth/ui/growth-create-sheet";
+import { GrowthHistory } from "@/modules/growth/ui/growth-history";
+import type { GrowthMetric } from "@/modules/growth/application/growth-chart-series";
 import {
   applyOfflineSleepEntry,
   clearPendingSleepMutationConflict,
@@ -51,6 +55,7 @@ import {
   listPendingTravelMutations,
   listPendingVaccineMutations,
   listPendingWeightMutations,
+  listPendingGrowthMutations,
   removePendingMutation,
   readOfflineSnapshot,
   readCalendarSnapshot,
@@ -68,13 +73,22 @@ import calendarPageStyles from "../../../app/(app)/calendario/page.module.css";
 import sleepStyles from "../../../app/(app)/sueno/page.module.css";
 
 type OfflineRoute =
-  "/" | "/peso" | "/vacunas" | "/sueno" | "/sueno/atajo" | "/viaje" | "/calendario" | "/ajustes";
+  | "/"
+  | "/peso"
+  | "/medidas"
+  | "/vacunas"
+  | "/sueno"
+  | "/sueno/atajo"
+  | "/viaje"
+  | "/calendario"
+  | "/ajustes";
 
 const noopAction = async () => {};
 
 const tabs: Array<{ href: OfflineRoute; label: string }> = [
   { href: "/", label: "Inicio" },
   { href: "/peso", label: "Peso" },
+  { href: "/medidas", label: "Medidas" },
   { href: "/vacunas", label: "Vacunas" },
   { href: "/sueno", label: "Sueño" },
   { href: "/viaje", label: "Viaje" },
@@ -92,6 +106,7 @@ export function OfflineLocalApp() {
     travel: 0,
     vaccines: 0,
     weight: 0,
+    growth: 0,
     sleep: 0,
   });
 
@@ -104,16 +119,25 @@ export function OfflineLocalApp() {
     }
 
     async function refreshLocalData() {
-      const [nextSnapshot, nextMetadata, nextCalendarSnapshot, weight, travel, vaccines, sleep] =
-        await Promise.all([
-          readOfflineSnapshot(),
-          readSyncMetadata(),
-          readCalendarSnapshot(),
-          listPendingWeightMutations(),
-          listPendingTravelMutations(),
-          listPendingVaccineMutations(),
-          listPendingSleepMutations(),
-        ]);
+      const [
+        nextSnapshot,
+        nextMetadata,
+        nextCalendarSnapshot,
+        weight,
+        growth,
+        travel,
+        vaccines,
+        sleep,
+      ] = await Promise.all([
+        readOfflineSnapshot(),
+        readSyncMetadata(),
+        readCalendarSnapshot(),
+        listPendingWeightMutations(),
+        listPendingGrowthMutations(),
+        listPendingTravelMutations(),
+        listPendingVaccineMutations(),
+        listPendingSleepMutations(),
+      ]);
 
       if (!isActive) {
         return;
@@ -126,6 +150,7 @@ export function OfflineLocalApp() {
         travel: travel.length,
         vaccines: vaccines.length,
         weight: weight.length,
+        growth: growth.length,
         sleep: sleep.length,
       });
     }
@@ -136,6 +161,7 @@ export function OfflineLocalApp() {
     window.addEventListener("popstate", refreshRoute);
     window.addEventListener("irati-offline-sync-updated", refreshLocalData);
     window.addEventListener("irati-offline-weight-updated", refreshLocalData);
+    window.addEventListener("irati-offline-growth-updated", refreshLocalData);
     window.addEventListener("irati-offline-travel-updated", refreshLocalData);
     window.addEventListener("irati-offline-vaccines-updated", refreshLocalData);
     window.addEventListener("irati-offline-sleep-updated", refreshLocalData);
@@ -145,6 +171,7 @@ export function OfflineLocalApp() {
       window.removeEventListener("popstate", refreshRoute);
       window.removeEventListener("irati-offline-sync-updated", refreshLocalData);
       window.removeEventListener("irati-offline-weight-updated", refreshLocalData);
+      window.removeEventListener("irati-offline-growth-updated", refreshLocalData);
       window.removeEventListener("irati-offline-travel-updated", refreshLocalData);
       window.removeEventListener("irati-offline-vaccines-updated", refreshLocalData);
       window.removeEventListener("irati-offline-sleep-updated", refreshLocalData);
@@ -194,12 +221,20 @@ function renderRoute(
   search: string,
   snapshot: OfflineSnapshot,
   metadata: SyncMetadata,
-  pendingCounts: { sleep: number; travel: number; vaccines: number; weight: number },
+  pendingCounts: {
+    sleep: number;
+    travel: number;
+    vaccines: number;
+    weight: number;
+    growth: number;
+  },
   calendarSnapshot: CalendarSnapshot | null,
 ) {
   switch (route) {
     case "/peso":
       return <OfflineWeightScreen search={search} snapshot={snapshot} />;
+    case "/medidas":
+      return <OfflineGrowthScreen search={search} snapshot={snapshot} />;
     case "/vacunas":
       return <OfflineVaccinesScreen search={search} snapshot={snapshot} />;
     case "/sueno":
@@ -584,6 +619,69 @@ function OfflineWeightScreen({ search, snapshot }: { search: string; snapshot: O
   );
 }
 
+function OfflineGrowthScreen({ search, snapshot }: { search: string; snapshot: OfflineSnapshot }) {
+  const metric: GrowthMetric =
+    new URLSearchParams(search).get("tipo") === "cabeza" ? "headCircumference" : "height";
+  const entries =
+    metric === "height"
+      ? (snapshot.heightEntries ?? [])
+      : (snapshot.headCircumferenceEntries ?? []);
+  const title = metric === "height" ? "Altura" : "Perímetro craneal";
+
+  return (
+    <>
+      <main className={weightStyles.main}>
+        <header className={weightStyles.header}>
+          <p>Medidas</p>
+          <h1>Medidas de Irati</h1>
+        </header>
+        <section className={weightStyles.panel} aria-labelledby="offline-growth-tabs-title">
+          <div className={weightStyles.sectionTitle}>
+            <h2 id="offline-growth-tabs-title">Crecimiento</h2>
+            <span>{entries.length} registros</span>
+          </div>
+          <div className={weightStyles.filters} aria-label="Tipo de medida">
+            <a aria-current={metric === "height" ? "page" : undefined} href="/medidas?tipo=altura">
+              Altura
+            </a>
+            <a
+              aria-current={metric === "headCircumference" ? "page" : undefined}
+              href="/medidas?tipo=cabeza"
+            >
+              Cabeza
+            </a>
+          </div>
+        </section>
+        <section className={weightStyles.panel} aria-labelledby="offline-growth-chart-title">
+          <div className={weightStyles.sectionTitle}>
+            <h2 id="offline-growth-chart-title">Evolución</h2>
+            <span>{title}</span>
+          </div>
+          <GrowthChart
+            birthDate={snapshot.profile?.birthDate ?? "2026-07-02"}
+            entries={entries}
+            metric={metric}
+            title={title}
+          />
+        </section>
+        <section className={weightStyles.panel} aria-labelledby="offline-growth-history-title">
+          <div className={weightStyles.sectionTitle}>
+            <h2 id="offline-growth-history-title">Histórico</h2>
+            <span>{entries.length} registros</span>
+          </div>
+          <GrowthHistory
+            deleteAction={noopAction}
+            entries={entries}
+            metric={metric}
+            updateAction={noopAction}
+          />
+        </section>
+      </main>
+      <GrowthCreateSheet action={noopAction} metric={metric} />
+    </>
+  );
+}
+
 function OfflineVaccinesScreen({
   search,
   snapshot,
@@ -694,11 +792,21 @@ function OfflineSettingsScreen({
   snapshot,
 }: {
   metadata: SyncMetadata;
-  pendingCounts: { sleep: number; travel: number; vaccines: number; weight: number };
+  pendingCounts: {
+    sleep: number;
+    travel: number;
+    vaccines: number;
+    weight: number;
+    growth: number;
+  };
   snapshot: OfflineSnapshot;
 }) {
   const totalPending =
-    pendingCounts.sleep + pendingCounts.travel + pendingCounts.vaccines + pendingCounts.weight;
+    pendingCounts.sleep +
+    pendingCounts.travel +
+    pendingCounts.vaccines +
+    pendingCounts.weight +
+    pendingCounts.growth;
 
   return (
     <main className={localStyles.settingsMain}>
@@ -749,6 +857,10 @@ function OfflineSettingsScreen({
           <div>
             <dt>Peso</dt>
             <dd>{pendingCounts.weight}</dd>
+          </div>
+          <div>
+            <dt>Medidas</dt>
+            <dd>{pendingCounts.growth}</dd>
           </div>
           <div>
             <dt>Viaje</dt>
@@ -823,6 +935,7 @@ function buildOfflineVaccinePlan(snapshot: OfflineSnapshot) {
 function toOfflineRoute(pathname: string): OfflineRoute {
   if (
     pathname === "/peso" ||
+    pathname === "/medidas" ||
     pathname === "/vacunas" ||
     pathname === "/sueno" ||
     pathname === "/sueno/atajo" ||

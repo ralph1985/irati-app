@@ -1,4 +1,5 @@
 export const CACHE_TAGS = {
+  growthEntries: "irati:growth-entries",
   profile: "irati:profile",
   sleepEntries: "irati:sleep-entries",
   vaccineAppliedDoses: "irati:vaccines:applied-doses",
