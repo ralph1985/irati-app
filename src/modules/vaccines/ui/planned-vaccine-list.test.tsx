@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { PlannedVaccineList } from "./planned-vaccine-list";
 import { PlannedVaccineDoseGroups } from "../domain/vaccine-calendar";
 
@@ -65,58 +65,65 @@ describe("PlannedVaccineList", () => {
   });
 
   it("opens actionable status groups and keeps history collapsed", () => {
-    const html = renderToStaticMarkup(
-      <PlannedVaccineList
-        groups={{
-          ...emptyGroups,
-          retrasada: [
-            {
-              id: "late-dose",
-              vaccineName: "Hexavalente",
-              doseLabel: "1.ª dosis",
-              plannedDate: "2026-09-02",
-              ageLabel: "2 meses",
-              notes: null,
-              application: null,
-              appliedOn: null,
-              status: "retrasada",
-            },
-          ],
-          proxima: [
-            {
-              id: "next-dose",
-              vaccineName: "Neumococo",
-              doseLabel: "1.ª dosis",
-              plannedDate: "2026-09-10",
-              ageLabel: "2 meses",
-              notes: null,
-              application: null,
-              appliedOn: null,
-              status: "proxima",
-            },
-          ],
-          pendiente: [
-            {
-              id: "pending-dose",
-              vaccineName: "Rotavirus",
-              doseLabel: "1.ª dosis",
-              plannedDate: "2026-10-02",
-              ageLabel: "3 meses",
-              notes: null,
-              application: null,
-              appliedOn: null,
-              status: "pendiente",
-            },
-          ],
-        }}
-        markAppliedAction={noopAction}
-        reopenAction={noopAction}
-        updateAction={noopAction}
-        updateApplicationAction={noopAction}
-      />,
-    );
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-03T12:00:00.000Z"));
 
-    expect(html.match(/<details[^>]*open/g)).toHaveLength(2);
+    try {
+      const html = renderToStaticMarkup(
+        <PlannedVaccineList
+          groups={{
+            ...emptyGroups,
+            retrasada: [
+              {
+                id: "late-dose",
+                vaccineName: "Hexavalente",
+                doseLabel: "1.ª dosis",
+                plannedDate: "2026-09-02",
+                ageLabel: "2 meses",
+                notes: null,
+                application: null,
+                appliedOn: null,
+                status: "retrasada",
+              },
+            ],
+            proxima: [
+              {
+                id: "next-dose",
+                vaccineName: "Neumococo",
+                doseLabel: "1.ª dosis",
+                plannedDate: "2026-09-10",
+                ageLabel: "2 meses",
+                notes: null,
+                application: null,
+                appliedOn: null,
+                status: "proxima",
+              },
+            ],
+            pendiente: [
+              {
+                id: "pending-dose",
+                vaccineName: "Rotavirus",
+                doseLabel: "1.ª dosis",
+                plannedDate: "2026-10-02",
+                ageLabel: "3 meses",
+                notes: null,
+                application: null,
+                appliedOn: null,
+                status: "pendiente",
+              },
+            ],
+          }}
+          markAppliedAction={noopAction}
+          reopenAction={noopAction}
+          updateAction={noopAction}
+          updateApplicationAction={noopAction}
+        />,
+      );
+
+      expect(html.match(/<details[^>]*open/g)).toHaveLength(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("renders applied dose editing as a sheet action", () => {
