@@ -587,3 +587,16 @@
     padding: 12px;
   }
 }
+
+@media (min-width: 960px) {
+  .main {
+    max-width: 1120px;
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .main {
+    max-width: 1180px;
+  }
+}

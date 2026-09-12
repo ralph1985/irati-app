@@ -74,7 +74,10 @@ export default async function GrowthPage({ searchParams }: GrowthPageProps) {
 
         <ToastFeedback messages={feedbackMessages} offset="floatingAction" />
 
-        <section className={styles.panel} aria-labelledby="metric-tabs-title">
+        <section
+          className={`${styles.panel} ${styles.metricPanel}`}
+          aria-labelledby="metric-tabs-title"
+        >
           <div className={styles.sectionTitle}>
             <h2 id="metric-tabs-title">Crecimiento</h2>
             <span>{entries.length} registros</span>
@@ -95,7 +98,7 @@ export default async function GrowthPage({ searchParams }: GrowthPageProps) {
           </div>
         </section>
 
-        <section className={styles.panel} aria-labelledby="chart-title">
+        <section className={`${styles.panel} ${styles.chartPanel}`} aria-labelledby="chart-title">
           <div className={styles.sectionTitle}>
             <h2 id="chart-title">Evolución</h2>
             <span>{title}</span>
@@ -110,7 +113,10 @@ export default async function GrowthPage({ searchParams }: GrowthPageProps) {
           ) : null}
         </section>
 
-        <section className={styles.panel} aria-labelledby="history-title">
+        <section
+          className={`${styles.panel} ${styles.historyPanel}`}
+          aria-labelledby="history-title"
+        >
           <div className={styles.sectionTitle}>
             <h2 id="history-title">Histórico</h2>
             <span>{entries.length} registros</span>

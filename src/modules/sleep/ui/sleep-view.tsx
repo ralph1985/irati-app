@@ -77,7 +77,7 @@ export function SleepView({
 
   return (
     <>
-      <section className={styles.panel} aria-labelledby="sleep-now-title">
+      <section className={`${styles.panel} ${styles.nowPanel}`} aria-labelledby="sleep-now-title">
         <div className={styles.sectionTitle}>
           <h2 id="sleep-now-title">Ahora</h2>
           <span>{formatLongDate(now)}</span>
@@ -148,7 +148,7 @@ export function SleepView({
         </button>
       </section>
 
-      <section className={styles.panel} aria-labelledby="today-title">
+      <section className={`${styles.panel} ${styles.todayPanel}`} aria-labelledby="today-title">
         <div className={styles.sectionTitle}>
           <h2 id="today-title">Resumen de hoy</h2>
           <span>{todayEntries.length} descansos</span>
@@ -171,7 +171,7 @@ export function SleepView({
         </div>
       </section>
 
-      <section className={styles.panel} aria-labelledby="history-title">
+      <section className={`${styles.panel} ${styles.historyPanel}`} aria-labelledby="history-title">
         <div className={styles.sectionTitle}>
           <h2 id="history-title">Historial</h2>
           <span>{completedEntries.length} registros</span>

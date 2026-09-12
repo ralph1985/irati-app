@@ -688,6 +688,36 @@
   }
 }
 
+@media (min-width: 960px) {
+  .main {
+    max-width: 1120px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .header {
+    grid-column: 1 / -1;
+  }
+
+  .metricPanel {
+    grid-column: 1 / -1;
+  }
+
+  .sheet {
+    width: min(100%, 760px);
+  }
+
+  .floatingAddButton {
+    bottom: 32px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .main {
+    max-width: 1180px;
+  }
+}
+
 @keyframes sheetIn {
   from {
     opacity: 0.86;

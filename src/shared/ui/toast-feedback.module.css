@@ -91,3 +91,10 @@
     animation: none;
   }
 }
+
+@media (min-width: 960px) {
+  .viewport,
+  .viewport[data-offset="floatingAction"] {
+    bottom: 32px;
+  }
+}

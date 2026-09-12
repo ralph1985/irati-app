@@ -1,4 +1,7 @@
 .page {
+  --app-sidebar-width: 232px;
+  --app-content-gutter: 32px;
+  --app-bottom-reserve: max(154px, calc(140px + env(safe-area-inset-bottom, 0px)));
   min-height: 100dvh;
   overflow-x: clip;
   background:
@@ -13,7 +16,7 @@
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  padding: 24px 18px max(154px, calc(140px + env(safe-area-inset-bottom, 0px)));
+  padding: 24px 18px var(--app-bottom-reserve);
 }
 
 .view {
@@ -157,5 +160,62 @@
   .nav a {
     flex: 1 1 0;
     min-width: 0;
+  }
+}
+
+@media (min-width: 960px) {
+  .page {
+    --app-bottom-reserve: 32px;
+    padding: 32px var(--app-content-gutter) 32px
+      calc(var(--app-sidebar-width) + var(--app-content-gutter));
+  }
+
+  .view {
+    min-height: calc(100dvh - 64px);
+  }
+
+  .nav {
+    top: 24px;
+    right: auto;
+    bottom: auto;
+    left: 24px;
+    display: grid;
+    width: var(--app-sidebar-width);
+    max-width: none;
+    margin: 0;
+    overflow: visible;
+    padding: 12px;
+  }
+
+  .nav a {
+    flex: 0 0 auto;
+    min-width: 0;
+    min-height: 48px;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 0 12px;
+    scroll-snap-align: none;
+  }
+
+  .navLabel {
+    font-size: 13px;
+    letter-spacing: normal;
+  }
+
+  .credit {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+@media (min-width: 1280px) {
+  .page {
+    --app-content-gutter: 48px;
+  }
+
+  .nav {
+    top: 32px;
+    left: 32px;
   }
 }

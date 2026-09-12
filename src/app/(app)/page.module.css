@@ -621,3 +621,40 @@
     transform: translateY(var(--sheet-drag-offset, 0px));
   }
 }
+
+@media (min-width: 960px) {
+  .main {
+    max-width: 1120px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .hero,
+  .alerts,
+  .reviewSoon,
+  .summary,
+  .logout {
+    grid-column: 1 / -1;
+  }
+
+  .agenda,
+  .calendarAgenda {
+    min-width: 0;
+  }
+
+  .quickActions {
+    right: 32px;
+    bottom: 32px;
+    left: auto;
+  }
+
+  .sheet {
+    width: min(100%, 760px);
+  }
+}
+
+@media (min-width: 1280px) {
+  .main {
+    max-width: 1180px;
+  }
+}

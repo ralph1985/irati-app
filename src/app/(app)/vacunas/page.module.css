@@ -738,6 +738,23 @@
   }
 }
 
+@media (min-width: 960px) {
+  .main {
+    max-width: 1120px;
+    gap: 24px;
+  }
+
+  .sheet {
+    width: min(100%, 760px);
+  }
+}
+
+@media (min-width: 1280px) {
+  .main {
+    max-width: 1180px;
+  }
+}
+
 @keyframes sheetIn {
   from {
     opacity: 0.86;
