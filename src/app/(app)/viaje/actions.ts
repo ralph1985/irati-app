@@ -223,7 +223,7 @@ export async function createTravelChecklistCategoryAction(formData: FormData) {
   try {
     await newRepository().createTravelChecklistCategory(String(formData.get("label") ?? ""));
   } catch {
-    redirect("/viaje?error=save");
+    redirect(`${getTravelReturnPath(formData)}?error=save`);
   }
   invalidateTravelChecklistReads();
 }
@@ -237,7 +237,19 @@ export async function updateTravelChecklistCategoryAction(formData: FormData) {
       Number(formData.get("sortOrder") ?? 0),
     );
   } catch {
-    redirect("/viaje?error=save");
+    redirect(`${getTravelReturnPath(formData)}?error=save`);
+  }
+  invalidateTravelChecklistReads();
+}
+
+export async function reorderTravelChecklistCategoriesAction(formData: FormData) {
+  if (!(await hasValidSession())) redirect("/?error=session");
+  const slugs = parseTravelCategoryOrder(String(formData.get("slugs") ?? ""));
+  if (!slugs) redirect("/viaje/organizar?error=reorder");
+  try {
+    await newRepository().reorderTravelChecklistCategories(slugs);
+  } catch {
+    redirect("/viaje/organizar?error=reorder");
   }
   invalidateTravelChecklistReads();
 }
@@ -247,7 +259,7 @@ export async function deleteTravelChecklistCategoryAction(formData: FormData) {
   try {
     await newRepository().deleteTravelChecklistCategory(String(formData.get("slug") ?? ""));
   } catch {
-    redirect("/viaje?error=delete");
+    redirect(`${getTravelReturnPath(formData)}?error=delete`);
   }
   invalidateTravelChecklistReads();
 }
@@ -261,7 +273,7 @@ export async function createTravelStorageLocationAction(formData: FormData) {
       sortOrder: Number(formData.get("sortOrder") ?? 10),
     });
   } catch {
-    redirect("/viaje?error=save");
+    redirect(`${getTravelReturnPath(formData)}?error=save`);
   }
   invalidateTravelChecklistReads();
 }
@@ -275,7 +287,20 @@ export async function updateTravelStorageLocationAction(formData: FormData) {
       sortOrder: Number(formData.get("sortOrder") ?? 10),
     });
   } catch {
-    redirect("/viaje?error=save");
+    redirect(`${getTravelReturnPath(formData)}?error=save`);
+  }
+  invalidateTravelChecklistReads();
+}
+
+export async function reorderTravelStorageLocationsAction(formData: FormData) {
+  if (!(await hasValidSession())) redirect("/?error=session");
+  const parentId = String(formData.get("parentId") ?? "") || null;
+  const ids = parseTravelLocationOrder(String(formData.get("ids") ?? ""));
+  if (!ids) redirect("/viaje/organizar?error=reorder");
+  try {
+    await newRepository().reorderTravelStorageLocations(parentId, ids);
+  } catch {
+    redirect("/viaje/organizar?error=reorder");
   }
   invalidateTravelChecklistReads();
 }
@@ -285,7 +310,7 @@ export async function deleteTravelStorageLocationAction(formData: FormData) {
   try {
     await newRepository().deleteTravelStorageLocation(String(formData.get("id") ?? ""));
   } catch {
-    redirect("/viaje?error=delete");
+    redirect(`${getTravelReturnPath(formData)}?error=delete`);
   }
   invalidateTravelChecklistReads();
 }
@@ -323,6 +348,45 @@ async function getNextStorageSortOrder(
 function invalidateTravelChecklistReads() {
   updateTag(CACHE_TAGS.travelChecklistItems);
   revalidatePath("/viaje");
+  revalidatePath("/viaje/organizar");
+}
+
+function getTravelReturnPath(formData: FormData): "/viaje" | "/viaje/organizar" {
+  return formData.get("returnTo") === "/viaje/organizar" ? "/viaje/organizar" : "/viaje";
+}
+
+function parseTravelCategoryOrder(rawSlugs: string): string[] | null {
+  try {
+    const value: unknown = JSON.parse(rawSlugs);
+    if (
+      !Array.isArray(value) ||
+      value.length > 100 ||
+      !value.every((slug) => typeof slug === "string" && /^[a-z0-9_]+$/.test(slug)) ||
+      new Set(value).size !== value.length
+    ) {
+      return null;
+    }
+    return value;
+  } catch {
+    return null;
+  }
+}
+
+function parseTravelLocationOrder(rawIds: string): string[] | null {
+  try {
+    const value: unknown = JSON.parse(rawIds);
+    if (
+      !Array.isArray(value) ||
+      value.length > 100 ||
+      !value.every((id) => typeof id === "string" && id.length > 0) ||
+      new Set(value).size !== value.length
+    ) {
+      return null;
+    }
+    return value;
+  } catch {
+    return null;
+  }
 }
 
 function parseTravelChecklistReorder(rawItems: string): TravelChecklistReorder[] | null {

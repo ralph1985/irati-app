@@ -115,6 +115,35 @@ export class SupabaseTravelChecklistRepository implements TravelChecklistReposit
     }
   }
 
+  async reorderTravelChecklistCategories(orderedSlugs: string[]): Promise<void> {
+    const current = await this.listTravelChecklistCategories();
+    const currentSlugs = current.map((category) => category.slug).sort();
+    const requestedSlugs = [...orderedSlugs].sort();
+
+    if (
+      requestedSlugs.length !== currentSlugs.length ||
+      requestedSlugs.some((slug, index) => slug !== currentSlugs[index])
+    ) {
+      throw new Error("INVALID_CATEGORY_ORDER");
+    }
+
+    for (const [position, slug] of orderedSlugs.entries()) {
+      const { error } = await this.supabase
+        .from("travel_checklist_categories")
+        .update({ sort_order: 100000 + position })
+        .eq("slug", slug);
+      if (error) throw error;
+    }
+
+    for (const [position, slug] of orderedSlugs.entries()) {
+      const { error } = await this.supabase
+        .from("travel_checklist_categories")
+        .update({ sort_order: (position + 1) * 10, updated_at: new Date().toISOString() })
+        .eq("slug", slug);
+      if (error) throw error;
+    }
+  }
+
   async deleteTravelChecklistCategory(slug: string): Promise<void> {
     const { count, error: countError } = await this.supabase
       .from("travel_checklist_items")
@@ -167,6 +196,35 @@ export class SupabaseTravelChecklistRepository implements TravelChecklistReposit
       })
       .eq("id", id);
     if (error) throw error;
+  }
+
+  async reorderTravelStorageLocations(
+    parentId: string | null,
+    orderedIds: string[],
+  ): Promise<void> {
+    const current = await this.listTravelStorageLocations();
+    const siblings = current
+      .filter((location) => location.parentId === parentId)
+      .sort((first, second) => first.sortOrder - second.sortOrder);
+    const siblingIds = siblings.map((location) => location.id).sort();
+    const requestedIds = [...orderedIds].sort();
+
+    if (
+      requestedIds.length !== siblingIds.length ||
+      requestedIds.some((id, index) => id !== siblingIds[index])
+    ) {
+      throw new Error("INVALID_LOCATION_ORDER");
+    }
+
+    for (const [position, id] of orderedIds.entries()) {
+      let query = this.supabase
+        .from("travel_storage_locations")
+        .update({ sort_order: (position + 1) * 10, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      query = parentId === null ? query.is("parent_id", null) : query.eq("parent_id", parentId);
+      const { error } = await query;
+      if (error) throw error;
+    }
   }
 
   async deleteTravelStorageLocation(id: string): Promise<void> {

@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DragDropProvider, useDroppable } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
@@ -48,13 +49,7 @@ type TravelChecklistViewProps = {
   updateAction: (formData: FormData) => void | Promise<void>;
   reorderAction?: (formData: FormData) => void | Promise<void>;
   reorderStorageAction?: (formData: FormData) => void | Promise<void>;
-  createCategoryAction?: (formData: FormData) => void | Promise<void>;
-  updateCategoryAction?: (formData: FormData) => void | Promise<void>;
-  deleteCategoryAction?: (formData: FormData) => void | Promise<void>;
-  createLocationAction?: (formData: FormData) => void | Promise<void>;
-  updateLocationAction?: (formData: FormData) => void | Promise<void>;
-  deleteLocationAction?: (formData: FormData) => void | Promise<void>;
-  showOrganizationPanel?: boolean;
+  organizationHref?: string;
 };
 
 type TravelGroupItems = Record<string, string[]>;
@@ -68,13 +63,7 @@ export function TravelChecklistView({
   updateAction,
   reorderAction = async () => {},
   reorderStorageAction = async () => {},
-  createCategoryAction = async () => {},
-  updateCategoryAction = async () => {},
-  deleteCategoryAction = async () => {},
-  createLocationAction = async () => {},
-  updateLocationAction = async () => {},
-  deleteLocationAction = async () => {},
-  showOrganizationPanel = true,
+  organizationHref,
 }: TravelChecklistViewProps) {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<"prepare" | "location">("prepare");
@@ -138,19 +127,6 @@ export function TravelChecklistView({
   const reorderStorageActionWithRefresh = (formData: FormData) =>
     refreshAfterAction(reorderStorageAction, formData);
   const resetActionWithRefresh = () => refreshAfterNoArgAction(resetAction);
-  const createCategoryActionWithRefresh = (formData: FormData) =>
-    refreshAfterAction(createCategoryAction, formData);
-  const updateCategoryActionWithRefresh = (formData: FormData) =>
-    refreshAfterAction(updateCategoryAction, formData);
-  const deleteCategoryActionWithRefresh = (formData: FormData) =>
-    refreshAfterAction(deleteCategoryAction, formData);
-  const createLocationActionWithRefresh = (formData: FormData) =>
-    refreshAfterAction(createLocationAction, formData);
-  const updateLocationActionWithRefresh = (formData: FormData) =>
-    refreshAfterAction(updateLocationAction, formData);
-  const deleteLocationActionWithRefresh = (formData: FormData) =>
-    refreshAfterAction(deleteLocationAction, formData);
-
   function handleDeleteOnline(event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) {
     event.preventDefault();
     setOptimisticDeletedIds((current) => new Set(current).add(item.id));
@@ -547,17 +523,10 @@ export function TravelChecklistView({
         updateAction={updateActionWithRefresh}
         locations={checklist.locations ?? []}
       />
-      {showOrganizationPanel ? (
-        <TravelOrganizationPanel
-          categories={checklist.categories}
-          locations={checklist.locations ?? []}
-          createCategoryAction={createCategoryActionWithRefresh}
-          updateCategoryAction={updateCategoryActionWithRefresh}
-          deleteCategoryAction={deleteCategoryActionWithRefresh}
-          createLocationAction={createLocationActionWithRefresh}
-          updateLocationAction={updateLocationActionWithRefresh}
-          deleteLocationAction={deleteLocationActionWithRefresh}
-        />
+      {organizationHref ? (
+        <Link className={styles.organizationLink} href={organizationHref}>
+          Organizar la lista
+        </Link>
       ) : null}
     </>
   );
@@ -1303,159 +1272,6 @@ function TravelStorageItemRow({
         pending={pending}
       />
     </li>
-  );
-}
-
-function TravelOrganizationPanel({
-  categories,
-  locations,
-  createCategoryAction,
-  updateCategoryAction,
-  deleteCategoryAction,
-  createLocationAction,
-  updateLocationAction,
-  deleteLocationAction,
-}: {
-  categories: TravelChecklistCategoryDefinition[];
-  locations: TravelStorageLocation[];
-  createCategoryAction: (formData: FormData) => void | Promise<void>;
-  updateCategoryAction: (formData: FormData) => void | Promise<void>;
-  deleteCategoryAction: (formData: FormData) => void | Promise<void>;
-  createLocationAction: (formData: FormData) => void | Promise<void>;
-  updateLocationAction: (formData: FormData) => void | Promise<void>;
-  deleteLocationAction: (formData: FormData) => void | Promise<void>;
-}) {
-  return (
-    <details className={styles.panel}>
-      <summary className={styles.sectionTitle}>
-        <h2>Organizar la lista</h2>
-        <span>Editar categorías y ubicaciones</span>
-      </summary>
-      <div className={styles.organizationGrid}>
-        <section aria-labelledby="travel-categories-title">
-          <h3 id="travel-categories-title">Categorías de preparación</h3>
-          {categories.map((category) => (
-            <form
-              action={updateCategoryAction}
-              className={styles.organizationRow}
-              key={category.slug}
-            >
-              <input name="slug" type="hidden" value={category.slug} />
-              <input
-                aria-label={`Nombre de ${category.label}`}
-                maxLength={80}
-                name="label"
-                required
-                defaultValue={category.label}
-              />
-              <input
-                aria-label={`Orden de ${category.label}`}
-                min="0"
-                name="sortOrder"
-                type="number"
-                defaultValue={category.sortOrder}
-              />
-              <PendingSubmitButton title="Guardar categoría" type="submit">
-                ✓
-              </PendingSubmitButton>
-              <ConfirmSubmit
-                action={deleteCategoryAction}
-                message={`¿Borrar la categoría “${category.label}”? Primero debe estar vacía.`}
-              >
-                <input name="slug" type="hidden" value={category.slug} />
-                <PendingSubmitButton
-                  className={styles.dangerIconButton}
-                  title="Borrar categoría"
-                  type="submit"
-                >
-                  ×
-                </PendingSubmitButton>
-              </ConfirmSubmit>
-            </form>
-          ))}
-          <form action={createCategoryAction} className={styles.inlineCreate}>
-            <input maxLength={80} name="label" placeholder="Nueva categoría" required />
-            <PendingSubmitButton type="submit">Añadir</PendingSubmitButton>
-          </form>
-        </section>
-        <section aria-labelledby="travel-locations-title">
-          <h3 id="travel-locations-title">Dónde está guardado</h3>
-          {locations.map((location) => (
-            <form
-              action={updateLocationAction}
-              className={styles.organizationRow}
-              key={location.id}
-            >
-              <input name="id" type="hidden" value={location.id} />
-              <input
-                aria-label={`Nombre de ${location.label}`}
-                maxLength={80}
-                name="label"
-                required
-                defaultValue={location.label}
-              />
-              <select
-                aria-label={`Contenedor de ${location.label}`}
-                name="parentId"
-                defaultValue={location.parentId ?? ""}
-              >
-                <option value="">Principal</option>
-                {locations
-                  .filter((candidate) => candidate.id !== location.id)
-                  .map((candidate) => (
-                    <option key={candidate.id} value={candidate.id}>
-                      {candidate.label}
-                    </option>
-                  ))}
-              </select>
-              <input
-                aria-label={`Orden de ${location.label}`}
-                min="0"
-                name="sortOrder"
-                type="number"
-                defaultValue={location.sortOrder}
-              />
-              <PendingSubmitButton title="Guardar ubicación" type="submit">
-                ✓
-              </PendingSubmitButton>
-              <ConfirmSubmit
-                action={deleteLocationAction}
-                message={`¿Borrar “${location.label}”? Primero debe estar vacía.`}
-              >
-                <input name="id" type="hidden" value={location.id} />
-                <PendingSubmitButton
-                  className={styles.dangerIconButton}
-                  title="Borrar ubicación"
-                  type="submit"
-                >
-                  ×
-                </PendingSubmitButton>
-              </ConfirmSubmit>
-            </form>
-          ))}
-          <form action={createLocationAction} className={styles.inlineCreate}>
-            <input
-              maxLength={80}
-              name="label"
-              placeholder="Bolso, bolsa o compartimento"
-              required
-            />
-            <select name="parentId">
-              <option value="">Principal</option>
-              {locations
-                .filter((location) => !location.parentId)
-                .map((location) => (
-                  <option key={location.id} value={location.id}>
-                    {location.label}
-                  </option>
-                ))}
-            </select>
-            <input min="0" name="sortOrder" type="number" defaultValue="10" />
-            <PendingSubmitButton type="submit">Añadir</PendingSubmitButton>
-          </form>
-        </section>
-      </div>
-    </details>
   );
 }
 

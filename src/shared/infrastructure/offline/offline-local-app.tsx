@@ -794,7 +794,6 @@ function OfflineTravelScreen({ snapshot }: { snapshot: OfflineSnapshot }) {
         resetAction={noopAction}
         setPackedAction={noopAction}
         updateAction={noopAction}
-        showOrganizationPanel={false}
       />
     </main>
   );

@@ -12,12 +12,6 @@ import {
   reorderTravelChecklistItemsByLocationAction,
   setTravelChecklistItemPackedAction,
   updateTravelChecklistItemAction,
-  createTravelChecklistCategoryAction,
-  updateTravelChecklistCategoryAction,
-  deleteTravelChecklistCategoryAction,
-  createTravelStorageLocationAction,
-  updateTravelStorageLocationAction,
-  deleteTravelStorageLocationAction,
 } from "./actions";
 import styles from "./page.module.css";
 
@@ -86,12 +80,7 @@ export default async function TravelPage({ searchParams }: TravelPageProps) {
         reorderStorageAction={reorderTravelChecklistItemsByLocationAction}
         setPackedAction={setTravelChecklistItemPackedAction}
         updateAction={updateTravelChecklistItemAction}
-        createCategoryAction={createTravelChecklistCategoryAction}
-        updateCategoryAction={updateTravelChecklistCategoryAction}
-        deleteCategoryAction={deleteTravelChecklistCategoryAction}
-        createLocationAction={createTravelStorageLocationAction}
-        updateLocationAction={updateTravelStorageLocationAction}
-        deleteLocationAction={deleteTravelStorageLocationAction}
+        organizationHref="/viaje/organizar"
       />
     </main>
   );
