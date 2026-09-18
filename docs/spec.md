@@ -41,7 +41,7 @@ Backups:
 - `pnpm backup:supabase` genera un archivo `irati-supabase-<timestamp>.sql.tar.gz` en `var/backups/supabase/`.
 - El archivo contiene `schema.sql`, `data.sql` y `manifest.txt`.
 - `schema.sql` concatena las migraciones versionadas del repositorio.
-- `data.sql` contiene los datos actuales de `baby_profiles`, `planned_vaccine_doses`, `weight_entries`, `height_entries`, `head_circumference_entries`, `applied_vaccine_doses`, `sleep_entries`, `travel_checklist_categories`, `travel_checklist_items` y `developer_backup_runs`.
+- `data.sql` contiene los datos actuales de `baby_profiles`, `planned_vaccine_doses`, `weight_entries`, `height_entries`, `head_circumference_entries`, `applied_vaccine_doses`, `sleep_entries`, `travel_checklist_categories`, `travel_storage_locations`, `travel_checklist_items` y `developer_backup_runs`.
 - Los archivos generados y logs viven en `var/` y no se suben a Git.
 - La retencion local por defecto es de 14 dias, configurable con `IRATI_SUPABASE_BACKUP_RETENTION_DAYS`.
 - `pnpm backup:supabase:cron:install` instala un cron diario a las 00:00 por defecto.

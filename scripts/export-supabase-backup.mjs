@@ -95,6 +95,13 @@ const tableDefinitions = [
     conflictColumns: ["slug"],
   },
   {
+    name: "travel_storage_locations",
+    order: "parent_id.asc.nullsfirst,sort_order.asc,created_at.asc",
+    columns: ["id", "label", "parent_id", "sort_order", "created_at", "updated_at"],
+    conflictColumns: ["id"],
+    optionalBeforeMigration: true,
+  },
+  {
     name: "travel_checklist_items",
     order: "category.asc,sort_order.asc,created_at.asc",
     columns: [
@@ -104,6 +111,8 @@ const tableDefinitions = [
       "sort_order",
       "is_packed",
       "notes",
+      "storage_location_id",
+      "storage_sort_order",
       "created_at",
       "updated_at",
     ],
@@ -247,6 +256,7 @@ function buildDataSql(rowsByTable) {
     "delete from public.applied_vaccine_doses;",
     "delete from public.sleep_entries;",
     "delete from public.travel_checklist_items;",
+    "delete from public.travel_storage_locations;",
     "delete from public.travel_checklist_categories;",
     "delete from public.weight_entries;",
     "delete from public.height_entries;",
