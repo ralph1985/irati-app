@@ -26,6 +26,13 @@ describe("FriendsView", () => {
     expect(html).not.toMatch(/<details[^>]*\bopen(?:=|\s|>)/);
   });
 
+  it("renders a search field for parents and children", () => {
+    const html = renderToStaticMarkup(<FriendsView groups={groups} />);
+
+    expect(html).toMatch(/<input[^>]*type="search"/);
+    expect(html).toContain("Buscar por padres o niños");
+  });
+
   it("renders group, adult context and highlighted children", () => {
     const html = renderToStaticMarkup(<FriendsView groups={groups} />);
 

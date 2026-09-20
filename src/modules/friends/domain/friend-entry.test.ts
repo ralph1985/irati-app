@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupFriendEntries, type FriendEntry } from "./friend-entry";
+import { filterFriendGroups, groupFriendEntries, type FriendEntry } from "./friend-entry";
 
 const entries: FriendEntry[] = [
   {
@@ -43,5 +43,22 @@ describe("groupFriendEntries", () => {
     const source = [...entries];
     groupFriendEntries(source);
     expect(source).toEqual(entries);
+  });
+
+  it("filters entries by parents or children without accents", () => {
+    const groups = groupFriendEntries(entries);
+
+    expect(filterFriendGroups(groups, "nina d")).toEqual([
+      {
+        label: "Grupo A",
+        entries: [entries[2]],
+      },
+    ]);
+    expect(filterFriendGroups(groups, "familia sin grupo")).toEqual([
+      {
+        label: "Sin grupo",
+        entries: [entries[1]],
+      },
+    ]);
   });
 });

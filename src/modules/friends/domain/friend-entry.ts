@@ -24,3 +24,28 @@ export function groupFriendEntries(entries: FriendEntry[]): FriendGroup[] {
 
   return [...groups.values()];
 }
+
+export function filterFriendGroups(groups: FriendGroup[], query: string): FriendGroup[] {
+  const normalizedQuery = normalizeSearchText(query);
+
+  if (!normalizedQuery) return groups;
+
+  return groups
+    .map((group) => ({
+      ...group,
+      entries: group.entries.filter((entry) =>
+        [entry.adultsLabel, entry.childrenLabel].some((label) =>
+          normalizeSearchText(label).includes(normalizedQuery),
+        ),
+      ),
+    }))
+    .filter((group) => group.entries.length > 0);
+}
+
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}

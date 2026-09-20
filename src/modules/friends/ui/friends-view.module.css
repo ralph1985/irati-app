@@ -5,6 +5,42 @@
   margin: 0 auto;
 }
 
+.searchPanel {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 16px 18px;
+  box-shadow: 0 10px 26px rgba(76, 29, 149, 0.06);
+}
+
+.searchLabel {
+  color: #3d1f58;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.searchInput {
+  width: 100%;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: 12px;
+  background: #fff;
+  color: #3d1f58;
+  font: inherit;
+  font-size: 16px;
+  padding: 11px 12px;
+}
+
+.searchInput::placeholder {
+  color: #a493b1;
+}
+
+.searchInput:focus-visible {
+  outline: 3px solid rgba(124, 58, 237, 0.28);
+  outline-offset: 2px;
+}
+
 .group {
   border: 1px solid rgba(124, 58, 237, 0.12);
   border-radius: 24px;
