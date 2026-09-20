@@ -43,6 +43,7 @@ describe("Irati offline database", () => {
   it("starts with an empty snapshot and no sync timestamp", async () => {
     await expect(readOfflineSnapshot()).resolves.toEqual({
       appliedVaccineDoses: [],
+      friendEntries: [],
       headCircumferenceEntries: [],
       heightEntries: [],
       plannedVaccineDoses: [],
@@ -57,7 +58,7 @@ describe("Irati offline database", () => {
       lastError: null,
       lastSuccessfulSyncAt: null,
       offlineAccessGranted: false,
-      schemaVersion: 9,
+      schemaVersion: 10,
     });
   });
 
@@ -74,6 +75,15 @@ describe("Irati offline database", () => {
             place: "Centro de salud",
             plannedDoseId: "planned-1",
             vaccineName: "Hexavalente",
+          },
+        ],
+        friendEntries: [
+          {
+            adultsLabel: "Familia local",
+            childrenLabel: "Niño local",
+            groupLabel: "Grupo local",
+            id: "friend-1",
+            sortOrder: 10,
           },
         ],
         plannedVaccineDoses: [
@@ -117,6 +127,7 @@ describe("Irati offline database", () => {
 
     await expect(readOfflineSnapshot()).resolves.toMatchObject({
       appliedVaccineDoses: [{ id: "applied-1" }],
+      friendEntries: [{ id: "friend-1" }],
       plannedVaccineDoses: [{ id: "planned-1" }],
       profile: { name: "Irati" },
       travelChecklistItems: [{ id: "travel-1" }],
@@ -125,7 +136,7 @@ describe("Irati offline database", () => {
     await expect(readSyncMetadata()).resolves.toMatchObject({
       lastSuccessfulSyncAt: "2026-07-23T10:00:00.000Z",
       offlineAccessGranted: true,
-      schemaVersion: 9,
+      schemaVersion: 10,
     });
   });
 
@@ -133,6 +144,7 @@ describe("Irati offline database", () => {
     await replaceOfflineSnapshot(
       {
         appliedVaccineDoses: [],
+        friendEntries: [],
         plannedVaccineDoses: [],
         profile: { birthDate: "2026-07-02", cipa: null, name: "Irati" },
         travelChecklistItems: [],
@@ -141,11 +153,11 @@ describe("Irati offline database", () => {
       },
       "2026-07-23T10:00:00.000Z",
     );
-
     await clearOfflineData();
 
     await expect(readOfflineSnapshot()).resolves.toEqual({
       appliedVaccineDoses: [],
+      friendEntries: [],
       headCircumferenceEntries: [],
       heightEntries: [],
       plannedVaccineDoses: [],
@@ -166,6 +178,7 @@ describe("Irati offline database", () => {
     await replaceOfflineSnapshot(
       {
         appliedVaccineDoses: [],
+        friendEntries: [],
         plannedVaccineDoses: [],
         profile: { birthDate: "2026-07-02", cipa: null, name: "Irati" },
         travelChecklistItems: [],

@@ -54,6 +54,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      friend_entries: {
+        Row: {
+          id: string;
+          group_label: string | null;
+          adults_label: string;
+          children_label: string;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          group_label?: string | null;
+          adults_label: string;
+          children_label: string;
+          sort_order: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          group_label?: string | null;
+          adults_label?: string;
+          children_label?: string;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       baby_profiles: {
         Row: {
           id: string;

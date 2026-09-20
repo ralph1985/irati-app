@@ -19,6 +19,7 @@ Incluido:
 - PWA instalable desde el inicio.
 - Estilo visual familiar, suave y luminoso, con morado como color principal.
 - Navegacion inferior con Inicio, Peso, Medidas, Vacunas, Sueño, Viaje, Calendario y Ajustes.
+- Menu autenticado de Amigos en `/amigos`, con el listado inicial agrupado por procedencia.
 - Registro de peso.
 - Grafica simple de peso.
 - Filtro de peso por lugar.
@@ -415,6 +416,28 @@ Criterios de aceptacion:
 - Puedo cambiar entre la vista de preparacion y la vista por ubicacion sin perder el estado preparado.
 - Puedo crear, renombrar, ordenar y borrar categorias y ubicaciones vacias.
 
+### Amigos de Irati
+
+La pantalla `/amigos` muestra el listado privado de familias y nombres de amigos de Irati para facilitar su memorización.
+
+Reglas:
+
+- La pantalla requiere una sesión válida.
+- Cada entrada conserva el contexto de adultos, el nombre o nombres de niños y su orden original.
+- Las entradas se agrupan por el primer orden de aparición de cada grupo.
+- Una entrada sin grupo se muestra bajo «Sin grupo».
+- La primera versión es de solo lectura: no permite editar, borrar, añadir, buscar, filtrar ni adjuntar fotos o notas.
+- El listado remoto vive en `friend_entries` y se incluye en el snapshot local después de una sincronización autenticada.
+- El listado forma parte de las copias de seguridad de Supabase.
+
+Criterios de aceptación:
+
+- Puedo abrir `/amigos` tras autenticarme.
+- Veo los grupos y las entradas en el mismo orden que el listado inicial.
+- Veo destacado el nombre o nombres de los niños y el contexto de adultos.
+- Puedo consultar el listado desde la copia offline preparada del dispositivo.
+- No veo datos privados del listado antes de autenticarme.
+
 ## Pantallas iniciales
 
 El MVP debe cubrir estas superficies:
@@ -451,15 +474,17 @@ Pestañas iniciales:
 
 - Inicio.
 - Peso.
+- Medidas.
 - Vacunas.
 - Sueño.
 - Viaje.
+- Amigos.
 - Calendario.
 - Ajustes.
 
-La estructura puede crecer despues con mas pestañas o menus secundarios, pero el MVP parte de estas siete.
+La estructura puede crecer despues con mas pestañas o menus secundarios, pero el MVP parte de estas nueve.
 
-La transicion entre pestañas principales usa una animacion lateral ligera sobre el contenido, manteniendo fijo el menu inferior. La direccion sigue el orden Inicio, Peso, Medidas, Vacunas, Sueño, Viaje, Calendario y Ajustes. La animacion no se aplica a login, logout, modales, filtros ni cambios de query, y debe desactivarse cuando el usuario prefiera reducir movimiento.
+La transicion entre pestañas principales usa una animacion lateral ligera sobre el contenido, manteniendo fijo el menu inferior. La direccion sigue el orden Inicio, Peso, Medidas, Vacunas, Sueño, Viaje, Amigos, Calendario y Ajustes. La animacion no se aplica a login, logout, modales, filtros ni cambios de query, y debe desactivarse cuando el usuario prefiera reducir movimiento.
 
 ### Inicio
 
@@ -619,6 +644,7 @@ Tablas previstas, pendientes de concretar en `docs/database-schema.md`:
 - `vaccine_plans`.
 - `vaccine_applications` o campos de aplicacion en la planificacion.
 - `travel_checklist_items`.
+- `friend_entries`.
 - Tabla o mecanismo para sesion/rate limit si fuera necesario.
 
 ## Testing

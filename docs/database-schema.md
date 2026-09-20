@@ -159,6 +159,24 @@ Indices:
 - `applied_vaccine_doses_applied_on_idx`
 - `applied_vaccine_doses_planned_dose_id_unique`, unico parcial para evitar mas de una aplicacion vinculada a la misma dosis planificada.
 
+## `friend_entries`
+
+Listado privado de familias y nombres de amigos de Irati. La clave textual estable conserva el orden y permite que el seed sea idempotente en backups.
+
+Migración: `supabase/migrations/20260920170000_create_friend_entries.sql`.
+
+| Campo            | Tipo          | Regla                                        |
+| ---------------- | ------------- | -------------------------------------------- |
+| `id`             | `text`        | Primary key estable                          |
+| `group_label`    | `text`        | Opcional; `null` se muestra como «Sin grupo» |
+| `adults_label`   | `text`        | Contexto de adultos obligatorio              |
+| `children_label` | `text`        | Nombre o nombres de niños obligatorios       |
+| `sort_order`     | `integer`     | Orden original positivo                      |
+| `created_at`     | `timestamptz` | `now()`                                      |
+| `updated_at`     | `timestamptz` | `now()`                                      |
+
+La tabla tiene RLS activado y no concede acceso directo a `anon` ni `authenticated`; la pantalla `/amigos` la lee mediante el servidor. La primera versión no permite editar estos registros desde la UI.
+
 ## `developer_backup_runs`
 
 Registro tecnico de las copias locales de Supabase.

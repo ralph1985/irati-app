@@ -119,6 +119,21 @@ const tableDefinitions = [
     conflictColumns: ["id"],
   },
   {
+    name: "friend_entries",
+    order: "sort_order.asc",
+    columns: [
+      "id",
+      "group_label",
+      "adults_label",
+      "children_label",
+      "sort_order",
+      "created_at",
+      "updated_at",
+    ],
+    conflictColumns: ["id"],
+    optionalBeforeMigration: true,
+  },
+  {
     name: "developer_backup_runs",
     order: "created_at.asc",
     columns: [
@@ -258,6 +273,7 @@ function buildDataSql(rowsByTable) {
     "delete from public.travel_checklist_items;",
     "delete from public.travel_storage_locations;",
     "delete from public.travel_checklist_categories;",
+    "delete from public.friend_entries;",
     "delete from public.weight_entries;",
     "delete from public.height_entries;",
     "delete from public.head_circumference_entries;",

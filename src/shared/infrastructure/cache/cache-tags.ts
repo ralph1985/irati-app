@@ -1,4 +1,5 @@
 export const CACHE_TAGS = {
+  friends: "irati:friends",
   growthEntries: "irati:growth-entries",
   profile: "irati:profile",
   sleepEntries: "irati:sleep-entries",

@@ -20,6 +20,7 @@ const tabs = [
   { href: "/vacunas", icon: "vaccine", label: "Vacunas" },
   { href: "/sueno", icon: "sleep", label: "Sueño" },
   { href: "/viaje", icon: "bag", label: "Viaje" },
+  { href: "/amigos", icon: "friends", label: "Amigos" },
   { href: "/calendario", icon: "calendar", label: "Calendario" },
   { href: "/ajustes", icon: "settings", label: "Ajustes" },
 ] as const;
@@ -260,6 +261,14 @@ function TabIcon({ name }: { name: TabIcon }) {
           <path d="M6.5 8.5h11L19 20H5L6.5 8.5Z" />
           <path d="M9 8.5a3 3 0 0 1 6 0" />
           <path d="m9.5 14 1.8 1.8 3.7-4" />
+        </svg>
+      );
+    case "friends":
+      return (
+        <svg aria-hidden="true" className={styles.navIcon} viewBox="0 0 24 24">
+          <circle cx="9" cy="8" r="3" />
+          <path d="M3.5 19a5.5 5.5 0 0 1 11 0" />
+          <path d="M15.5 5.5a2.7 2.7 0 0 1 0 5.2M17 13.3a5.2 5.2 0 0 1 3.5 4.9" />
         </svg>
       );
     case "settings":

@@ -1,0 +1,41 @@
+.main {
+  width: min(100%, 900px);
+  margin: 0 auto;
+}
+
+.header {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.header p {
+  margin: 0;
+  color: #806b90;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  margin: 0;
+  color: #3d1f58;
+  font-size: clamp(30px, 8vw, 48px);
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.header span {
+  color: #705982;
+  font-size: 15px;
+}
+
+.error {
+  margin: 0 0 18px;
+  border: 1px solid rgba(185, 28, 28, 0.18);
+  border-radius: 16px;
+  background: rgba(254, 242, 242, 0.88);
+  color: #991b1b;
+  padding: 12px 14px;
+}

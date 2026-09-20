@@ -37,6 +37,8 @@ import { WeightCreateSheet } from "@/modules/weight/ui/weight-create-sheet";
 import { WeightHistory } from "@/modules/weight/ui/weight-history";
 import { SleepView } from "@/modules/sleep/ui/sleep-view";
 import type { SleepEntry, SleepKind } from "@/modules/sleep/domain/sleep-entry";
+import { groupFriendEntries } from "@/modules/friends/domain/friend-entry";
+import { FriendsView } from "@/modules/friends/ui/friends-view";
 import {
   toggleSleepEntry,
   type ToggleSleepResult,
@@ -80,6 +82,7 @@ type OfflineRoute =
   | "/sueno"
   | "/sueno/atajo"
   | "/viaje"
+  | "/amigos"
   | "/calendario"
   | "/ajustes";
 
@@ -92,6 +95,7 @@ const tabs: Array<{ href: OfflineRoute; label: string }> = [
   { href: "/vacunas", label: "Vacunas" },
   { href: "/sueno", label: "Sueño" },
   { href: "/viaje", label: "Viaje" },
+  { href: "/amigos", label: "Amigos" },
   { href: "/calendario", label: "Calendario" },
   { href: "/ajustes", label: "Ajustes" },
 ];
@@ -257,6 +261,8 @@ function renderRoute(
       return <OfflineQuickSleepScreen search={search} snapshot={snapshot} />;
     case "/viaje":
       return <OfflineTravelScreen snapshot={snapshot} />;
+    case "/amigos":
+      return <FriendsView groups={groupFriendEntries(snapshot.friendEntries)} />;
     case "/calendario":
       return <OfflineCalendarScreen snapshot={calendarSnapshot} />;
     case "/ajustes":
@@ -953,6 +959,7 @@ function toOfflineRoute(pathname: string): OfflineRoute {
     pathname === "/sueno" ||
     pathname === "/sueno/atajo" ||
     pathname === "/viaje" ||
+    pathname === "/amigos" ||
     pathname === "/calendario" ||
     pathname === "/ajustes"
   ) {

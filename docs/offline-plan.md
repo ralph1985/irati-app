@@ -4,7 +4,7 @@ Este documento guia la conversion de Irati a una experiencia offline-first sin r
 
 ## Objetivo
 
-- Permitir que la PWA instalada abra las mismas URLs (`/`, `/peso`, `/vacunas`, `/viaje` y `/ajustes`) y muestre la ultima copia disponible cuando no haya conexion.
+- Permitir que la PWA instalada abra las mismas URLs (`/`, `/peso`, `/medidas`, `/vacunas`, `/viaje`, `/amigos` y `/ajustes`) y muestre la ultima copia disponible cuando no haya conexion.
 - Permitir datos locales offline solo en dispositivos con una sesion online valida previa y sin logout posterior.
 - Usar IndexedDB como fuente local de lectura y como destino inmediato de escritura local-first.
 - Sincronizar Supabase en segundo plano al recuperar conexion o cuando haya red disponible.
@@ -30,7 +30,7 @@ Este documento guia la conversion de Irati a una experiencia offline-first sin r
 
 ## Estado Actual
 
-- Irati es una PWA instalable con Dexie, Serwist, snapshot local y colas de mutacion para Peso, Viaje y Vacunas.
+- Irati es una PWA instalable con Dexie, Serwist, snapshot local y colas de mutacion para Peso, Viaje y Vacunas; Amigos se incorpora como lectura offline.
 - El fallback `/~offline` renderiza un shell local que decide la pantalla por `window.location.pathname`, conserva las URLs principales y lee desde IndexedDB.
 - Las pantallas online mantienen Server Components y repositorios cacheados de servidor durante la transicion.
 - Las escrituras de Peso, Viaje y Vacunas tienen camino offline con IndexedDB, cola local y endpoints autenticados de sincronizacion.
@@ -80,7 +80,7 @@ Estado: implementacion lista. Pendiente de validacion manual en PWA instalada.
 Tareas:
 
 - [x] Instalar Dexie y Serwist.
-- [x] Crear storage local con tablas para `baby_profiles`, `weight_entries`, `height_entries`, `head_circumference_entries`, `planned_vaccine_doses`, `applied_vaccine_doses`, `travel_checklist_items` y `sync_metadata`.
+- [x] Crear storage local con tablas para `baby_profiles`, `weight_entries`, `height_entries`, `head_circumference_entries`, `planned_vaccine_doses`, `applied_vaccine_doses`, `travel_checklist_items`, `friend_entries` y `sync_metadata`.
 - [x] Añadir tests del storage local para snapshot vacio, reemplazo completo y limpieza en logout.
 - [x] Configurar Serwist con registro manual, fallback offline y cache restrictiva de assets.
 - [x] Precachear el fallback `/~offline`.
@@ -95,7 +95,7 @@ Tareas:
 - [x] Mantener las escrituras online con Server Actions como ahora.
 - [x] Guardar marcador local `offlineAccessGranted` tras hidratacion autenticada.
 - [x] Bloquear datos privados offline si el dispositivo no tiene marcador local y snapshot valido.
-- [x] Renderizar `/`, `/peso`, `/medidas`, `/vacunas`, `/viaje` y `/ajustes` desde el shell local cuando el service worker sirve `/~offline`.
+- [x] Renderizar `/`, `/peso`, `/medidas`, `/vacunas`, `/viaje`, `/amigos` y `/ajustes` desde el shell local cuando el service worker sirve `/~offline`.
 
 Gate:
 

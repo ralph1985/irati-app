@@ -346,6 +346,19 @@ El modo offline-first se implementa por fases segun [`docs/offline-plan.md`](off
 - [ ] Aplicar migración y verificar los registros iniciales en Supabase remoto.
 - [ ] Ejecutar validación automática completa y prueba manual en PWA instalada.
 
+## Hito 23 - Amigos de Irati
+
+- [x] Definir el contrato de consulta del listado en `docs/spec.md`.
+- [x] Crear tabla privada `friend_entries` con el listado inicial.
+- [x] Crear dominio, caso de uso y adaptador Supabase de solo lectura.
+- [x] Mostrar la pantalla autenticada `/amigos` agrupada por procedencia.
+- [x] Añadir Amigos a la navegación online.
+- [x] Incluir Amigos en el snapshot y la navegación offline.
+- [x] Incluir `friend_entries` en backups.
+- [x] Añadir tests de dominio, caso de uso, UI e IndexedDB.
+- [ ] Aplicar la migración y verificar los 24 registros en Supabase remoto.
+- [ ] Ejecutar validación automática completa y prueba manual offline.
+
 ## Fuera del MVP inicial
 
 - Exportacion o impresion para pediatra.

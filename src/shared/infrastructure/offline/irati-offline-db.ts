@@ -16,6 +16,7 @@ import type {
 import type { WeightEntry } from "@/modules/weight/domain/weight-entry";
 import type { HeadCircumferenceEntry, HeightEntry } from "@/modules/growth/domain/growth-entry";
 import type { SleepEntry } from "@/modules/sleep/domain/sleep-entry";
+import type { FriendEntry } from "@/modules/friends/domain/friend-entry";
 
 export type OfflineSnapshot = {
   profile: BabyProfile | null;
@@ -25,6 +26,7 @@ export type OfflineSnapshot = {
   sleepEntries?: SleepEntry[];
   plannedVaccineDoses: PlannedVaccineDose[];
   appliedVaccineDoses: AppliedVaccineDose[];
+  friendEntries: FriendEntry[];
   travelChecklistItems: TravelChecklistItem[];
   travelChecklistCategories?: TravelChecklistCategoryDefinition[];
   travelStorageLocations?: TravelStorageLocation[];
@@ -130,7 +132,7 @@ type StoredBabyProfile = BabyProfile & {
   id: "irati";
 };
 
-const currentSchemaVersion = 9;
+const currentSchemaVersion = 10;
 const profileId = "irati";
 const metadataId = "main";
 
@@ -142,6 +144,7 @@ class IratiOfflineDatabase extends Dexie {
   sleepEntries!: Table<SleepEntry, string>;
   plannedVaccineDoses!: Table<PlannedVaccineDose, string>;
   appliedVaccineDoses!: Table<AppliedVaccineDose, string>;
+  friendEntries!: Table<FriendEntry, string>;
   travelChecklistItems!: Table<TravelChecklistItem, string>;
   travelChecklistCategories!: Table<TravelChecklistCategoryDefinition, string>;
   travelStorageLocations!: Table<TravelStorageLocation, string>;
@@ -155,6 +158,7 @@ class IratiOfflineDatabase extends Dexie {
     this.version(currentSchemaVersion).stores({
       appliedVaccineDoses: "id, plannedDoseId, appliedOn",
       babyProfiles: "id",
+      friendEntries: "id, groupLabel, sortOrder",
       pendingMutations: "id, entity, operation, createdAt",
       plannedVaccineDoses: "id, plannedDate",
       syncMetadata: "id",
@@ -201,6 +205,7 @@ export async function replaceOfflineSnapshot(
       iratiOfflineDb.sleepEntries,
       iratiOfflineDb.plannedVaccineDoses,
       iratiOfflineDb.appliedVaccineDoses,
+      iratiOfflineDb.friendEntries,
       iratiOfflineDb.travelChecklistItems,
       iratiOfflineDb.travelChecklistCategories,
       iratiOfflineDb.travelStorageLocations,
@@ -215,6 +220,7 @@ export async function replaceOfflineSnapshot(
       await iratiOfflineDb.sleepEntries.clear();
       await iratiOfflineDb.plannedVaccineDoses.clear();
       await iratiOfflineDb.appliedVaccineDoses.clear();
+      await iratiOfflineDb.friendEntries.clear();
       await iratiOfflineDb.travelChecklistItems.clear();
       await iratiOfflineDb.travelChecklistCategories.clear();
       await iratiOfflineDb.travelStorageLocations.clear();
@@ -233,6 +239,7 @@ export async function replaceOfflineSnapshot(
       await iratiOfflineDb.sleepEntries.bulkPut(snapshot.sleepEntries ?? []);
       await iratiOfflineDb.plannedVaccineDoses.bulkPut(snapshot.plannedVaccineDoses);
       await iratiOfflineDb.appliedVaccineDoses.bulkPut(snapshot.appliedVaccineDoses);
+      await iratiOfflineDb.friendEntries.bulkPut(snapshot.friendEntries);
       await iratiOfflineDb.travelChecklistItems.bulkPut(snapshot.travelChecklistItems);
       await iratiOfflineDb.travelChecklistCategories.bulkPut(
         snapshot.travelChecklistCategories ?? [],
@@ -258,6 +265,7 @@ export async function readOfflineSnapshot(): Promise<OfflineSnapshot> {
     sleepEntries,
     plannedVaccineDoses,
     appliedVaccineDoses,
+    friendEntries,
     travelChecklistItems,
     travelChecklistCategories,
     travelStorageLocations,
@@ -269,6 +277,7 @@ export async function readOfflineSnapshot(): Promise<OfflineSnapshot> {
     iratiOfflineDb.sleepEntries.orderBy("startedAt").reverse().toArray(),
     iratiOfflineDb.plannedVaccineDoses.orderBy("plannedDate").toArray(),
     iratiOfflineDb.appliedVaccineDoses.orderBy("appliedOn").toArray(),
+    iratiOfflineDb.friendEntries.orderBy("sortOrder").toArray(),
     iratiOfflineDb.travelChecklistItems.orderBy("sortOrder").toArray(),
     iratiOfflineDb.travelChecklistCategories.orderBy("sortOrder").toArray(),
     iratiOfflineDb.travelStorageLocations.orderBy("sortOrder").toArray(),
@@ -276,6 +285,7 @@ export async function readOfflineSnapshot(): Promise<OfflineSnapshot> {
 
   return {
     appliedVaccineDoses,
+    friendEntries,
     plannedVaccineDoses,
     profile: profile
       ? {
@@ -600,6 +610,7 @@ export async function clearOfflineData(): Promise<void> {
       iratiOfflineDb.sleepEntries,
       iratiOfflineDb.plannedVaccineDoses,
       iratiOfflineDb.appliedVaccineDoses,
+      iratiOfflineDb.friendEntries,
       iratiOfflineDb.travelChecklistItems,
       iratiOfflineDb.travelChecklistCategories,
       iratiOfflineDb.travelStorageLocations,
@@ -615,6 +626,7 @@ export async function clearOfflineData(): Promise<void> {
       await iratiOfflineDb.sleepEntries.clear();
       await iratiOfflineDb.plannedVaccineDoses.clear();
       await iratiOfflineDb.appliedVaccineDoses.clear();
+      await iratiOfflineDb.friendEntries.clear();
       await iratiOfflineDb.travelChecklistItems.clear();
       await iratiOfflineDb.travelChecklistCategories.clear();
       await iratiOfflineDb.travelStorageLocations.clear();

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getBabyProfile } from "@/modules/profile/application/get-baby-profile";
+import { CachedFriendReadRepository } from "@/modules/friends/infrastructure/cached-friend-read-repository";
+import { listFriends } from "@/modules/friends/application/list-friends";
 import { SupabaseProfileRepository } from "@/modules/profile/infrastructure/supabase-profile-repository";
 import { SupabaseTravelChecklistRepository } from "@/modules/travel/infrastructure/supabase-travel-checklist-repository";
 import { SupabaseVaccinePlanRepository } from "@/modules/vaccines/infrastructure/supabase-vaccine-plan-repository";
@@ -34,6 +36,7 @@ export async function GET() {
       travelStorageLocations,
       sleepEntries,
       { heightEntries, headCircumferenceEntries },
+      friends,
     ] = await Promise.all([
       getBabyProfile(profileRepository),
       weightRepository.listWeightEntries(),
@@ -44,9 +47,11 @@ export async function GET() {
       travelRepository.listTravelStorageLocations(),
       sleepRepository.listSleepEntries(),
       growthRepository.listGrowthEntries(),
+      listFriends(new CachedFriendReadRepository()),
     ]);
     const snapshot: OfflineSnapshot = {
       appliedVaccineDoses,
+      friendEntries: friends.groups.flatMap((group) => group.entries),
       plannedVaccineDoses,
       profile,
       travelChecklistItems,
