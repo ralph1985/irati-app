@@ -8,15 +8,16 @@ export function FriendsView({ groups }: { groups: FriendGroup[] }) {
         <p className={styles.emptyState}>Todavía no hay amigos guardados.</p>
       ) : (
         groups.map((group) => (
-          <section
-            aria-labelledby={`friends-${getGroupId(group.label)}`}
-            className={styles.group}
-            key={group.label}
-          >
-            <div className={styles.groupHeading}>
-              <p className={styles.eyebrow}>Grupo</p>
-              <h2 id={`friends-${getGroupId(group.label)}`}>{group.label}</h2>
-            </div>
+          <details className={styles.group} key={group.label}>
+            <summary className={styles.groupSummary}>
+              <span className={styles.groupHeading}>
+                <span className={styles.eyebrow}>Grupo</span>
+                <span className={styles.groupTitle}>{group.label}</span>
+              </span>
+              <span aria-hidden="true" className={styles.groupToggle}>
+                +
+              </span>
+            </summary>
             <ul className={styles.entries}>
               {group.entries.map((entry) => (
                 <li className={styles.entry} key={entry.id}>
@@ -25,18 +26,9 @@ export function FriendsView({ groups }: { groups: FriendGroup[] }) {
                 </li>
               ))}
             </ul>
-          </section>
+          </details>
         ))
       )}
     </div>
   );
-}
-
-function getGroupId(label: string): string {
-  return label
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }

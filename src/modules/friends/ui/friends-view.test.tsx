@@ -18,6 +18,14 @@ const groups = [
 ];
 
 describe("FriendsView", () => {
+  it("renders groups collapsed with a native disclosure control", () => {
+    const html = renderToStaticMarkup(<FriendsView groups={groups} />);
+
+    expect(html).toMatch(/<details[^>]*>/);
+    expect(html).toMatch(/<summary[^>]*>/);
+    expect(html).not.toMatch(/<details[^>]*\bopen(?:=|\s|>)/);
+  });
+
   it("renders group, adult context and highlighted children", () => {
     const html = renderToStaticMarkup(<FriendsView groups={groups} />);
 
