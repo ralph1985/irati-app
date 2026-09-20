@@ -8,7 +8,7 @@ import { SupabaseFriendRepository } from "./supabase-friend-repository";
 const getCachedFriendEntries = unstable_cache(
   async (): Promise<FriendEntry[]> =>
     new SupabaseFriendRepository(createServerSupabaseClient()).listFriendEntries(),
-  ["irati", "friends"],
+  ["irati", "friends", "v2"],
   {
     revalidate: false,
     tags: [CACHE_TAGS.friends],
