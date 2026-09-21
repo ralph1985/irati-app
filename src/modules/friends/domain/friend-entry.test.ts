@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { filterFriendGroups, groupFriendEntries, type FriendEntry } from "./friend-entry";
+import {
+  filterFriendGroups,
+  groupFriendEntries,
+  normalizeFriendEntryInput,
+  FriendEntryValidationError,
+  type FriendEntry,
+} from "./friend-entry";
 
 const entries: FriendEntry[] = [
   {
@@ -60,5 +66,31 @@ describe("groupFriendEntries", () => {
         entries: [entries[1]],
       },
     ]);
+  });
+});
+
+describe("normalizeFriendEntryInput", () => {
+  it("recorta etiquetas y convierte un grupo vacío en null", () => {
+    expect(
+      normalizeFriendEntryInput({
+        adultsLabel: "  Coral y David  ",
+        childrenLabel: "  Darío, Alma y Luna  ",
+        groupLabel: "   ",
+      }),
+    ).toEqual({
+      adultsLabel: "Coral y David",
+      childrenLabel: "Darío, Alma y Luna",
+      groupLabel: null,
+    });
+  });
+
+  it("rechaza adultos o niños vacíos", () => {
+    expect(() =>
+      normalizeFriendEntryInput({
+        adultsLabel: " ",
+        childrenLabel: "Leire",
+        groupLabel: "Kamikazes",
+      }),
+    ).toThrow(FriendEntryValidationError);
   });
 });

@@ -117,10 +117,41 @@
 
 .entry {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
   gap: 4px;
   border-radius: 16px;
   background: #faf7ff;
   padding: 13px 14px;
+}
+
+.entryContent {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.editEntryButton,
+.editGroupButton {
+  border: 0;
+  border-radius: 10px;
+  background: #f3eaff;
+  color: #5b21b6;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 8px 10px;
+}
+
+.editGroupButton {
+  margin-top: 14px;
+}
+
+.editEntryButton:focus-visible,
+.editGroupButton:focus-visible {
+  outline: 3px solid rgba(124, 58, 237, 0.28);
+  outline-offset: 3px;
 }
 
 .adults {
@@ -148,5 +179,172 @@
 @media (min-width: 620px) {
   .group {
     padding: 22px;
+  }
+}
+
+.floatingAddButton {
+  position: fixed;
+  z-index: 10;
+  right: max(18px, env(safe-area-inset-right, 0px));
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: #7c3aed;
+  color: #fff;
+  box-shadow: 0 18px 42px rgba(76, 29, 149, 0.24);
+  cursor: pointer;
+  font: inherit;
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.floatingAddButton:focus-visible {
+  outline: 3px solid rgba(124, 58, 237, 0.28);
+  outline-offset: 4px;
+}
+
+.sheetBackdrop {
+  position: fixed;
+  z-index: 12;
+  inset: 0;
+  display: grid;
+  align-items: end;
+  padding: 0 max(10px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px))
+    max(10px, env(safe-area-inset-left, 0px));
+  background: rgba(46, 23, 72, 0.32);
+}
+
+.sheet {
+  display: grid;
+  width: min(100%, 560px);
+  max-height: calc(100dvh - 18px);
+  margin: 0 auto;
+  overflow: auto;
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  border-radius: 18px 18px 0 0;
+  background: #fff;
+  box-shadow: 0 -20px 52px rgba(46, 23, 72, 0.22);
+  gap: 16px;
+  padding: 8px 16px 18px;
+  transform: translateY(var(--sheet-drag-offset, 0px));
+  animation: sheetIn 0.24s ease-out;
+}
+
+.sheetBody {
+  display: grid;
+  gap: 16px;
+}
+
+.sheetHandle {
+  display: grid;
+  min-height: 34px;
+  place-items: center;
+  cursor: grab;
+  touch-action: none;
+}
+
+.sheetHandle span {
+  width: 48px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(96, 72, 115, 0.34);
+}
+
+.sheetHandle:focus-visible {
+  outline: 3px solid rgba(124, 58, 237, 0.22);
+  outline-offset: 2px;
+}
+
+.sheetHeader {
+  display: grid;
+  gap: 4px;
+}
+
+.sheetHeader p {
+  color: #7c3aed;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.sheetHeader h2 {
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.sheetFields {
+  display: grid;
+  gap: 14px;
+}
+
+.sheetFields label,
+.sheetBody > label {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  color: #5b426f;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sheetFields input,
+.sheetBody > label input {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid rgba(124, 58, 237, 0.24);
+  border-radius: 14px;
+  background: #fff;
+  color: #241335;
+  font: inherit;
+  padding: 0 12px;
+}
+
+.sheetActions {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 10px;
+}
+
+.primaryButton,
+.secondaryButton {
+  min-height: 48px;
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.primaryButton {
+  background: #7c3aed;
+  color: #fff;
+}
+
+.secondaryButton {
+  background: #f3e8ff;
+  color: #5b21b6;
+}
+
+.sheetHint {
+  margin: 0;
+  color: #705982;
+  font-size: 14px;
+}
+
+@keyframes sheetIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(var(--sheet-drag-offset, 0px));
   }
 }

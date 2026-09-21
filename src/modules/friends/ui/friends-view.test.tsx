@@ -46,4 +46,12 @@ describe("FriendsView", () => {
     const html = renderToStaticMarkup(<FriendsView groups={[]} />);
     expect(html).toContain("Todavía no hay amigos guardados.");
   });
+
+  it("renders controls to add entries and edit entries and groups", () => {
+    const html = renderToStaticMarkup(<FriendsView groups={groups} />);
+
+    expect(html).toContain("Añadir amigo");
+    expect(html).toContain("Editar amigo Familia A");
+    expect(html).toContain("Editar grupo Grupo A");
+  });
 });
