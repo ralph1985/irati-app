@@ -43,10 +43,7 @@ TDD:
 
 ```ts
 import { describe, expect, it } from "vitest";
-import {
-  FriendEntryValidationError,
-  normalizeFriendEntryInput,
-} from "./friend-entry";
+import { FriendEntryValidationError, normalizeFriendEntryInput } from "./friend-entry";
 
 describe("normalizeFriendEntryInput", () => {
   it("recorta etiquetas y convierte un grupo vacío en null", () => {
@@ -155,7 +152,9 @@ import type { FriendEntry, FriendEntryInput } from "../domain/friend-entry";
 
 export interface FriendRepository {
   listFriendEntries(): Promise<FriendEntry[]>;
-  createFriendEntry(input: FriendEntryInput & { id: string; sortOrder: number }): Promise<FriendEntry>;
+  createFriendEntry(
+    input: FriendEntryInput & { id: string; sortOrder: number },
+  ): Promise<FriendEntry>;
   updateFriendEntry(id: string, input: FriendEntryInput): Promise<FriendEntry>;
   renameFriendGroup(currentLabel: string, nextLabel: string): Promise<void>;
 }
@@ -223,9 +222,7 @@ Resultado esperado antes de implementar: fallo porque no existe `create-friend-e
 pnpm exec vitest run src/modules/friends/application
 ```
 
-Resultado esperado: todos los tests de aplicación pasan.
-7. Ejecuta `pnpm typecheck`; resultado esperado: `tsc --noEmit` termina con código `0`.
-8. Haz commit:
+Resultado esperado: todos los tests de aplicación pasan. 7. Ejecuta `pnpm typecheck`; resultado esperado: `tsc --noEmit` termina con código `0`. 8. Haz commit:
 
 ```bash
 git add src/modules/friends/application
@@ -254,18 +251,14 @@ TDD:
 pnpm exec vitest run src/modules/friends/infrastructure/supabase-friend-repository.test.ts
 ```
 
-Resultado esperado antes de implementar: fallo porque el adaptador solo implementa `listFriendEntries`.
-3. Implementa los tres métodos en `src/modules/friends/infrastructure/supabase-friend-repository.ts`. Usa la misma conversión de fila que ya existe en `listFriendEntries`; fija `updated_at: new Date().toISOString()` explícitamente y propaga cualquier `error` de Supabase.
-4. No hagas `upsert` por defecto: `createFriendEntry` debe usar `insert` y `updateFriendEntry` debe filtrar por el ID exacto, para no sobrescribir accidentalmente a otra familia.
-5. Ejecuta el test de nuevo y después:
+Resultado esperado antes de implementar: fallo porque el adaptador solo implementa `listFriendEntries`. 3. Implementa los tres métodos en `src/modules/friends/infrastructure/supabase-friend-repository.ts`. Usa la misma conversión de fila que ya existe en `listFriendEntries`; fija `updated_at: new Date().toISOString()` explícitamente y propaga cualquier `error` de Supabase. 4. No hagas `upsert` por defecto: `createFriendEntry` debe usar `insert` y `updateFriendEntry` debe filtrar por el ID exacto, para no sobrescribir accidentalmente a otra familia. 5. Ejecuta el test de nuevo y después:
 
 ```bash
 pnpm typecheck
 pnpm exec vitest run src/modules/friends/infrastructure
 ```
 
-Resultado esperado: código `0` en ambos comandos.
-6. Haz commit:
+Resultado esperado: código `0` en ambos comandos. 6. Haz commit:
 
 ```bash
 git add src/modules/friends/infrastructure/supabase-friend-repository.ts src/modules/friends/infrastructure/supabase-friend-repository.test.ts
@@ -293,18 +286,18 @@ TDD:
 pnpm exec vitest run 'src/app/(app)/amigos/actions.test.ts'
 ```
 
-Resultado esperado antes de implementar: fallo porque no existe el archivo de acciones o la función exportada.
-3. Implementa `src/app/(app)/amigos/actions.ts` con:
-   - directiva `"use server"`;
-   - `requireSession()` basado en `hasValidSession()` y `redirect("/?error=session")`;
-   - `createFriendEntryAction(formData)`;
-   - `updateFriendEntryAction(formData)`;
-   - `renameFriendGroupAction(formData)`;
-   - lectura y validación a través de `normalizeFriendEntryInput` y los casos de uso;
-   - `crypto.randomUUID()` para nuevas entradas;
-   - para el orden nuevo, leer las entradas con el repositorio de escritura y usar `(max sort_order) + 10`, o `10` si no hay entradas;
-   - redirecciones `/amigos?created=1`, `/amigos?updated=1`, `/amigos?groupUpdated=1` y códigos `validation`/`save` para errores;
-   - tras cada escritura, llamar a:
+Resultado esperado antes de implementar: fallo porque no existe el archivo de acciones o la función exportada. 3. Implementa `src/app/(app)/amigos/actions.ts` con:
+
+- directiva `"use server"`;
+- `requireSession()` basado en `hasValidSession()` y `redirect("/?error=session")`;
+- `createFriendEntryAction(formData)`;
+- `updateFriendEntryAction(formData)`;
+- `renameFriendGroupAction(formData)`;
+- lectura y validación a través de `normalizeFriendEntryInput` y los casos de uso;
+- `crypto.randomUUID()` para nuevas entradas;
+- para el orden nuevo, leer las entradas con el repositorio de escritura y usar `(max sort_order) + 10`, o `10` si no hay entradas;
+- redirecciones `/amigos?created=1`, `/amigos?updated=1`, `/amigos?groupUpdated=1` y códigos `validation`/`save` para errores;
+- tras cada escritura, llamar a:
 
 ```ts
 function invalidateFriendReads() {
@@ -322,8 +315,7 @@ pnpm typecheck
 pnpm lint
 ```
 
-Resultado esperado: tests, TypeScript y ESLint terminan con código `0`.
-6. Haz commit:
+Resultado esperado: tests, TypeScript y ESLint terminan con código `0`. 6. Haz commit:
 
 ```bash
 git add 'src/app/(app)/amigos/actions.ts' 'src/app/(app)/amigos/actions.test.ts' src/modules/friends/infrastructure/cached-friend-read-repository.ts
@@ -355,8 +347,7 @@ TDD:
 pnpm exec vitest run src/modules/friends/ui/friend-entry-sheet.test.tsx
 ```
 
-Resultado esperado antes de implementar: fallo porque el componente no existe.
-3. Implementa un componente cliente con esta API completa:
+Resultado esperado antes de implementar: fallo porque el componente no existe. 3. Implementa un componente cliente con esta API completa:
 
 ```ts
 type FriendEntrySheetProps = {
@@ -368,17 +359,14 @@ type FriendEntrySheetProps = {
 };
 ```
 
-Usa `BottomSheet` y `PendingSubmitButton`, como `src/modules/weight/ui/weight-create-sheet.tsx`. En creación, el campo de grupo debe permitir escribir un nombre nuevo (`<input name="groupLabel" ...>`), no limitarse a un `<select>` de grupos existentes. En edición, precarga los tres campos y el ID.
-4. Añade un botón flotante o de acción visible con `aria-label="Añadir amigo"`. El formulario debe mostrar «Necesitas conexión para guardar cambios» si el navegador está offline y debe evitar fingir que se guardó localmente; no añadas mutaciones a `PendingMutation` en esta entrega.
-5. Ejecuta de nuevo el test y:
+Usa `BottomSheet` y `PendingSubmitButton`, como `src/modules/weight/ui/weight-create-sheet.tsx`. En creación, el campo de grupo debe permitir escribir un nombre nuevo (`<input name="groupLabel" ...>`), no limitarse a un `<select>` de grupos existentes. En edición, precarga los tres campos y el ID. 4. Añade un botón flotante o de acción visible con `aria-label="Añadir amigo"`. El formulario debe mostrar «Necesitas conexión para guardar cambios» si el navegador está offline y debe evitar fingir que se guardó localmente; no añadas mutaciones a `PendingMutation` en esta entrega. 5. Ejecuta de nuevo el test y:
 
 ```bash
 pnpm lint
 pnpm typecheck
 ```
 
-Resultado esperado: todo termina con código `0`.
-6. Haz commit:
+Resultado esperado: todo termina con código `0`. 6. Haz commit:
 
 ```bash
 git add src/modules/friends/ui/friend-entry-sheet.tsx src/modules/friends/ui/friend-entry-sheet.test.tsx src/modules/friends/ui/friend-entry-sheet.module.css
@@ -411,8 +399,7 @@ TDD:
 pnpm exec vitest run src/modules/friends/ui/friends-view.test.tsx
 ```
 
-Resultado esperado antes de implementar: fallos de aserción porque los botones y hojas aún no existen.
-3. Amplía la API de `FriendsView` a:
+Resultado esperado antes de implementar: fallos de aserción porque los botones y hojas aún no existen. 3. Amplía la API de `FriendsView` a:
 
 ```ts
 type FriendsViewProps = {
@@ -435,8 +422,7 @@ type FriendGroupSheetProps = {
 };
 ```
 
-Debe enviar `currentLabel` y `nextLabel`, exigir un nombre no vacío y mostrar una advertencia breve: «El cambio se aplicará a todas las personas de este grupo».
-6. Ejecuta el test y después:
+Debe enviar `currentLabel` y `nextLabel`, exigir un nombre no vacío y mostrar una advertencia breve: «El cambio se aplicará a todas las personas de este grupo». 6. Ejecuta el test y después:
 
 ```bash
 pnpm exec vitest run src/modules/friends/ui
@@ -444,8 +430,7 @@ pnpm lint
 pnpm typecheck
 ```
 
-Resultado esperado: todos los tests de UI pasan; lint y typecheck terminan con código `0`.
-7. Haz commit:
+Resultado esperado: todos los tests de UI pasan; lint y typecheck terminan con código `0`. 7. Haz commit:
 
 ```bash
 git add src/modules/friends/ui
@@ -485,9 +470,7 @@ const errorMessages: Record<string, string> = {
 };
 ```
 
-Mensajes de éxito: `Amigo añadido.`, `Amigo actualizado.` y `Grupo actualizado.`. Conserva la comprobación de sesión y el error de carga existentes.
-4. Coloca la hoja de creación dentro de la página o dentro de `FriendsView`, pero deja una sola fuente para el formulario: `FriendEntrySheet`.
-5. Ejecuta:
+Mensajes de éxito: `Amigo añadido.`, `Amigo actualizado.` y `Grupo actualizado.`. Conserva la comprobación de sesión y el error de carga existentes. 4. Coloca la hoja de creación dentro de la página o dentro de `FriendsView`, pero deja una sola fuente para el formulario: `FriendEntrySheet`. 5. Ejecuta:
 
 ```bash
 pnpm exec vitest run 'src/app/(app)/amigos/page.test.tsx'
@@ -495,8 +478,7 @@ pnpm typecheck
 pnpm lint
 ```
 
-Resultado esperado: código `0` en los tres comandos.
-6. Haz commit:
+Resultado esperado: código `0` en los tres comandos. 6. Haz commit:
 
 ```bash
 git add 'src/app/(app)/amigos/page.tsx' 'src/app/(app)/amigos/page.module.css' 'src/app/(app)/amigos/page.test.tsx'
@@ -526,17 +508,13 @@ const darioEntry: FriendEntry = {
 };
 ```
 
-y verifique que `groupFriendEntries([darioEntry])` conserva exactamente `childrenLabel`.
-2. Añade o conserva el test del snapshot que verifica que `friendEntries` se guarda y se hidrata sin perder `groupLabel`, `adultsLabel`, `childrenLabel` ni `sortOrder`.
-3. Ejecuta antes de tocar producción:
+y verifique que `groupFriendEntries([darioEntry])` conserva exactamente `childrenLabel`. 2. Añade o conserva el test del snapshot que verifica que `friendEntries` se guarda y se hidrata sin perder `groupLabel`, `adultsLabel`, `childrenLabel` ni `sortOrder`. 3. Ejecuta antes de tocar producción:
 
 ```bash
 pnpm exec vitest run src/modules/friends src/shared/infrastructure/offline/irati-offline-db.test.ts
 ```
 
-Resultado esperado: todos los tests pasan.
-4. No añadas una migración ni un seed para probar la edición. No cambies `supabase/migrations/20260920174000_restore_dario_for_coral_david.sql` ni `children_label` de la fila existente desde código de inicialización.
-5. Si se actualiza documentación, ejecuta `git diff --check` y haz un commit separado:
+Resultado esperado: todos los tests pasan. 4. No añadas una migración ni un seed para probar la edición. No cambies `supabase/migrations/20260920174000_restore_dario_for_coral_david.sql` ni `children_label` de la fila existente desde código de inicialización. 5. Si se actualiza documentación, ejecuta `git diff --check` y haz un commit separado:
 
 ```bash
 git add docs/spec.md docs/offline-plan.md
