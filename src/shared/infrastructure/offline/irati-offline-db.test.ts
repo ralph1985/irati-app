@@ -1,5 +1,5 @@
 import "fake-indexeddb/auto";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   applyOfflineWeightEntry,
   applyOfflineHeightEntry,
@@ -9,6 +9,7 @@ import {
   applyOfflineTravelChecklistReorder,
   applyOfflineAppliedVaccineDose,
   applyOfflinePlannedVaccineDose,
+  clearApplicationCaches,
   clearOfflineData,
   deleteOfflineHeightEntry,
   deleteOfflineHeadCircumferenceEntry,
@@ -172,6 +173,23 @@ describe("Irati offline database", () => {
       lastSuccessfulSyncAt: null,
       offlineAccessGranted: false,
     });
+  });
+
+  it("clears browser caches for logout", async () => {
+    const deletedCacheNames: string[] = [];
+
+    vi.stubGlobal("caches", {
+      delete: async (cacheName: string) => {
+        deletedCacheNames.push(cacheName);
+        return true;
+      },
+      keys: async () => ["irati-static-assets", "irati-precache"],
+    });
+
+    await clearApplicationCaches();
+
+    expect(deletedCacheNames).toEqual(["irati-static-assets", "irati-precache"]);
+    vi.unstubAllGlobals();
   });
 
   it("records sync errors without deleting the latest successful snapshot", async () => {

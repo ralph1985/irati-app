@@ -636,3 +636,12 @@ export async function clearOfflineData(): Promise<void> {
     },
   );
 }
+
+export async function clearApplicationCaches(): Promise<void> {
+  if (typeof caches === "undefined") {
+    return;
+  }
+
+  const cacheNames = await caches.keys();
+  await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+}
