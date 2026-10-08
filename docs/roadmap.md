@@ -322,7 +322,7 @@ El modo offline-first se implementa por fases segun [`docs/offline-plan.md`](off
 - [x] Añadir Calendario a la navegación online y offline.
 - [x] Configurar las URLs reales en el entorno de despliegue y validar con el calendario de Irati.
 - [x] Ejecutar validación automática completa.
-- [ ] Hacer prueba manual en móvil con las URLs reales.
+- [x] Hacer prueba manual en móvil con las URLs reales.
 
 ## Hito 21 - Registro de sueño
 
