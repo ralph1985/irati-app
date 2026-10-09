@@ -57,7 +57,9 @@ export function OfflineSnapshotView({ styles }: OfflineSnapshotViewProps) {
     right.measuredOn.localeCompare(left.measuredOn),
   )[0];
   const vaccineSummary = getVaccineSummary(snapshot);
-  const travelPacked = snapshot.travelChecklistItems.filter((item) => item.isPacked).length;
+  const travelPacked = snapshot.travelChecklistItems.filter(
+    (item) => item.packingStatus === "packed",
+  ).length;
 
   return (
     <section className={styles.panel} aria-labelledby="offline-data-title">

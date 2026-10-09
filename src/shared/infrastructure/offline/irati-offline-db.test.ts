@@ -59,7 +59,7 @@ describe("Irati offline database", () => {
       lastError: null,
       lastSuccessfulSyncAt: null,
       offlineAccessGranted: false,
-      schemaVersion: 10,
+      schemaVersion: 11,
     });
   });
 
@@ -106,7 +106,7 @@ describe("Irati offline database", () => {
           {
             category: "salud",
             id: "travel-1",
-            isPacked: false,
+            packingStatus: "pending",
             label: "Cartilla",
             notes: null,
             sortOrder: 10,
@@ -137,7 +137,7 @@ describe("Irati offline database", () => {
     await expect(readSyncMetadata()).resolves.toMatchObject({
       lastSuccessfulSyncAt: "2026-07-23T10:00:00.000Z",
       offlineAccessGranted: true,
-      schemaVersion: 10,
+      schemaVersion: 11,
     });
   });
 
@@ -401,7 +401,7 @@ describe("Irati offline database", () => {
       payload: {
         category: "salud",
         id: "travel-1",
-        isPacked: false,
+        packingStatus: "pending",
         label: "Cartilla",
         notes: null,
         sortOrder: 10,
@@ -418,7 +418,7 @@ describe("Irati offline database", () => {
     await applyOfflineTravelChecklistItem({
       category: "higiene",
       id: "travel-1",
-      isPacked: false,
+      packingStatus: "pending",
       label: "Pañales",
       notes: null,
       sortOrder: 10,
@@ -426,7 +426,7 @@ describe("Irati offline database", () => {
     await applyOfflineTravelChecklistItem({
       category: "salud",
       id: "travel-2",
-      isPacked: true,
+      packingStatus: "packed",
       label: "Termómetro",
       notes: null,
       sortOrder: 10,
@@ -532,7 +532,7 @@ describe("Irati offline database", () => {
     await applyOfflineTravelChecklistItem({
       category: "salud",
       id: "travel-1",
-      isPacked: false,
+      packingStatus: "pending",
       label: "Cartilla",
       notes: null,
       sortOrder: 10,

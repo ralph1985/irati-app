@@ -5,10 +5,11 @@ import { redirect } from "next/navigation";
 import { createTravelChecklistItem } from "@/modules/travel/application/create-travel-checklist-item";
 import { deleteTravelChecklistItem } from "@/modules/travel/application/delete-travel-checklist-item";
 import { resetTravelChecklist } from "@/modules/travel/application/reset-travel-checklist";
-import { setTravelChecklistItemPacked } from "@/modules/travel/application/set-travel-checklist-item-packed";
+import { setTravelChecklistItemPackingStatus } from "@/modules/travel/application/set-travel-checklist-item-packed";
 import { updateTravelChecklistItem } from "@/modules/travel/application/update-travel-checklist-item";
 import {
   isTravelChecklistCategory,
+  isTravelPackingStatus,
   reorderTravelChecklistItems,
   TravelChecklistReorder,
   TravelStorageReorder,
@@ -91,7 +92,7 @@ export async function updateTravelChecklistItemAction(formData: FormData) {
       label: String(formData.get("label") ?? ""),
       category,
       sortOrder: reorderedItem?.sortOrder ?? targetIndex * 10 + 10,
-      isPacked: formData.get("isPacked") === "true",
+      packingStatus: currentItem?.packingStatus ?? "pending",
       notes: String(formData.get("notes") ?? ""),
       storageLocationId,
       storageSortOrder:
@@ -116,16 +117,22 @@ export async function updateTravelChecklistItemAction(formData: FormData) {
   invalidateTravelChecklistReads();
 }
 
-export async function setTravelChecklistItemPackedAction(formData: FormData) {
+export async function setTravelChecklistItemPackingStatusAction(formData: FormData) {
   if (!(await hasValidSession())) {
     redirect("/?error=session");
   }
 
+  const packingStatus = String(formData.get("packingStatus") ?? "pending");
+
+  if (!isTravelPackingStatus(packingStatus)) {
+    redirect("/viaje?error=validation");
+  }
+
   try {
-    await setTravelChecklistItemPacked(
+    await setTravelChecklistItemPackingStatus(
       newRepository(),
       String(formData.get("id") ?? ""),
-      formData.get("isPacked") === "true",
+      packingStatus,
     );
   } catch {
     redirect("/viaje?error=save");

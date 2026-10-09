@@ -21,6 +21,7 @@ import {
   TravelChecklistGroup,
   TravelChecklistItem,
   TravelChecklistProgress,
+  TravelPackingStatus,
   TravelStorageLocation,
   reorderTravelChecklistItems,
   TravelChecklistReorder,
@@ -36,7 +37,7 @@ import {
   listPendingTravelMutations,
   PendingTravelMutation,
   resetOfflineTravelChecklist,
-  setOfflineTravelChecklistItemPacked,
+  setOfflineTravelChecklistItemPackingStatus,
 } from "../../../shared/infrastructure/offline/irati-offline-db";
 import styles from "../../../app/(app)/viaje/page.module.css";
 
@@ -45,7 +46,7 @@ type TravelChecklistViewProps = {
   createAction: (formData: FormData) => void | Promise<void>;
   deleteAction: (formData: FormData) => void | Promise<void>;
   resetAction: () => void | Promise<void>;
-  setPackedAction: (formData: FormData) => void | Promise<void>;
+  setPackingStatusAction: (formData: FormData) => void | Promise<void>;
   updateAction: (formData: FormData) => void | Promise<void>;
   reorderAction?: (formData: FormData) => void | Promise<void>;
   reorderStorageAction?: (formData: FormData) => void | Promise<void>;
@@ -59,7 +60,7 @@ export function TravelChecklistView({
   createAction,
   deleteAction,
   resetAction,
-  setPackedAction,
+  setPackingStatusAction,
   updateAction,
   reorderAction = async () => {},
   reorderStorageAction = async () => {},
@@ -113,8 +114,8 @@ export function TravelChecklistView({
   };
   const deleteActionWithRefresh = (formData: FormData) =>
     refreshAfterAction(deleteAction, formData);
-  const setPackedActionWithRefresh = (formData: FormData) =>
-    refreshAfterAction(setPackedAction, formData);
+  const setPackingStatusActionWithRefresh = (formData: FormData) =>
+    refreshAfterAction(setPackingStatusAction, formData);
   const updateActionWithRefresh = async (formData: FormData) => {
     try {
       await refreshAfterAction(updateAction, formData);
@@ -299,7 +300,7 @@ export function TravelChecklistView({
         ),
       }),
       id: crypto.randomUUID(),
-      isPacked: false,
+      packingStatus: "pending",
     };
 
     await applyOfflineTravelChecklistItem(item);
@@ -338,7 +339,7 @@ export function TravelChecklistView({
       id,
       ...updateTravelChecklistItemInput({
         category,
-        isPacked: formData.get("isPacked") === "true",
+        packingStatus: currentItem?.packingStatus ?? "pending",
         label: String(formData.get("label") ?? ""),
         notes: String(formData.get("notes") ?? ""),
         storageLocationId,
@@ -348,7 +349,7 @@ export function TravelChecklistView({
             : getNextOfflineStorageSortOrder(currentItems, storageLocationId),
         sortOrder: reorderedItem?.sortOrder ?? Number(formData.get("sortOrder") ?? 0),
       }),
-      isPacked: formData.get("isPacked") === "true",
+      packingStatus: currentItem?.packingStatus ?? "pending",
     };
 
     await applyOfflineTravelChecklistItem(item);
@@ -484,7 +485,7 @@ export function TravelChecklistView({
                   key={group.category.slug}
                   openEditSheet={(item) => setSheetState({ item, mode: "edit" })}
                   openCreateSheet={(category) => setSheetState({ category, mode: "create" })}
-                  setPackedAction={setPackedActionWithRefresh}
+                  setPackingStatusAction={setPackingStatusActionWithRefresh}
                   pendingMutations={pendingMutations}
                   pendingServerIds={pendingServerIds}
                   isReordering={isReordering}
@@ -505,7 +506,7 @@ export function TravelChecklistView({
             pendingMutations={pendingMutations}
             pendingServerIds={pendingServerIds}
             reorderAction={reorderStorageActionWithRefresh}
-            setPackedAction={setPackedActionWithRefresh}
+            setPackingStatusAction={setPackingStatusActionWithRefresh}
           />
         ) : (
           <p className={styles.empty}>Aún no hay nada en la lista de viaje.</p>
@@ -540,7 +541,7 @@ function TravelChecklistGroupView({
   isReordering,
   pendingServerIds,
   pendingMutations,
-  setPackedAction,
+  setPackingStatusAction,
   onDeleteOnline,
 }: {
   deleteAction: (formData: FormData) => void | Promise<void>;
@@ -550,7 +551,7 @@ function TravelChecklistGroupView({
   isReordering: boolean;
   pendingServerIds: Set<string>;
   pendingMutations: PendingTravelMutation[];
-  setPackedAction: (formData: FormData) => void | Promise<void>;
+  setPackingStatusAction: (formData: FormData) => void | Promise<void>;
   onDeleteOnline: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => void;
 }) {
   return (
@@ -591,8 +592,8 @@ function TravelChecklistGroupView({
             onDeleteOnline={onDeleteOnline}
             onEdit={() => openEditSheet(item)}
             onOfflineDelete={deleteTravelItemOffline}
-            onOfflinePacked={setTravelItemPackedOffline}
-            packedAction={setPackedAction}
+            onOfflinePackingStatus={setTravelItemPackingStatusOffline}
+            packingStatusAction={setPackingStatusAction}
             pending={
               isReordering ||
               pendingServerIds.has(item.id) ||
@@ -635,8 +636,8 @@ function TravelChecklistItemRow({
   onDeleteOnline,
   onEdit,
   onOfflineDelete,
-  onOfflinePacked,
-  packedAction,
+  onOfflinePackingStatus,
+  packingStatusAction,
   pending,
 }: {
   category: TravelChecklistCategory;
@@ -646,8 +647,12 @@ function TravelChecklistItemRow({
   onDeleteOnline: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => void;
   onEdit: () => void;
   onOfflineDelete: (event: FormEvent<HTMLFormElement>, id: string) => Promise<void>;
-  onOfflinePacked: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => Promise<void>;
-  packedAction: (formData: FormData) => void | Promise<void>;
+  onOfflinePackingStatus: (
+    event: FormEvent<HTMLFormElement>,
+    item: TravelChecklistItem,
+    packingStatus: TravelPackingStatus,
+  ) => Promise<void>;
+  packingStatusAction: (formData: FormData) => void | Promise<void>;
   pending: boolean;
 }) {
   const { handleRef, isDragging, ref } = useSortable({
@@ -661,7 +666,7 @@ function TravelChecklistItemRow({
   return (
     <li
       data-dragging={isDragging}
-      data-packed={item.isPacked}
+      data-packing-status={item.packingStatus}
       data-pending={pending}
       data-travel-item-id={item.id}
       ref={ref}
@@ -683,8 +688,8 @@ function TravelChecklistItemRow({
         onDeleteOnline={onDeleteOnline}
         onEdit={onEdit}
         onOfflineDelete={onOfflineDelete}
-        onOfflinePacked={onOfflinePacked}
-        packedAction={packedAction}
+        onOfflinePackingStatus={onOfflinePackingStatus}
+        packingStatusAction={packingStatusAction}
         pending={pending}
       />
     </li>
@@ -698,8 +703,8 @@ function TravelChecklistItemContent({
   onDeleteOnline,
   onEdit,
   onOfflineDelete,
-  onOfflinePacked,
-  packedAction,
+  onOfflinePackingStatus,
+  packingStatusAction,
   pending,
 }: {
   deleteAction: (formData: FormData) => void | Promise<void>;
@@ -708,33 +713,59 @@ function TravelChecklistItemContent({
   onDeleteOnline: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => void;
   onEdit: () => void;
   onOfflineDelete: (event: FormEvent<HTMLFormElement>, id: string) => Promise<void>;
-  onOfflinePacked: (event: FormEvent<HTMLFormElement>, item: TravelChecklistItem) => Promise<void>;
-  packedAction: (formData: FormData) => void | Promise<void>;
+  onOfflinePackingStatus: (
+    event: FormEvent<HTMLFormElement>,
+    item: TravelChecklistItem,
+    packingStatus: TravelPackingStatus,
+  ) => Promise<void>;
+  packingStatusAction: (formData: FormData) => void | Promise<void>;
   pending: boolean;
 }) {
   return (
     <>
-      <form
-        action={packedAction}
-        className={styles.itemCheck}
-        onSubmit={(event) => {
-          if (!navigator.onLine) {
-            void onOfflinePacked(event, item);
-          }
-        }}
-      >
-        <input name="id" type="hidden" value={item.id} />
-        <input name="isPacked" type="hidden" value={item.isPacked ? "false" : "true"} />
-        <PendingSubmitButton
-          aria-label={item.isPacked ? "Marcar como pendiente" : "Marcar como preparado"}
-          aria-pressed={item.isPacked}
-          pendingAriaLabel="Actualizando elemento"
-          title={item.isPacked ? "Marcar como pendiente" : "Marcar como preparado"}
-          type="submit"
-        >
-          <span aria-hidden="true">{item.isPacked ? "✓" : ""}</span>
-        </PendingSubmitButton>
-      </form>
+      <div aria-label={`Estado de ${item.label}`} className={styles.itemChecks} role="group">
+        {(["packed", "not_taking"] as const).map((packingStatus) => {
+          const isActive = item.packingStatus === packingStatus;
+          const isPacked = packingStatus === "packed";
+          const label = isPacked
+            ? isActive
+              ? "Marcar como pendiente"
+              : "Marcar como preparado"
+            : isActive
+              ? "Marcar como pendiente"
+              : "Marcar como no me lo llevo";
+
+          return (
+            <form
+              action={packingStatusAction}
+              className={styles.itemCheck}
+              key={packingStatus}
+              onSubmit={(event) => {
+                if (!navigator.onLine) {
+                  void onOfflinePackingStatus(event, item, packingStatus);
+                }
+              }}
+            >
+              <input name="id" type="hidden" value={item.id} />
+              <input
+                name="packingStatus"
+                type="hidden"
+                value={isActive ? "pending" : packingStatus}
+              />
+              <PendingSubmitButton
+                aria-label={`${label}: ${item.label}`}
+                aria-pressed={isActive}
+                data-status={packingStatus}
+                pendingAriaLabel="Actualizando estado"
+                title={label}
+                type="submit"
+              >
+                <span aria-hidden="true">{isPacked ? "✓" : "×"}</span>
+              </PendingSubmitButton>
+            </form>
+          );
+        })}
+      </div>
       <div className={styles.itemBody}>
         <strong>{item.label}</strong>
         {item.notes ? <p>{item.notes}</p> : null}
@@ -845,7 +876,7 @@ function TravelChecklistSheet({
                   category: sheetState.item.category,
                   position: getTravelItemPosition(items, sheetState.item),
                   sortOrder: sheetState.item.sortOrder,
-                  isPacked: sheetState.item.isPacked,
+                  packingStatus: sheetState.item.packingStatus,
                   notes: sheetState.item.notes ?? "",
                   storageLocationId: sheetState.item.storageLocationId ?? null,
                 }
@@ -885,7 +916,7 @@ function TravelChecklistItemForm({
     category: TravelChecklistCategory;
     position?: number;
     sortOrder?: number;
-    isPacked?: boolean;
+    packingStatus?: TravelPackingStatus;
     notes?: string;
     storageLocationId?: string | null;
   };
@@ -913,7 +944,7 @@ function TravelChecklistItemForm({
       {defaults?.id ? <input name="id" type="hidden" value={defaults.id} /> : null}
       {defaults?.id ? (
         <>
-          <input name="isPacked" type="hidden" value={defaults.isPacked ? "true" : "false"} />
+          <input name="packingStatus" type="hidden" value={defaults.packingStatus ?? "pending"} />
           <input name="sortOrder" type="hidden" value={defaults.sortOrder} />
           <input name="previousCategory" type="hidden" value={defaults.category} />
           <input name="position" type="hidden" value={position} />
@@ -1013,21 +1044,23 @@ function formatProgress(progress: TravelChecklistProgress): string {
     return "0 de 0";
   }
 
-  return `${progress.packed} de ${progress.total}`;
+  return `${progress.packed} preparados · ${progress.notTaking} no se llevan · ${progress.pending} pendientes`;
 }
 
-async function setTravelItemPackedOffline(
+async function setTravelItemPackingStatusOffline(
   event: FormEvent<HTMLFormElement>,
   item: TravelChecklistItem,
+  packingStatus: TravelPackingStatus,
 ): Promise<void> {
   event.preventDefault();
-  const nextPacked = !item.isPacked;
 
-  await setOfflineTravelChecklistItemPacked(item.id, nextPacked);
+  const nextStatus: TravelPackingStatus =
+    item.packingStatus === packingStatus ? "pending" : packingStatus;
+  await setOfflineTravelChecklistItemPackingStatus(item.id, nextStatus);
   await enqueuePendingTravelMutation({
-    id: `travel-packed-${item.id}-${crypto.randomUUID()}`,
-    operation: "setPacked",
-    payload: { id: item.id, isPacked: nextPacked },
+    id: `travel-packing-status-${item.id}-${crypto.randomUUID()}`,
+    operation: "setPackingStatus",
+    payload: { id: item.id, packingStatus: nextStatus },
   });
   dispatchOfflineTravelEvents();
 }
@@ -1052,7 +1085,7 @@ function TravelLocationGroups({
   groups,
   onDeleteOnline,
   onEdit,
-  setPackedAction,
+  setPackingStatusAction,
   pendingMutations,
   pendingServerIds,
   reorderAction,
@@ -1064,7 +1097,7 @@ function TravelLocationGroups({
   pendingMutations: PendingTravelMutation[];
   pendingServerIds: Set<string>;
   reorderAction: (formData: FormData) => void | Promise<void>;
-  setPackedAction: (formData: FormData) => void | Promise<void>;
+  setPackingStatusAction: (formData: FormData) => void | Promise<void>;
 }) {
   const [dragGroups, setDragGroups] = useState<LocationGroupItems | null>(null);
   const dragGroupsRef = useRef<LocationGroupItems | null>(null);
@@ -1160,8 +1193,8 @@ function TravelLocationGroups({
                     onDeleteOnline={onDeleteOnline}
                     onEdit={() => onEdit(item)}
                     onOfflineDelete={deleteTravelItemOffline}
-                    onOfflinePacked={setTravelItemPackedOffline}
-                    packedAction={setPackedAction}
+                    onOfflinePackingStatus={setTravelItemPackingStatusOffline}
+                    packingStatusAction={setPackingStatusAction}
                     pending={
                       isReordering ||
                       pendingServerIds.has(item.id) ||
@@ -1236,8 +1269,8 @@ function TravelStorageItemRow({
   onDeleteOnline,
   onEdit,
   onOfflineDelete,
-  onOfflinePacked,
-  packedAction,
+  onOfflinePackingStatus,
+  packingStatusAction,
   pending,
 }: React.ComponentProps<typeof TravelChecklistItemRow>) {
   const { handleRef, isDragging, ref } = useSortable({
@@ -1249,7 +1282,12 @@ function TravelStorageItemRow({
   });
 
   return (
-    <li data-dragging={isDragging} data-packed={item.isPacked} data-pending={pending} ref={ref}>
+    <li
+      data-dragging={isDragging}
+      data-packing-status={item.packingStatus}
+      data-pending={pending}
+      ref={ref}
+    >
       <TravelChecklistItemContent
         deleteAction={deleteAction}
         dragHandle={
@@ -1267,8 +1305,8 @@ function TravelStorageItemRow({
         onDeleteOnline={onDeleteOnline}
         onEdit={onEdit}
         onOfflineDelete={onOfflineDelete}
-        onOfflinePacked={onOfflinePacked}
-        packedAction={packedAction}
+        onOfflinePackingStatus={onOfflinePackingStatus}
+        packingStatusAction={packingStatusAction}
         pending={pending}
       />
     </li>
@@ -1329,7 +1367,7 @@ function buildVisibleTravelChecklist(
   for (const mutation of pendingMutations) {
     if (mutation.operation === "reset") {
       for (const [id, item] of itemsById) {
-        itemsById.set(id, { ...item, isPacked: false });
+        itemsById.set(id, { ...item, packingStatus: "pending" });
       }
       continue;
     }
@@ -1341,7 +1379,7 @@ function buildVisibleTravelChecklist(
       continue;
     }
 
-    if (mutation.operation === "setPacked") {
+    if (mutation.operation === "setPackingStatus") {
       if (!("id" in mutation.payload)) {
         continue;
       }
@@ -1350,10 +1388,13 @@ function buildVisibleTravelChecklist(
 
       if (
         item &&
-        "isPacked" in mutation.payload &&
-        typeof mutation.payload.isPacked === "boolean"
+        "packingStatus" in mutation.payload &&
+        typeof mutation.payload.packingStatus === "string"
       ) {
-        itemsById.set(item.id, { ...item, isPacked: mutation.payload.isPacked });
+        itemsById.set(item.id, {
+          ...item,
+          packingStatus: mutation.payload.packingStatus as TravelChecklistItem["packingStatus"],
+        });
       }
 
       continue;
@@ -1398,7 +1439,7 @@ function buildVisibleTravelChecklist(
     if (
       "label" in mutation.payload &&
       "category" in mutation.payload &&
-      "isPacked" in mutation.payload
+      "packingStatus" in mutation.payload
     ) {
       itemsById.set(mutation.payload.id, mutation.payload);
     }

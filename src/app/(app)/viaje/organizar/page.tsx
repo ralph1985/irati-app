@@ -83,7 +83,7 @@ async function getTravelChecklist() {
         locations: [],
         groups: [],
         locationGroups: [],
-        progress: { packed: 0, pending: 0, total: 0 },
+        progress: { packed: 0, notTaking: 0, pending: 0, total: 0 },
       },
       loadError: "load",
     };

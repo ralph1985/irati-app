@@ -5,6 +5,7 @@ import type {
   TravelChecklistItem,
   TravelChecklistCategoryDefinition,
   TravelChecklistReorder,
+  TravelPackingStatus,
   TravelStorageReorder,
   TravelStorageLocation,
 } from "@/modules/travel/domain/travel-checklist-item";
@@ -67,7 +68,7 @@ export type PendingGrowthMutation = {
 export type PendingTravelMutationOperation =
   | "create"
   | "update"
-  | "setPacked"
+  | "setPackingStatus"
   | "delete"
   | "reset"
   | "reorder"
@@ -85,7 +86,7 @@ export type PendingTravelMutation = {
   operation: PendingTravelMutationOperation;
   payload:
     | TravelChecklistItem
-    | { id: string; isPacked?: boolean }
+    | { id: string; packingStatus?: TravelPackingStatus }
     | { resetAt: string }
     | TravelChecklistReorder[]
     | TravelStorageReorder[]
@@ -132,7 +133,7 @@ type StoredBabyProfile = BabyProfile & {
   id: "irati";
 };
 
-const currentSchemaVersion = 10;
+const currentSchemaVersion = 11;
 const profileId = "irati";
 const metadataId = "main";
 
@@ -155,15 +156,13 @@ class IratiOfflineDatabase extends Dexie {
   constructor() {
     super("irati-offline");
 
-    this.version(currentSchemaVersion).stores({
+    const stores = {
       appliedVaccineDoses: "id, plannedDoseId, appliedOn",
       babyProfiles: "id",
       friendEntries: "id, groupLabel, sortOrder",
       pendingMutations: "id, entity, operation, createdAt",
       plannedVaccineDoses: "id, plannedDate",
       syncMetadata: "id",
-      travelChecklistItems:
-        "id, category, sortOrder, storageLocationId, storageSortOrder, isPacked",
       travelChecklistCategories: "slug, sortOrder",
       travelStorageLocations: "id, parentId, sortOrder",
       weightEntries: "id, measuredOn",
@@ -171,7 +170,29 @@ class IratiOfflineDatabase extends Dexie {
       headCircumferenceEntries: "id, measuredOn",
       sleepEntries: "id, startedAt, endedAt",
       calendarSnapshots: "id, fetchedAt",
+    };
+
+    this.version(10).stores({
+      ...stores,
+      travelChecklistItems:
+        "id, category, sortOrder, storageLocationId, storageSortOrder, isPacked",
     });
+    this.version(currentSchemaVersion)
+      .stores({
+        ...stores,
+        travelChecklistItems:
+          "id, category, sortOrder, storageLocationId, storageSortOrder, packingStatus",
+      })
+      .upgrade(async (transaction) => {
+        await transaction
+          .table("travelChecklistItems")
+          .toCollection()
+          .modify((item) => {
+            const legacyItem = item as { isPacked?: boolean; packingStatus?: string };
+            legacyItem.packingStatus = legacyItem.isPacked ? "packed" : "pending";
+            delete legacyItem.isPacked;
+          });
+      });
   }
 }
 
@@ -543,12 +564,12 @@ export async function deleteOfflineAppliedVaccineDose(id: string): Promise<void>
   await iratiOfflineDb.appliedVaccineDoses.delete(id);
 }
 
-export async function setOfflineTravelChecklistItemPacked(
+export async function setOfflineTravelChecklistItemPackingStatus(
   id: string,
-  isPacked: boolean,
+  packingStatus: TravelPackingStatus,
 ): Promise<void> {
   await iratiOfflineDb.travelChecklistItems.update(id, {
-    isPacked,
+    packingStatus,
   });
 }
 
@@ -562,7 +583,7 @@ export async function resetOfflineTravelChecklist(): Promise<void> {
   await iratiOfflineDb.travelChecklistItems.bulkPut(
     items.map((item) => ({
       ...item,
-      isPacked: false,
+      packingStatus: "pending",
     })),
   );
 }

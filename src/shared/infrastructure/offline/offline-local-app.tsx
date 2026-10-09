@@ -798,7 +798,7 @@ function OfflineTravelScreen({ snapshot }: { snapshot: OfflineSnapshot }) {
         createAction={noopAction}
         deleteAction={noopAction}
         resetAction={noopAction}
-        setPackedAction={noopAction}
+        setPackingStatusAction={noopAction}
         updateAction={noopAction}
       />
     </main>

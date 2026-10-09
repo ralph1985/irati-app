@@ -25,7 +25,7 @@ describe("travel checklist item", () => {
       label: "Pañales",
       category: "higiene",
       sortOrder: 10,
-      isPacked: false,
+      packingStatus: "pending",
       notes: "Talla 1",
       storageLocationId: null,
       storageSortOrder: null,
@@ -45,11 +45,12 @@ describe("travel checklist item", () => {
   it("calculates progress", () => {
     expect(
       calculateTravelChecklistProgress([
-        item({ id: "item-1", isPacked: true }),
-        item({ id: "item-2", isPacked: false }),
+        item({ id: "item-1", packingStatus: "packed" }),
+        item({ id: "item-2", packingStatus: "pending" }),
       ]),
     ).toEqual({
       packed: 1,
+      notTaking: 0,
       pending: 1,
       total: 2,
     });
@@ -59,8 +60,8 @@ describe("travel checklist item", () => {
     expect(
       sortTravelChecklistItems(
         [
-          item({ id: "packed", label: "B", isPacked: true, sortOrder: 10 }),
-          item({ id: "pending", label: "A", isPacked: false, sortOrder: 20 }),
+          item({ id: "packed", label: "B", packingStatus: "packed", sortOrder: 10 }),
+          item({ id: "pending", label: "A", packingStatus: "pending", sortOrder: 20 }),
         ],
         categories,
       ).map((entry) => entry.id),
@@ -86,14 +87,15 @@ describe("travel checklist item", () => {
   it("groups items by category", () => {
     const groups = groupTravelChecklistItems(
       [
-        item({ id: "food", category: "comida", isPacked: true }),
-        item({ id: "walk", category: "paseo", isPacked: false }),
+        item({ id: "food", category: "comida", packingStatus: "packed" }),
+        item({ id: "walk", category: "paseo", packingStatus: "pending" }),
       ],
       categories,
     );
 
     expect(groups.find((group) => group.category.slug === "comida")?.progress).toEqual({
       packed: 1,
+      notTaking: 0,
       pending: 0,
       total: 1,
     });
@@ -103,7 +105,7 @@ describe("travel checklist item", () => {
   it("groups items by physical location without changing packed state", () => {
     const groups = groupTravelChecklistItemsByLocation(
       [
-        item({ id: "packed", isPacked: true, storageLocationId: "bag" }),
+        item({ id: "packed", packingStatus: "packed", storageLocationId: "bag" }),
         item({ id: "unassigned", storageLocationId: null }),
       ],
       [{ id: "bag", label: "Bolso verde", parentId: null, sortOrder: 10 }],
@@ -111,7 +113,7 @@ describe("travel checklist item", () => {
 
     expect(groups[0]).toMatchObject({
       location: { label: "Bolso verde" },
-      items: [{ id: "packed", isPacked: true }],
+      items: [{ id: "packed", packingStatus: "packed" }],
     });
     expect(groups[1]).toMatchObject({ location: null, items: [{ id: "unassigned" }] });
   });
@@ -130,7 +132,7 @@ describe("travel checklist item", () => {
       expect.objectContaining({ id: "first", sortOrder: 10, storageSortOrder: 20 }),
       expect.objectContaining({ id: "second", sortOrder: 20, storageSortOrder: 10 }),
     ]);
-    expect(reordered.find((entry) => entry.id === "second")?.isPacked).toBe(false);
+    expect(reordered.find((entry) => entry.id === "second")?.packingStatus).toBe("pending");
   });
 });
 
@@ -140,7 +142,7 @@ function item(overrides: Partial<TravelChecklistItem>): TravelChecklistItem {
     label: "Pañales",
     category: "higiene",
     sortOrder: 10,
-    isPacked: false,
+    packingStatus: "pending",
     notes: null,
     ...overrides,
   };
