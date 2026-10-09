@@ -138,7 +138,7 @@
 
 .groupHeader {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
   cursor: pointer;
@@ -158,15 +158,43 @@
   display: none;
 }
 
-.groupHeader span:last-child {
-  color: #6b587d;
-  font-size: 13px;
+.groupTitle {
+  min-width: 0;
 }
 
 .groupMeta {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: 8px;
+}
+
+.groupProgress {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #6b587d;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.groupProgressItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.groupProgressItem[data-status="packed"] {
+  color: #15803d;
+}
+
+.groupProgressItem[data-status="not-taking"] {
+  color: #b91c1c;
+}
+
+.groupProgressItem[data-status="pending"] {
+  color: #9a3412;
 }
 
 .groupAddButton {

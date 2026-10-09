@@ -563,7 +563,7 @@ function TravelChecklistGroupView({
       <summary className={styles.groupHeader}>
         <span className={styles.groupTitle}>{formatTravelChecklistCategory(group.category)}</span>
         <span className={styles.groupMeta}>
-          {formatProgress(group.progress)}
+          <PackingProgressSummary progress={group.progress} />
           <button
             aria-label={`Añadir a ${formatTravelChecklistCategory(group.category)}`}
             className={styles.groupAddButton}
@@ -1039,12 +1039,40 @@ function TravelChecklistItemForm({
   );
 }
 
+function PackingProgressSummary({ progress }: { progress: TravelChecklistProgress }) {
+  return (
+    <span
+      aria-label={formatProgressAccessible(progress)}
+      className={styles.groupProgress}
+      role="img"
+    >
+      <span aria-hidden="true" className={styles.groupProgressItem} data-status="packed">
+        ✓<span aria-hidden="true">{progress.packed}</span>
+      </span>
+      <span aria-hidden="true" className={styles.groupProgressItem} data-status="not-taking">
+        ×<span aria-hidden="true">{progress.notTaking}</span>
+      </span>
+      <span aria-hidden="true" className={styles.groupProgressItem} data-status="pending">
+        □<span aria-hidden="true">{progress.pending}</span>
+      </span>
+    </span>
+  );
+}
+
 function formatProgress(progress: TravelChecklistProgress): string {
   if (progress.total === 0) {
     return "0 de 0";
   }
 
   return `${progress.packed} preparados · ${progress.notTaking} no se llevan · ${progress.pending} pendientes`;
+}
+
+function formatProgressAccessible(progress: TravelChecklistProgress): string {
+  const packedLabel = progress.packed === 1 ? "preparado" : "preparados";
+  const notTakingLabel = progress.notTaking === 1 ? "no se lleva" : "no se llevan";
+  const pendingLabel = progress.pending === 1 ? "pendiente" : "pendientes";
+
+  return `${progress.packed} ${packedLabel}, ${progress.notTaking} ${notTakingLabel}, ${progress.pending} ${pendingLabel}`;
 }
 
 async function setTravelItemPackingStatusOffline(
