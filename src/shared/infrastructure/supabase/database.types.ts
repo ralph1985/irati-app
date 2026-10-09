@@ -377,7 +377,7 @@ export type Database = {
           label: string;
           category: string;
           sort_order: number;
-          is_packed: boolean;
+          packing_status: string;
           notes: string | null;
           storage_location_id: string | null;
           storage_sort_order: number | null;
@@ -389,7 +389,7 @@ export type Database = {
           label: string;
           category: string;
           sort_order?: number;
-          is_packed?: boolean;
+          packing_status?: string;
           notes?: string | null;
           storage_location_id?: string | null;
           storage_sort_order?: number | null;
@@ -401,7 +401,7 @@ export type Database = {
           label?: string;
           category?: string;
           sort_order?: number;
-          is_packed?: boolean;
+          packing_status?: string;
           notes?: string | null;
           storage_location_id?: string | null;
           storage_sort_order?: number | null;

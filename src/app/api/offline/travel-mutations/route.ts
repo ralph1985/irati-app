@@ -3,6 +3,7 @@ import { hasValidSession } from "@/modules/auth/infrastructure/server-auth";
 import {
   createTravelChecklistItem,
   isTravelChecklistCategory,
+  isTravelPackingStatus,
   updateTravelChecklistItemInput,
 } from "@/modules/travel/domain/travel-checklist-item";
 import { createServerSupabaseClient } from "@/shared/infrastructure/supabase/server-client";
@@ -34,8 +35,8 @@ async function applyTravelMutation(mutation: PendingTravelMutation): Promise<voi
   if (mutation.operation === "reset") {
     const { error } = await supabase
       .from("travel_checklist_items")
-      .update({ is_packed: false, updated_at: new Date().toISOString() })
-      .eq("is_packed", true);
+      .update({ packing_status: "pending", updated_at: new Date().toISOString() })
+      .neq("packing_status", "pending");
 
     if (error) {
       throw error;
@@ -61,14 +62,23 @@ async function applyTravelMutation(mutation: PendingTravelMutation): Promise<voi
     return;
   }
 
-  if (mutation.operation === "setPacked") {
-    if (!("isPacked" in mutation.payload) || typeof mutation.payload.isPacked !== "boolean") {
-      throw new Error("Invalid packed payload");
+  if (mutation.operation === "setPackingStatus") {
+    if (
+      !("id" in mutation.payload) ||
+      typeof mutation.payload.id !== "string" ||
+      !("packingStatus" in mutation.payload) ||
+      typeof mutation.payload.packingStatus !== "string" ||
+      !isTravelPackingStatus(mutation.payload.packingStatus)
+    ) {
+      throw new Error("Invalid packing status payload");
     }
 
     const { error } = await supabase
       .from("travel_checklist_items")
-      .update({ is_packed: mutation.payload.isPacked, updated_at: new Date().toISOString() })
+      .update({
+        packing_status: mutation.payload.packingStatus,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", mutation.payload.id);
 
     if (error) {
@@ -123,7 +133,7 @@ async function applyTravelMutation(mutation: PendingTravelMutation): Promise<voi
     const { error } = await supabase.from("travel_checklist_items").upsert({
       id: mutation.payload.id,
       category: item.category,
-      is_packed: item.isPacked ?? false,
+      packing_status: item.packingStatus ?? "pending",
       label: item.label,
       notes: item.notes ?? null,
       sort_order: item.sortOrder,
@@ -168,9 +178,15 @@ function isPendingTravelMutation(value: unknown): value is PendingTravelMutation
 
   return (
     mutation.entity === "travel" &&
-    ["create", "update", "setPacked", "delete", "reset", "reorder", "reorderStorage"].includes(
-      mutation.operation,
-    ) &&
+    [
+      "create",
+      "update",
+      "setPackingStatus",
+      "delete",
+      "reset",
+      "reorder",
+      "reorderStorage",
+    ].includes(mutation.operation) &&
     typeof mutation.id === "string" &&
     typeof mutation.createdAt === "string" &&
     typeof mutation.payload === "object" &&
@@ -237,6 +253,9 @@ function isTravelItemPayload(
     typeof value.label === "string" &&
     typeof value.category === "string" &&
     isTravelChecklistCategory(value.category) &&
-    typeof value.sortOrder === "number"
+    typeof value.sortOrder === "number" &&
+    "packingStatus" in value &&
+    typeof value.packingStatus === "string" &&
+    isTravelPackingStatus(value.packingStatus)
   );
 }

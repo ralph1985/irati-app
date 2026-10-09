@@ -19,6 +19,7 @@ describe("TravelChecklistView", () => {
             groups: [],
             progress: {
               packed: 0,
+              notTaking: 0,
               pending: 0,
               total: 0,
             },
@@ -26,7 +27,7 @@ describe("TravelChecklistView", () => {
           createAction={noopAction}
           deleteAction={noopAction}
           resetAction={noopAction}
-          setPackedAction={noopAction}
+          setPackingStatusAction={noopAction}
           updateAction={noopAction}
         />,
       ),
@@ -40,12 +41,12 @@ describe("TravelChecklistView", () => {
         createAction={noopAction}
         deleteAction={noopAction}
         resetAction={noopAction}
-        setPackedAction={noopAction}
+        setPackingStatusAction={noopAction}
         updateAction={noopAction}
       />,
     );
 
-    expect(html).toContain("1 de 2");
+    expect(html).toContain("1 preparados · 0 no se llevan · 1 pendientes");
     expect(html).toContain("Higiene");
     expect(html).toContain("Pañales");
     expect(html).toContain("Talla 1");
@@ -53,8 +54,11 @@ describe("TravelChecklistView", () => {
     expect(html).toContain("Añadir a la lista");
     expect(html).toContain('aria-label="Añadir a Higiene"');
     expect(html).toContain('aria-label="Mover Pañales"');
+    expect(html).toContain('aria-label="Marcar como preparado: Pañales"');
+    expect(html).toContain('aria-label="Marcar como no me lo llevo: Pañales"');
     expect(html).toContain('aria-pressed="true"');
     expect(html).toContain(">✓</span>");
+    expect(html).toContain(">×</span>");
   });
 });
 
@@ -65,6 +69,7 @@ const checklist: TravelChecklist = {
   ],
   progress: {
     packed: 1,
+    notTaking: 0,
     pending: 1,
     total: 2,
   },
@@ -73,6 +78,7 @@ const checklist: TravelChecklist = {
       category: { label: "Higiene", slug: "higiene", sortOrder: 1 },
       progress: {
         packed: 1,
+        notTaking: 0,
         pending: 1,
         total: 2,
       },
@@ -82,7 +88,7 @@ const checklist: TravelChecklist = {
           label: "Pañales",
           category: "higiene",
           sortOrder: 10,
-          isPacked: false,
+          packingStatus: "pending",
           notes: "Talla 1",
         },
         {
@@ -90,7 +96,7 @@ const checklist: TravelChecklist = {
           label: "Toallitas",
           category: "higiene",
           sortOrder: 20,
-          isPacked: true,
+          packingStatus: "packed",
           notes: null,
         },
       ],

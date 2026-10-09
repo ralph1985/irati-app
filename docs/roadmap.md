@@ -322,7 +322,7 @@ El modo offline-first se implementa por fases segun [`docs/offline-plan.md`](off
 - [x] Añadir Calendario a la navegación online y offline.
 - [x] Configurar las URLs reales en el entorno de despliegue y validar con el calendario de Irati.
 - [x] Ejecutar validación automática completa.
-- [ ] Hacer prueba manual en móvil con las URLs reales.
+- [x] Hacer prueba manual en móvil con las URLs reales.
 
 ## Hito 21 - Registro de sueño
 
@@ -343,8 +343,9 @@ El modo offline-first se implementa por fases segun [`docs/offline-plan.md`](off
 - [x] Integrar lectura y escritura offline con cola de sincronización.
 - [x] Incluir las nuevas tablas en backups y documentación del esquema.
 - [x] Añadir tests de dominio, referencias OMS, gráficas e IndexedDB.
-- [ ] Aplicar migración y verificar los registros iniciales en Supabase remoto.
-- [ ] Ejecutar validación automática completa y prueba manual en PWA instalada.
+- [x] Aplicar migración y verificar los registros iniciales en Supabase remoto.
+- [x] Ejecutar validación automática completa.
+- [x] Hacer prueba manual en PWA instalada.
 
 ## Hito 23 - Amigos de Irati
 
@@ -356,8 +357,9 @@ El modo offline-first se implementa por fases segun [`docs/offline-plan.md`](off
 - [x] Incluir Amigos en el snapshot y la navegación offline.
 - [x] Incluir `friend_entries` en backups.
 - [x] Añadir tests de dominio, caso de uso, UI e IndexedDB.
-- [ ] Aplicar la migración y verificar los 24 registros en Supabase remoto.
-- [ ] Ejecutar validación automática completa y prueba manual offline.
+- [x] Aplicar la migración y verificar los 24 registros en Supabase remoto.
+- [x] Ejecutar validación automática completa.
+- [x] Hacer prueba manual offline.
 
 ## Fuera del MVP inicial
 

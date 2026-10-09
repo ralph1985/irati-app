@@ -3,25 +3,27 @@ import { createTravelChecklistItem } from "./create-travel-checklist-item";
 import { deleteTravelChecklistItem } from "./delete-travel-checklist-item";
 import { listTravelChecklist } from "./list-travel-checklist";
 import { resetTravelChecklist } from "./reset-travel-checklist";
-import { setTravelChecklistItemPacked } from "./set-travel-checklist-item-packed";
+import { setTravelChecklistItemPackingStatus } from "./set-travel-checklist-item-packed";
 import { TravelChecklistRepository } from "./travel-checklist-repository";
 import { updateTravelChecklistItem } from "./update-travel-checklist-item";
 import {
   TravelChecklistCategoryDefinition,
   TravelChecklistItem,
+  TravelPackingStatus,
   TravelStorageLocation,
 } from "../domain/travel-checklist-item";
 
 describe("travel checklist use cases", () => {
   it("lists grouped items with progress", async () => {
     const repository = new FakeTravelChecklistRepository([
-      item({ id: "packed", isPacked: true }),
-      item({ id: "pending", isPacked: false }),
+      item({ id: "packed", packingStatus: "packed" }),
+      item({ id: "pending", packingStatus: "pending" }),
     ]);
 
     await expect(listTravelChecklist(repository)).resolves.toMatchObject({
       progress: {
         packed: 1,
+        notTaking: 0,
         pending: 1,
         total: 2,
       },
@@ -41,16 +43,16 @@ describe("travel checklist use cases", () => {
       label: "Chupete extra",
       category: "sueno",
       sortOrder: 30,
-      isPacked: false,
+      packingStatus: "pending",
     });
-    const packed = await setTravelChecklistItemPacked(repository, created.id, true);
+    const packed = await setTravelChecklistItemPackingStatus(repository, created.id, "packed");
 
     await resetTravelChecklist(repository);
     await deleteTravelChecklistItem(repository, created.id);
 
     expect(created.label).toBe("Chupete");
     expect(updated.label).toBe("Chupete extra");
-    expect(packed.isPacked).toBe(true);
+    expect(packed.packingStatus).toBe("packed");
     await expect(repository.listTravelChecklistItems()).resolves.toEqual([]);
   });
 });
@@ -92,7 +94,7 @@ class FakeTravelChecklistRepository implements TravelChecklistRepository {
     const item = {
       id: `item-${this.items.length + 1}`,
       ...entry,
-      isPacked: entry.isPacked ?? false,
+      packingStatus: entry.packingStatus ?? "pending",
     };
     this.items = [...this.items, item];
 
@@ -100,20 +102,20 @@ class FakeTravelChecklistRepository implements TravelChecklistRepository {
   }
 
   async updateTravelChecklistItem(id: string, entry: Omit<TravelChecklistItem, "id">) {
-    const item = { id, ...entry, isPacked: entry.isPacked ?? false };
+    const item = { id, ...entry, packingStatus: entry.packingStatus ?? "pending" };
     this.items = this.items.map((existing) => (existing.id === id ? item : existing));
 
     return item;
   }
 
-  async setTravelChecklistItemPacked(id: string, isPacked: boolean) {
+  async setTravelChecklistItemPackingStatus(id: string, packingStatus: TravelPackingStatus) {
     const item = this.items.find((entry) => entry.id === id);
 
     if (!item) {
       throw new Error("Item not found");
     }
 
-    const updated = { ...item, isPacked };
+    const updated = { ...item, packingStatus };
     this.items = this.items.map((existing) => (existing.id === id ? updated : existing));
 
     return updated;
@@ -124,7 +126,7 @@ class FakeTravelChecklistRepository implements TravelChecklistRepository {
   }
 
   async resetTravelChecklist() {
-    this.items = this.items.map((item) => ({ ...item, isPacked: false }));
+    this.items = this.items.map((item) => ({ ...item, packingStatus: "pending" }));
   }
 }
 
@@ -144,7 +146,7 @@ function item(overrides: Partial<TravelChecklistItem>): TravelChecklistItem {
     label: "Pañales",
     category: "higiene",
     sortOrder: 10,
-    isPacked: false,
+    packingStatus: "pending",
     notes: null,
     storageLocationId: null,
     ...overrides,

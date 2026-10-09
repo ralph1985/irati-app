@@ -5,6 +5,7 @@ import {
   NewTravelChecklistItem,
   TravelChecklistCategoryDefinition,
   TravelChecklistItem,
+  TravelPackingStatus,
   TravelStorageLocation,
 } from "../domain/travel-checklist-item";
 
@@ -31,9 +32,11 @@ export class SupabaseTravelChecklistRepository implements TravelChecklistReposit
   async listTravelChecklistItems(): Promise<TravelChecklistItem[]> {
     const { data, error } = await this.supabase
       .from("travel_checklist_items")
-      .select("id,label,category,sort_order,is_packed,notes,storage_location_id,storage_sort_order")
+      .select(
+        "id,label,category,sort_order,packing_status,notes,storage_location_id,storage_sort_order",
+      )
       .order("category", { ascending: true })
-      .order("is_packed", { ascending: true })
+      .order("packing_status", { ascending: true })
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true });
 
@@ -253,12 +256,14 @@ export class SupabaseTravelChecklistRepository implements TravelChecklistReposit
         label: item.label,
         category: item.category,
         sort_order: item.sortOrder,
-        is_packed: item.isPacked ?? false,
+        packing_status: item.packingStatus ?? "pending",
         notes: item.notes ?? null,
         storage_location_id: item.storageLocationId ?? null,
         storage_sort_order: item.storageSortOrder ?? null,
       })
-      .select("id,label,category,sort_order,is_packed,notes,storage_location_id,storage_sort_order")
+      .select(
+        "id,label,category,sort_order,packing_status,notes,storage_location_id,storage_sort_order",
+      )
       .single();
 
     if (error) {
@@ -284,7 +289,9 @@ export class SupabaseTravelChecklistRepository implements TravelChecklistReposit
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
-      .select("id,label,category,sort_order,is_packed,notes,storage_location_id,storage_sort_order")
+      .select(
+        "id,label,category,sort_order,packing_status,notes,storage_location_id,storage_sort_order",
+      )
       .single();
 
     if (error) {
@@ -294,15 +301,20 @@ export class SupabaseTravelChecklistRepository implements TravelChecklistReposit
     return mapTravelChecklistItem(data);
   }
 
-  async setTravelChecklistItemPacked(id: string, isPacked: boolean): Promise<TravelChecklistItem> {
+  async setTravelChecklistItemPackingStatus(
+    id: string,
+    packingStatus: TravelPackingStatus,
+  ): Promise<TravelChecklistItem> {
     const { data, error } = await this.supabase
       .from("travel_checklist_items")
       .update({
-        is_packed: isPacked,
+        packing_status: packingStatus,
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
-      .select("id,label,category,sort_order,is_packed,notes,storage_location_id,storage_sort_order")
+      .select(
+        "id,label,category,sort_order,packing_status,notes,storage_location_id,storage_sort_order",
+      )
       .single();
 
     if (error) {
@@ -324,10 +336,10 @@ export class SupabaseTravelChecklistRepository implements TravelChecklistReposit
     const { error } = await this.supabase
       .from("travel_checklist_items")
       .update({
-        is_packed: false,
+        packing_status: "pending",
         updated_at: new Date().toISOString(),
       })
-      .eq("is_packed", true);
+      .neq("packing_status", "pending");
 
     if (error) {
       throw error;
@@ -342,7 +354,7 @@ function mapTravelChecklistItem(
     | "label"
     | "category"
     | "sort_order"
-    | "is_packed"
+    | "packing_status"
     | "notes"
     | "storage_location_id"
     | "storage_sort_order"
@@ -353,7 +365,7 @@ function mapTravelChecklistItem(
     label: row.label,
     category: row.category,
     sortOrder: row.sort_order,
-    isPacked: row.is_packed,
+    packingStatus: row.packing_status as TravelPackingStatus,
     notes: row.notes,
     storageLocationId: row.storage_location_id,
     storageSortOrder: row.storage_sort_order,

@@ -1,9 +1,10 @@
+import { TravelPackingStatus } from "../domain/travel-checklist-item";
 import { TravelChecklistRepository } from "./travel-checklist-repository";
 
-export async function setTravelChecklistItemPacked(
-  repository: Pick<TravelChecklistRepository, "setTravelChecklistItemPacked">,
+export async function setTravelChecklistItemPackingStatus(
+  repository: Pick<TravelChecklistRepository, "setTravelChecklistItemPackingStatus">,
   id: string,
-  isPacked: boolean,
+  packingStatus: TravelPackingStatus,
 ) {
-  return repository.setTravelChecklistItemPacked(id, isPacked);
+  return repository.setTravelChecklistItemPackingStatus(id, packingStatus);
 }

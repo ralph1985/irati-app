@@ -2,6 +2,7 @@ import {
   NewTravelChecklistItem,
   TravelChecklistCategoryDefinition,
   TravelChecklistItem,
+  TravelPackingStatus,
   TravelStorageLocation,
 } from "../domain/travel-checklist-item";
 
@@ -22,7 +23,10 @@ export type TravelChecklistRepository = {
   deleteTravelStorageLocation(id: string): Promise<void>;
   createTravelChecklistItem(item: NewTravelChecklistItem): Promise<TravelChecklistItem>;
   updateTravelChecklistItem(id: string, item: NewTravelChecklistItem): Promise<TravelChecklistItem>;
-  setTravelChecklistItemPacked(id: string, isPacked: boolean): Promise<TravelChecklistItem>;
+  setTravelChecklistItemPackingStatus(
+    id: string,
+    packingStatus: TravelPackingStatus,
+  ): Promise<TravelChecklistItem>;
   deleteTravelChecklistItem(id: string): Promise<void>;
   resetTravelChecklist(): Promise<void>;
 };

@@ -383,8 +383,10 @@ Reglas:
 
 - La lista es unica y reutilizable, no se crean viajes individuales en esta version.
 - Los items se guardan en Supabase remoto para compartir el estado entre Rafa y Begoña.
-- Los items pueden añadirse, editarse, borrarse y marcarse como preparados desde la app.
-- La lista puede reiniciarse antes de una nueva salida, desmarcando todos los items.
+- Los items pueden añadirse, editarse, borrarse y marcarse como preparados o como no llevados desde la app.
+- Cada item tiene tres estados de preparación: pendiente, preparado y no me lo llevo. El estado pendiente significa que todavía no se ha decidido.
+- Los controles de preparado y no me lo llevo son mutuamente excluyentes; ninguno de los dos puede estar activo a la vez.
+- La lista puede reiniciarse antes de una nueva salida, devolviendo todos los items al estado pendiente.
 - Los items se agrupan por categoria y se ordenan manualmente por `sort_order`.
 - Los items pueden reordenarse con drag & drop dentro de una categoria o entre categorias.
 - La vista por categoria y la vista por ubicacion mantienen ordenes independientes: `sort_order` organiza la preparacion y `storage_sort_order` organiza cada ubicacion fisica.
@@ -409,7 +411,9 @@ Criterios de aceptacion:
 
 - Puedo ver una checklist de viaje agrupada por categorias.
 - Puedo ver el progreso total de items preparados.
-- Puedo marcar y desmarcar un item.
+- Puedo marcar y desmarcar un item como preparado.
+- Puedo marcar y desmarcar un item como "No me lo llevo".
+- Un item nunca aparece simultáneamente como preparado y como "No me lo llevo".
 - Puedo añadir, editar y borrar items.
 - Puedo reiniciar la lista antes de una nueva salida.
 - Rafa y Begoña ven el mismo estado si usan la app desde dispositivos distintos con conexion.

@@ -71,16 +71,16 @@ const checklist: TravelChecklist = {
           label: "Bañera portátil",
           category: "higiene",
           sortOrder: 10,
-          isPacked: false,
+          packingStatus: "pending",
           storageLocationId: "room",
         },
       ],
-      progress: { packed: 0, pending: 1, total: 1 },
+      progress: { packed: 0, notTaking: 0, pending: 1, total: 1 },
     },
     {
       category: { label: "Salud", slug: "salud", sortOrder: 20 },
       items: [],
-      progress: { packed: 0, pending: 0, total: 0 },
+      progress: { packed: 0, notTaking: 0, pending: 0, total: 0 },
     },
   ],
   locations: [
@@ -90,5 +90,5 @@ const checklist: TravelChecklist = {
     { id: "pocket", label: "Bolsillo", parentId: "bag", sortOrder: 10 },
   ],
   locationGroups: [],
-  progress: { packed: 0, pending: 1, total: 1 },
+  progress: { packed: 0, notTaking: 0, pending: 1, total: 1 },
 };

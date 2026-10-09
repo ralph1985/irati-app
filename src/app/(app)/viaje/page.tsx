@@ -10,7 +10,7 @@ import {
   resetTravelChecklistAction,
   reorderTravelChecklistItemsAction,
   reorderTravelChecklistItemsByLocationAction,
-  setTravelChecklistItemPackedAction,
+  setTravelChecklistItemPackingStatusAction,
   updateTravelChecklistItemAction,
 } from "./actions";
 import styles from "./page.module.css";
@@ -78,7 +78,7 @@ export default async function TravelPage({ searchParams }: TravelPageProps) {
         resetAction={resetTravelChecklistAction}
         reorderAction={reorderTravelChecklistItemsAction}
         reorderStorageAction={reorderTravelChecklistItemsByLocationAction}
-        setPackedAction={setTravelChecklistItemPackedAction}
+        setPackingStatusAction={setTravelChecklistItemPackingStatusAction}
         updateAction={updateTravelChecklistItemAction}
         organizationHref="/viaje/organizar"
       />
@@ -100,6 +100,7 @@ async function getTravelChecklist() {
         locationGroups: [],
         progress: {
           packed: 0,
+          notTaking: 0,
           pending: 0,
           total: 0,
         },

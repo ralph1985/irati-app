@@ -13,12 +13,14 @@ export type TravelStorageLocation = {
   sortOrder: number;
 };
 
+export type TravelPackingStatus = "pending" | "packed" | "not_taking";
+
 export type TravelChecklistItem = {
   id: string;
   label: string;
   category: TravelChecklistCategory;
   sortOrder: number;
-  isPacked: boolean;
+  packingStatus: TravelPackingStatus;
   notes?: string | null;
   storageLocationId?: string | null;
   storageSortOrder?: number | null;
@@ -26,15 +28,16 @@ export type TravelChecklistItem = {
 
 export type NewTravelChecklistItem = Omit<
   TravelChecklistItem,
-  "id" | "isPacked" | "storageLocationId"
+  "id" | "packingStatus" | "storageLocationId"
 > & {
-  isPacked?: boolean;
+  packingStatus?: TravelPackingStatus;
   storageLocationId?: string | null;
   storageSortOrder?: number | null;
 };
 
 export type TravelChecklistProgress = {
   packed: number;
+  notTaking: number;
   pending: number;
   total: number;
 };
@@ -89,12 +92,14 @@ export function updateTravelChecklistItemInput(
 export function calculateTravelChecklistProgress(
   items: TravelChecklistItem[],
 ): TravelChecklistProgress {
-  const packed = items.filter((item) => item.isPacked).length;
+  const packed = items.filter((item) => item.packingStatus === "packed").length;
+  const notTaking = items.filter((item) => item.packingStatus === "not_taking").length;
   const total = items.length;
 
   return {
     packed,
-    pending: total - packed,
+    notTaking,
+    pending: total - packed - notTaking,
     total,
   };
 }
@@ -258,6 +263,10 @@ export function isTravelChecklistCategory(value: string): value is TravelCheckli
   return value.trim().length > 0;
 }
 
+export function isTravelPackingStatus(value: string): value is TravelPackingStatus {
+  return value === "pending" || value === "packed" || value === "not_taking";
+}
+
 export function formatTravelChecklistCategory(category: TravelChecklistCategoryDefinition): string {
   return category.label;
 }
@@ -277,7 +286,7 @@ function normalizeTravelChecklistItem(input: NewTravelChecklistItem): NewTravelC
     label: input.label.trim(),
     category: input.category,
     sortOrder: input.sortOrder,
-    isPacked: input.isPacked ?? false,
+    packingStatus: input.packingStatus ?? "pending",
     notes: input.notes?.trim() || null,
     storageLocationId: input.storageLocationId ?? null,
     storageSortOrder: input.storageSortOrder ?? null,
