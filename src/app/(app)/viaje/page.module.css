@@ -368,6 +368,10 @@
   font-weight: 900;
 }
 
+.itemCheck button[aria-busy="true"] > span:last-child {
+  display: none;
+}
+
 .itemCheck button[aria-pressed="true"] {
   border-color: #7c3aed;
   background: #ede9fe;
