@@ -46,7 +46,10 @@ describe("TravelChecklistView", () => {
       />,
     );
 
-    expect(html).toContain("1 preparados · 0 no se llevan · 1 pendientes");
+    expect(html).toContain('aria-label="1 preparado, 0 no se llevan, 1 pendiente"');
+    expect(html).toContain('data-status="packed">✓<span aria-hidden="true">1</span>');
+    expect(html).toContain('data-status="not-taking">×<span aria-hidden="true">0</span>');
+    expect(html).toContain('data-status="pending">□<span aria-hidden="true">1</span>');
     expect(html).toContain("Higiene");
     expect(html).toContain("Pañales");
     expect(html).toContain("Talla 1");
