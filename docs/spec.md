@@ -233,6 +233,7 @@ Lugares validos iniciales:
 - Hospital.
 - Pediatra.
 - Farmacia.
+- Enfermería.
 
 Reglas:
 
@@ -244,7 +245,7 @@ Reglas:
 - La referencia OMS de peso para la edad usada en esta gráfica termina a los 5 años; no se extrapola más allá de ese límite.
 - Las referencias OMS son visuales y no generan diagnosticos ni alertas clinicas automaticas.
 - La grafica permite abrir una vista ampliada a pantalla completa dentro de la app.
-- La grafica permite filtrar por Todos, Hospital, Farmacia o Pediatra.
+- La grafica permite filtrar por Todos, Hospital, Farmacia, Pediatra o Enfermería.
 - No se calcula el percentil individual de cada peso ni se interpreta clinicamente en el MVP.
 - No se mezclan estimaciones con pesos registrados en el MVP.
 - El historico muestra en cada registro el cambio respecto al anterior y el promedio diario en g/dia cuando las fechas son distintas; el registro mas antiguo muestra "Sin comparacion".
@@ -261,6 +262,7 @@ Criterios de aceptacion:
 - Puedo filtrar la grafica por Farmacia.
 - Puedo filtrar la grafica por Pediatra.
 - Puedo filtrar la grafica por Hospital.
+- Puedo filtrar la grafica por Enfermería.
 - Si no hay pesos para un filtro, veo un estado vacio claro.
 
 ### Medidas de crecimiento

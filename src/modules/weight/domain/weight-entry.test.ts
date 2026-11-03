@@ -34,6 +34,7 @@ describe("isWeightPlace", () => {
     expect(isWeightPlace("hospital")).toBe(true);
     expect(isWeightPlace("pediatra")).toBe(true);
     expect(isWeightPlace("farmacia")).toBe(true);
+    expect(isWeightPlace("enfermeria")).toBe(true);
   });
 
   it("rejects unsupported places", () => {

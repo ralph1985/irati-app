@@ -143,6 +143,7 @@ export function WeightCreateSheet({
                   <option value="hospital">Hospital</option>
                   <option value="pediatra">Pediatra</option>
                   <option value="farmacia">Farmacia</option>
+                  <option value="enfermeria">Enfermería</option>
                 </select>
               </label>
 

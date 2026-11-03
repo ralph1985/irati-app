@@ -180,6 +180,7 @@ export function WeightHistory({ deleteAction, entries, updateAction }: WeightHis
                   <option value="hospital">Hospital</option>
                   <option value="pediatra">Pediatra</option>
                   <option value="farmacia">Farmacia</option>
+                  <option value="enfermeria">Enfermería</option>
                 </select>
               </label>
               <label className={styles.full}>
@@ -344,5 +345,13 @@ function formatPlace(place: string): string {
     return "Hospital";
   }
 
-  return place === "pediatra" ? "Pediatra" : "Farmacia";
+  if (place === "pediatra") {
+    return "Pediatra";
+  }
+
+  if (place === "farmacia") {
+    return "Farmacia";
+  }
+
+  return "Enfermería";
 }
