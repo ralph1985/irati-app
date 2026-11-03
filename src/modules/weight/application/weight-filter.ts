@@ -22,6 +22,7 @@ export function formatWeightFilterLabel(filter: WeightFilter): string {
     hospital: "Hospital",
     pediatra: "Pediatra",
     farmacia: "Farmacia",
+    enfermeria: "Enfermería",
   };
 
   return labels[filter];

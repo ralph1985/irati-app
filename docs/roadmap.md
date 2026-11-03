@@ -154,7 +154,7 @@ No se copia en el MVP inicial:
 
 - [x] Definir entidad de peso en dominio.
 - [x] Registrar peso con fecha, gramos y lugar.
-- [x] Restringir lugar a Hospital, Pediatra o Farmacia.
+- [x] Restringir lugar a Hospital, Pediatra, Farmacia o Enfermería.
 - [x] Listar historico de pesos.
 - [x] Editar una entrada de peso.
 - [x] Borrar una entrada de peso con confirmacion.

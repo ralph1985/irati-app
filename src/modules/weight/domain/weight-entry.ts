@@ -1,4 +1,4 @@
-export const weightPlaces = ["hospital", "pediatra", "farmacia"] as const;
+export const weightPlaces = ["hospital", "pediatra", "farmacia", "enfermeria"] as const;
 
 export type WeightPlace = (typeof weightPlaces)[number];
 
@@ -54,7 +54,7 @@ function validateWeightEntry(input: NewWeightEntry): string[] {
   }
 
   if (!isWeightPlace(input.place)) {
-    issues.push("El lugar debe ser Hospital, Pediatra o Farmacia.");
+    issues.push("El lugar debe ser Hospital, Pediatra, Farmacia o Enfermería.");
   }
 
   return issues;
