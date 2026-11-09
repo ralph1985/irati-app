@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { filterWeightEntries, isWeightFilter } from "./weight-filter";
+import {
+  filterWeightEntries,
+  getWeightPlaceFilters,
+  toggleWeightPlaceFilter,
+  weightFilterHref,
+} from "./weight-filter";
 import { WeightEntry } from "../domain/weight-entry";
 
 const entries: WeightEntry[] = [
@@ -35,25 +40,47 @@ const entries: WeightEntry[] = [
 
 describe("filterWeightEntries", () => {
   it("returns all entries for the all filter", () => {
-    expect(filterWeightEntries(entries, "all")).toHaveLength(4);
+    expect(filterWeightEntries(entries, [])).toHaveLength(4);
   });
 
-  it("filters entries by place", () => {
-    expect(filterWeightEntries(entries, "hospital")).toEqual([entries[0]]);
-    expect(filterWeightEntries(entries, "pediatra")).toEqual([entries[1]]);
-    expect(filterWeightEntries(entries, "farmacia")).toEqual([entries[2]]);
-    expect(filterWeightEntries(entries, "enfermeria")).toEqual([entries[3]]);
+  it("filters entries by one or several places", () => {
+    expect(filterWeightEntries(entries, ["hospital"])).toEqual([entries[0]]);
+    expect(filterWeightEntries(entries, ["pediatra"])).toEqual([entries[1]]);
+    expect(filterWeightEntries(entries, ["farmacia"])).toEqual([entries[2]]);
+    expect(filterWeightEntries(entries, ["enfermeria"])).toEqual([entries[3]]);
+    expect(filterWeightEntries(entries, ["hospital", "farmacia"])).toEqual([
+      entries[0],
+      entries[2],
+    ]);
+    expect(filterWeightEntries(entries, [])).toHaveLength(4);
   });
 });
 
-describe("isWeightFilter", () => {
-  it("accepts supported filter values", () => {
-    expect(isWeightFilter("all")).toBe(true);
-    expect(isWeightFilter("hospital")).toBe(true);
-    expect(isWeightFilter("enfermeria")).toBe(true);
+describe("getWeightPlaceFilters", () => {
+  it("keeps valid repeated values, removing invalid and duplicate values", () => {
+    expect(getWeightPlaceFilters(["hospital", "casa", "hospital", "farmacia"])).toEqual([
+      "hospital",
+      "farmacia",
+    ]);
   });
 
-  it("rejects unsupported filter values", () => {
-    expect(isWeightFilter("casa")).toBe(false);
+  it("returns no selected places for an absent value", () => {
+    expect(getWeightPlaceFilters(undefined)).toEqual([]);
+  });
+});
+
+describe("toggleWeightPlaceFilter", () => {
+  it("adds and removes places without turning all into a separate selection", () => {
+    expect(toggleWeightPlaceFilter([], "hospital")).toEqual(["hospital"]);
+    expect(toggleWeightPlaceFilter(["hospital"], "farmacia")).toEqual(["hospital", "farmacia"]);
+    expect(toggleWeightPlaceFilter(["hospital", "farmacia"], "hospital")).toEqual(["farmacia"]);
+    expect(toggleWeightPlaceFilter(["hospital"], "hospital")).toEqual([]);
+  });
+});
+
+describe("weightFilterHref", () => {
+  it("serializes multiple places as repeatable query parameters", () => {
+    expect(weightFilterHref(["hospital", "farmacia"])).toBe("/peso?lugar=hospital&lugar=farmacia");
+    expect(weightFilterHref([])).toBe("/peso");
   });
 });
