@@ -245,7 +245,8 @@ Reglas:
 - La referencia OMS de peso para la edad usada en esta gráfica termina a los 5 años; no se extrapola más allá de ese límite.
 - Las referencias OMS son visuales y no generan diagnosticos ni alertas clinicas automaticas.
 - La grafica permite abrir una vista ampliada a pantalla completa dentro de la app.
-- La grafica permite filtrar por Todos, Hospital, Farmacia, Pediatra o Enfermería.
+- La gráfica y el histórico permiten filtrar por Todos, Hospital, Farmacia, Pediatra o Enfermería.
+- Los filtros por lugar son multiselección: activar varios lugares muestra los registros de cualquiera de ellos; `Todos` limpia la selección. La selección se conserva en parámetros repetidos `lugar` de la URL y funciona también en la vista offline.
 - No se calcula el percentil individual de cada peso ni se interpreta clinicamente en el MVP.
 - No se mezclan estimaciones con pesos registrados en el MVP.
 - El historico muestra en cada registro el cambio respecto al anterior y el promedio diario en g/dia cuando las fechas son distintas; el registro mas antiguo muestra "Sin comparacion".
@@ -259,10 +260,9 @@ Criterios de aceptacion:
 - Puedo ver una grafica simple con todos los pesos.
 - Puedo comparar la evolucion con referencias OMS orientativas.
 - Puedo ampliar la grafica para verla sin el historial.
-- Puedo filtrar la grafica por Farmacia.
-- Puedo filtrar la grafica por Pediatra.
-- Puedo filtrar la grafica por Hospital.
-- Puedo filtrar la grafica por Enfermería.
+- Puedo filtrar la gráfica y el histórico por uno o varios lugares.
+- Puedo limpiar la selección con `Todos`.
+- Los filtros seleccionados se conservan al recargar o compartir la URL.
 - Si no hay pesos para un filtro, veo un estado vacio claro.
 
 ### Medidas de crecimiento

@@ -27,8 +27,10 @@ import { PlannedVaccineList } from "@/modules/vaccines/ui/planned-vaccine-list";
 import {
   filterWeightEntries,
   formatWeightFilterLabel,
-  isWeightFilter,
-  type WeightFilter,
+  formatWeightFiltersLabel,
+  getWeightPlaceFilters,
+  toggleWeightPlaceFilter,
+  weightFilterHref,
   weightFilterValues,
 } from "@/modules/weight/application/weight-filter";
 import { buildWeightTrendSummary } from "@/modules/weight/application/weight-trend-summary";
@@ -581,10 +583,8 @@ function OfflineHomeScreen({ snapshot }: { snapshot: OfflineSnapshot }) {
 }
 
 function OfflineWeightScreen({ search, snapshot }: { search: string; snapshot: OfflineSnapshot }) {
-  const activeFilterParam = new URLSearchParams(search).get("lugar");
-  const activeFilter: WeightFilter =
-    activeFilterParam && isWeightFilter(activeFilterParam) ? activeFilterParam : "all";
-  const filteredEntries = filterWeightEntries(snapshot.weightEntries, activeFilter);
+  const activeFilters = getWeightPlaceFilters(new URLSearchParams(search).getAll("lugar"));
+  const filteredEntries = filterWeightEntries(snapshot.weightEntries, activeFilters);
   const trendSummary = buildWeightTrendSummary(filteredEntries, new Date());
 
   return (
@@ -598,19 +598,27 @@ function OfflineWeightScreen({ search, snapshot }: { search: string; snapshot: O
         <section className={weightStyles.panel} aria-labelledby="chart-title">
           <div className={weightStyles.sectionTitle}>
             <h2 id="chart-title">Evolucion</h2>
-            <span>{formatWeightFilterLabel(activeFilter)}</span>
+            <span>{formatWeightFiltersLabel(activeFilters)}</span>
           </div>
 
-          <div className={weightStyles.filters} aria-label="Filtrar pesos por lugar">
-            {weightFilterValues.map((filter) => (
-              <a
-                aria-current={filter === activeFilter ? "page" : undefined}
-                href={filter === "all" ? "/peso" : `/peso?lugar=${filter}`}
-                key={filter}
-              >
-                {formatWeightFilterLabel(filter)}
-              </a>
-            ))}
+          <p className={weightStyles.filterHint}>Puedes combinar varios lugares.</p>
+          <div className={weightStyles.filters} role="group" aria-label="Filtrar pesos por lugar">
+            {weightFilterValues.map((filter) => {
+              const selected =
+                filter === "all" ? activeFilters.length === 0 : activeFilters.includes(filter);
+              const nextFilters =
+                filter === "all" ? [] : toggleWeightPlaceFilter(activeFilters, filter);
+
+              return (
+                <a
+                  aria-current={selected ? "page" : undefined}
+                  href={weightFilterHref(nextFilters)}
+                  key={filter}
+                >
+                  {formatWeightFilterLabel(filter)}
+                </a>
+              );
+            })}
           </div>
 
           {snapshot.profile ? (

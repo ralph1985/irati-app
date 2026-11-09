@@ -5,9 +5,13 @@ import { CachedProfileRepository } from "@/modules/profile/infrastructure/cached
 import {
   filterWeightEntries,
   formatWeightFilterLabel,
-  isWeightFilter,
+  formatWeightFiltersLabel,
+  getWeightPlaceFilters,
+  toggleWeightPlaceFilter,
+  weightFilterHref,
   weightFilterValues,
 } from "@/modules/weight/application/weight-filter";
+import { WeightPlace } from "@/modules/weight/domain/weight-entry";
 import { LoginScreen } from "@/modules/auth/ui/login-screen";
 import { listWeightEntries } from "@/modules/weight/application/list-weight-entries";
 import {
@@ -31,7 +35,7 @@ type WeightPageProps = {
     created?: string;
     deleted?: string;
     error?: string;
-    lugar?: string;
+    lugar?: string | string[];
     updated?: string;
   }>;
 };
@@ -55,8 +59,8 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
     getBabyProfile(new CachedProfileRepository()),
   ]);
   const currentError = error ?? loadError;
-  const activeFilter = isWeightFilter(lugar) ? lugar : "all";
-  const filteredEntries = filterWeightEntries(entries, activeFilter);
+  const activeFilters = getWeightPlaceFilters(lugar);
+  const filteredEntries = filterWeightEntries(entries, activeFilters);
   const trendSummary = buildWeightTrendSummary(filteredEntries, new Date());
   const feedbackMessages: ToastFeedbackMessage[] = [
     ...(created ? [{ id: "created", text: "Peso guardado.", variant: "success" as const }] : []),
@@ -86,19 +90,27 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
         <section className={styles.panel} aria-labelledby="chart-title">
           <div className={styles.sectionTitle}>
             <h2 id="chart-title">Evolución</h2>
-            <span>{formatWeightFilterLabel(activeFilter)}</span>
+            <span>{formatWeightFiltersLabel(activeFilters)}</span>
           </div>
 
-          <div className={styles.filters} aria-label="Filtrar pesos por lugar">
-            {weightFilterValues.map((filter) => (
-              <Link
-                aria-current={filter === activeFilter ? "page" : undefined}
-                href={filter === "all" ? "/peso" : `/peso?lugar=${filter}`}
-                key={filter}
-              >
-                {formatWeightFilterLabel(filter)}
-              </Link>
-            ))}
+          <p className={styles.filterHint}>Puedes combinar varios lugares.</p>
+          <div className={styles.filters} role="group" aria-label="Filtrar pesos por lugar">
+            {weightFilterValues.map((filter) => {
+              const selected =
+                filter === "all" ? activeFilters.length === 0 : activeFilters.includes(filter);
+              const nextFilters: WeightPlace[] =
+                filter === "all" ? [] : toggleWeightPlaceFilter(activeFilters, filter);
+
+              return (
+                <Link
+                  aria-current={selected ? "page" : undefined}
+                  href={weightFilterHref(nextFilters)}
+                  key={filter}
+                >
+                  {formatWeightFilterLabel(filter)}
+                </Link>
+              );
+            })}
           </div>
 
           <WeightChart birthDate={profile.birthDate} entries={filteredEntries} />

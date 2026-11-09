@@ -73,6 +73,13 @@
   gap: 8px;
 }
 
+.filterHint {
+  margin-bottom: -8px;
+  color: #6b587c;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .filters a {
   display: flex;
   min-height: 42px;
